@@ -13,7 +13,7 @@ Permission: `admin`
 <nil>
 
 #### Body
-```json
+```jsonc
 {
   name: "dataset-name" // Name / slug that identifies the dataset. Must be unique!
   replications: 6 // Max. Number of replications that can be made
@@ -38,7 +38,7 @@ Permission: `admin`
 
 #### Response
 > 200 : Success
-```json
+```jsonc
 [
   {
     id: 1
@@ -59,7 +59,7 @@ Permission: `admin`
 dataset: identifier (name) of dataset
 
 ### Body: 
-```json
+```jsonc
 [
  {
   cid: "Q1234",
@@ -80,7 +80,7 @@ Permission: `admin`
 <nil>
 
 #### Body
-```json
+```jsonc
 {
   id: "f01234" // unique! SP identifier
 }
@@ -100,7 +100,7 @@ Permission: `admin`
 <nil>
 
 #### Body
-```json
+```jsonc
 {
   id: "f01234" // unique! SP identifier
   replicated_bytes: 58712698 // Number of bytes replicated to SP
@@ -123,7 +123,7 @@ Permission: `admin`
 <nil>
 
 #### Body 
-```json
+```jsonc
 {
   provider: "f01234", // required! ID of the SP to create deals with
   dataset: "test-dataset", // optional - if unspecified, will select content from any dataset
@@ -134,7 +134,7 @@ Permission: `admin`
 
 #### Response
 > 200: Success
-```json
+```jsonc
 [
   "bafy123", // Proposal CIDs
   "bafy456",
