@@ -89,3 +89,54 @@ Permission: `admin`
 #### Response
 > 200: Success
 > 500: Fail
+
+
+### GET /
+- Gets list of storage providers
+
+Permission: `admin`
+
+#### Params
+<nil>
+
+#### Body
+```json
+{
+  id: "f01234" // unique! SP identifier
+  replicated_bytes: 58712698 // Number of bytes replicated to SP
+  replicated_deals: 12332 // Number of deals made with SP
+}
+```
+
+#### Response
+> 200: Success
+> 500: Fail
+
+## /deal
+
+### POST / 
+- Create deals
+
+Permission: `admin`
+
+#### Params
+<nil>
+
+#### Body 
+```json
+{
+  provider: "f01234", // required! ID of the SP to create deals with
+  dataset: "test-dataset", // optional - if unspecified, will select content from any dataset
+  numDeals: 10, // optional - if unspecified, then numTib must be specified. Number of deals to make
+  numTib: 2 // optional - if unspecified, then numDeals must be specified. Amount of TiB of deals to make
+}
+```
+
+#### Response
+> 200: Success
+```json
+[
+  "bafy123", // Proposal CIDs
+  "bafy456",
+]
+```
