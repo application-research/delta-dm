@@ -18,3 +18,20 @@ A tool to manage onboarding of large datasets to the Filecoin network.
 
 ### Deal Making
 1. Call `/deal` endpoint to make deals with providers- specify either a # of deals or amount (TiB) to replicate
+
+
+
+#### Wishlist
+- Ability to specify region / IP address of providers so that deals can be made in a geo-aware way (only replicate a certain amount to a given region)
+- Never deal the same CAR to the same provider! 
+- Show progress bar of how much datacap is being used for each dataset/wallet
+
+### Reporting
+
+Dataset level 
+-> see how **distributed** the data is. See which SPs 
+-> match what Validation-bot does 
+-> see % replicated 
+
+SP Level
+-> Total list of data/CIDs replicated, which datasets

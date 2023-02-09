@@ -26,7 +26,7 @@ func OpenDatabase() (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Carfile{})
+	db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{})
 }
 
 type DealState string
@@ -41,7 +41,7 @@ type DealState string
 type Replication struct {
 	gorm.Model
 	client  Provider
-	carfile Carfile
+	content Content
 	// state    DealState // TODO: directly from delta core?
 	dealTime    time.Time
 	proposalCid string // TODO: type
@@ -60,10 +60,11 @@ type Dataset struct {
 	name             string
 	dealLength       int64 // num. epochs
 	replicationQuota int
-	carfiles         []Carfile
+	unsealed         bool // whether to keep unsealed copy or not
+	contents         []Content
 }
 
-type Carfile struct {
+type Content struct {
 	commp       string `gorm:"primarykey"`
 	size        int64
 	padded_size int64

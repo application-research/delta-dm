@@ -19,6 +19,8 @@ Permission: `admin`
   replication_quota: 6 // Max. Number of replications that can be made
   length: 540 // Deal length, in days
   wallet: "f1xxx" // Wallet to be used for datacap or payment
+  unsealed: true // Whether unsealed copies should be created or not
+  indexed: true // Whether dataset should be announced to indexer or not
 }
 ```
 
@@ -131,6 +133,7 @@ Permission: `admin`
   dataset: "test-dataset", // optional - if unspecified, will select content from any dataset
   numDeals: 10, // optional - if unspecified, then numTib must be specified. Number of deals to make
   numTib: 2 // optional - if unspecified, then numDeals must be specified. Amount of TiB of deals to make
+  pricePerDeal : 0 // optional - amount of fil per deal. If unspecifed, makes verified deal with datacap
 }
 ```
 
