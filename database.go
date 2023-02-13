@@ -4,16 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func OpenDatabase() (*gorm.DB, error) {
-	dbName, okHost := viper.Get("DB_NAME").(string)
-	if !okHost {
-		panic("DB_NAME not set")
-	}
+func OpenDatabase(dbName string) (*gorm.DB, error) {
 	DB, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 
 	// generate new models.
@@ -58,14 +53,15 @@ type Provider struct {
 type Dataset struct {
 	gorm.Model
 	name             string
-	dealLength       int64 // num. epochs
+	dealDuration     int64 // num. epochs
 	replicationQuota int
 	unsealed         bool // whether to keep unsealed copy or not
 	contents         []Content
 }
 
 type Content struct {
-	commp       string `gorm:"primarykey"`
+	gorm.Model
+	commp       string `gorm:"primaryKey"`
 	size        int64
 	padded_size int64
 }

@@ -17,7 +17,7 @@ Permission: `admin`
 {
   name: "dataset-name" // Name / slug that identifies the dataset. Must be unique!
   replication_quota: 6 // Max. Number of replications that can be made
-  length: 540 // Deal length, in days
+  duration: 540 // Deal length, in days
   wallet: "f1xxx" // Wallet to be used for datacap or payment
   unsealed: true // Whether unsealed copies should be created or not
   indexed: true // Whether dataset should be announced to indexer or not
@@ -48,7 +48,7 @@ Permission: `admin`
     name: "dataset-name"
     replications: 6
     wallet: "f1xxx"
-    length: 540 // Deal length, in days
+    duration: 540 // Deal length, in days
     size: 38451017 // total size of CARfiles
     cids: 10000 // Number of CIDs / files comprising the dataset
   }
