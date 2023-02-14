@@ -48,18 +48,18 @@ type Provider struct {
 // A Dataset is a collection of CAR files, and is identified by a slug
 type Dataset struct {
 	gorm.Model
-	Name             string `json:"name" gorm:"unique; not null"`
-	ReplicationQuota int    `json:"replication_quota"`
-	DealDuration     int    `json:"deal_duration"`
-	Wallet           string `json:"wallet"`
-	Unsealed         bool   `json:"unsealed"`
-	Indexed          bool   `json:"indexed"`
-	contents         []Content
+	Name             string    `json:"name" gorm:"unique; not null"`
+	ReplicationQuota int       `json:"replication_quota"`
+	DealDuration     int       `json:"deal_duration"`
+	Wallet           string    `json:"wallet"`
+	Unsealed         bool      `json:"unsealed"`
+	Indexed          bool      `json:"indexed"`
+	Contents         []Content `json:"contents" gorm:"foreignKey:CommP"`
 }
 
 type Content struct {
 	gorm.Model
-	commp       string `gorm:"primaryKey"`
-	size        int64
-	padded_size int64
+	CommP      string `json:"commp" gorm:"primaryKey"`
+	Size       int64  `json:"size"`
+	PaddedSize int64  `json:"padded_size"`
 }

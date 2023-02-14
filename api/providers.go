@@ -24,7 +24,7 @@ func ConfigureProvidersRouter(e *echo.Group, db *gorm.DB) {
 		var p core.Provider
 
 		if err := c.Bind(&p); err != nil {
-			return c.JSON(http.StatusBadRequest, "invalid provider data")
+			return err
 		}
 
 		p.Key = uuid.New()
