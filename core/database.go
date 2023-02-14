@@ -1,6 +1,7 @@
-package main
+package core
 
 import (
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,16 +22,11 @@ func OpenDatabase(dbName string) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{})
+	err := db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{})
+	if err != nil {
+		log.Fatalf("error migrating database: %s", err)
+	}
 }
-
-type DealState string
-
-// const (
-// 	PENDING  DealState = "PENDING"  // Deal has been made
-// 	COMPLETE DealState = "COMPLETE" // Deal is successfully onchain
-// 	FAILED   DealState = "FAILED"   // Deal failed
-// )
 
 // A replication refers to a deal, for a specific carfile, with a client
 type Replication struct {
@@ -45,17 +41,19 @@ type Replication struct {
 // A client is a Storage Provider that is being replicated to
 type Provider struct {
 	gorm.Model
-	key     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	actorID string    `gorm:"unique,not null"`
+	Key     uuid.UUID `json:"key" gorm:"type:uuid"`
+	ActorID string    `json:"actor_id" gorm:"unique; not null"`
 }
 
 // A Dataset is a collection of CAR files, and is identified by a slug
 type Dataset struct {
 	gorm.Model
-	name             string
-	dealDuration     int64 // num. epochs
-	replicationQuota int
-	unsealed         bool // whether to keep unsealed copy or not
+	Name             string `json:"name" gorm:"unique; not null"`
+	ReplicationQuota int    `json:"replication_quota"`
+	DealDuration     int    `json:"deal_duration"`
+	Wallet           string `json:"wallet"`
+	Unsealed         bool   `json:"unsealed"`
+	Indexed          bool   `json:"indexed"`
 	contents         []Content
 }
 

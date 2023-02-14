@@ -1,26 +1,36 @@
 package api
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/application-research/delta-ldm/core"
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
+)
 
-type AddDatasetBody struct {
-	Name             string `json:"name"`
-	ReplicationQuota int    `json:"replication_quota"`
-	DealDuration     int    `json:"deal_duration"`
-	Wallet           string `json:"wallet"`
-	Unsealed         bool   `json:"unsealed"`
-	Indexed          bool   `json:"indexed"`
-}
-
-func ConfigureDatasetRouter(e *echo.Group) {
+func ConfigureDatasetRouter(e *echo.Group, db *gorm.DB) {
 	dataset := e.Group("/dataset")
 
-	dataset.POST("/add", func(c echo.Context) error {
-		var ads AddDatasetBody
+	dataset.GET("", func(c echo.Context) error {
+		var ds []core.Dataset
+
+		db.Find(&ds)
+
+		return c.JSON(200, ds)
+	})
+
+	dataset.POST("", func(c echo.Context) error {
+		var ads core.Dataset
 
 		if err := c.Bind(&ads); err != nil {
 			return err
 		}
 
+		res := db.Create(&ads)
+
+		if res.Error != nil {
+			return res.Error
+		}
+
 		return c.JSON(200, ads)
 	})
+
 }

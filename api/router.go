@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/xerrors"
+	"gorm.io/gorm"
 )
 
 var (
@@ -43,7 +44,7 @@ type AuthResponse struct {
 }
 
 // RouterConfig configures the API node
-func InitializeEchoRouterConfig() {
+func InitializeEchoRouterConfig(db *gorm.DB) {
 	// Echo instance
 	e := echo.New()
 
@@ -55,7 +56,8 @@ func InitializeEchoRouterConfig() {
 
 	apiGroup := e.Group("/api/v1")
 
-	ConfigureDatasetRouter(apiGroup)
+	ConfigureDatasetRouter(apiGroup, db)
+	ConfigureProvidersRouter(apiGroup, db)
 	// Start server
 	e.Logger.Fatal(e.Start("0.0.0.0:1314")) // configuration
 }

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	api "github.com/application-research/delta-ldm/api"
+	core "github.com/application-research/delta-ldm/core"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -42,7 +43,7 @@ func main() {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			db, err := OpenDatabase(dbConnStr)
+			db, err := core.OpenDatabase(dbConnStr)
 			if err != nil {
 				log.Fatalf("could not connect to db: %s", err)
 			}
@@ -62,6 +63,6 @@ func main() {
 }
 
 func (t *DeltaLDM) serveAPI() {
-	api.InitializeEchoRouterConfig()
+	api.InitializeEchoRouterConfig(t.db)
 	api.LoopForever()
 }
