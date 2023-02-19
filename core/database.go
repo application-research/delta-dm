@@ -1,16 +1,25 @@
 package core
 
 import (
-	"log"
 	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	//	"gorm.io/gorm/logger"
+
+	logging "github.com/ipfs/go-log/v2"
+)
+
+var (
+	log = logging.Logger("router")
 )
 
 func OpenDatabase(dbName string) (*gorm.DB, error) {
-	DB, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
+	DB, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{
+		//	Logger: logger.Default.LogMode(logger.Info),
+	})
 
 	// generate new models.
 	ConfigureModels(DB) // create models.
@@ -54,12 +63,12 @@ type Dataset struct {
 	Wallet           string    `json:"wallet"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
-	Contents         []Content `json:"contents" gorm:"foreignKey:CommP"`
+	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetId"`
 }
 
 type Content struct {
-	gorm.Model
 	CommP      string `json:"commp" gorm:"primaryKey"`
 	Size       int64  `json:"size"`
 	PaddedSize int64  `json:"padded_size"`
+	DatasetId  int
 }

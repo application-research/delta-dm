@@ -1,3 +1,4 @@
 *.db
 testdb
 .env
+.DS_Store
