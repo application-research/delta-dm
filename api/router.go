@@ -58,7 +58,7 @@ func InitializeEchoRouterConfig(db *gorm.DB) {
 
 	ConfigureDatasetRouter(apiGroup, db)
 	ConfigureProvidersRouter(apiGroup, db)
-	ConfigureDealRouter(apiGroup, db)
+	ConfigureReplicationRouter(apiGroup, db)
 	// Start server
 	e.Logger.Fatal(e.Start("0.0.0.0:1314")) // configuration
 }
