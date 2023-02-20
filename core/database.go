@@ -37,24 +37,26 @@ func ConfigureModels(db *gorm.DB) {
 	}
 }
 
-// A replication refers to a deal, for a specific carfile, with a client
+// A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	client  Provider
-	content Content
-	// state    DealState // TODO: directly from delta core?
-	dealTime    time.Time
-	proposalCid string // TODO: type
+	// Provider     Provider  `json:"provider"`
+	Content         Content   `json:"content"`
+	DealTime        time.Time `json:"deal_time"`
+	ProposalCid     string    `json:"proposal_cid" gorm:"unique"`
+	ProviderActorID string    `json:"provider_actor_id"`
+	ContentCommP    string    `json:"content_commp"`
 }
 
 // A client is a Storage Provider that is being replicated to
 type Provider struct {
-	gorm.Model
-	Key     uuid.UUID `json:"key" gorm:"type:uuid"`
-	ActorID string    `json:"actor_id" gorm:"unique; not null"`
+	// gorm.Model
+	Key          uuid.UUID     `json:"key" gorm:"type:uuid"`
+	ActorID      string        `json:"actor_id" gorm:"primaryKey"`
+	Replications []Replication `json:"replications" gorm:"foreignKey:ProviderActorID"`
 }
 
-// A Dataset is a collection of CAR files, and is identified by a slug
+// A Dataset is a collection of CAR files, and is identified by a name/slug
 type Dataset struct {
 	gorm.Model
 	Name             string    `json:"name" gorm:"unique; not null"`
@@ -63,12 +65,14 @@ type Dataset struct {
 	Wallet           string    `json:"wallet"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
-	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetId"`
+	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetID"`
 }
 
 type Content struct {
-	CommP      string `json:"commp" gorm:"primaryKey"`
-	Size       int64  `json:"size"`
-	PaddedSize int64  `json:"padded_size"`
-	DatasetId  int
+	CommP           string `json:"commp" gorm:"primaryKey"`
+	Size            int64  `json:"size"`
+	PaddedSize      int64  `json:"padded_size"`
+	DatasetID       int
+	Replications    []Replication `json:"replications" gorm:"foreignKey:ContentCommP"`
+	NumReplications int           `json:"num_replications"`
 }
