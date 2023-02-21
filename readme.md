@@ -1,29 +1,39 @@
-# Delta Large Dataset Manager
+# Δ LDM (Large Dataset Manager)
 
-A tool to manage onboarding of large datasets to the Filecoin network. 
+A tool to manage deal replication tracking for onboarding large datasets to the Filecoin network via **offline storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
+
+## LDM - Data Flow
+
+### Dataset
+The top-level logical grouping of data in LDM is the **dataset**. Datasets are identified by a name (aka "slug"), along with a replication quota, deal length, and a wallet to make the deals from.
+Datasets are added independently from the content making them up. 
+
+### Content
+Once a dataset has been created, content may be added to it. A content represents a .CAR file - archive of data that will be shipped to the SP and loaded into their operation. Content is identified by its **PieceCID** (CommP), has two sizes (raw file size, Padded Piece Size), and also contains a CID of the actual data (Payload CID).
+
+### Providers
+LDM tracks deals to Storage Providers in the network. Add a list of storage providers to LDM before making deals to begin tracking them.
+
+
+### Replication
+Once a **Dataset**, **Content**, and **Providers** have been specified, the LDM `replication` API can be called to issue a number of offline deals out to the providers. 
+
 
 # Instructions
 
-- Set `DB_NAME` env var to postgres connection string ex) `host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai`
+- Set `DB_NAME` env var to postgres connection string ex) `testdb`. Can also be specified as a cli argument.
 
+## Example Usage
 
+```bash
+delta-ldm --db testdb
+```
 
-## Data Onboarding Flow
+## API
+See api docs in /api/api.md.
 
-
-### Set Up
-1. Add the dataset into Delta-LDM -> specify the name(slug), replication quota, deal length, and associated wallet for datacap
-2. Add Storage Providers to Delta-LDM, by actor ID / identifier
-3. Associate content (CAR files) with the dataset. Specify each by CID and provide sizes (padded and raw)
-
-### Deal Making
-1. Call `/deal` endpoint to make deals with providers- specify either a # of deals or amount (TiB) to replicate
-
-
-
-#### Wishlist
+## Wishlist
 - Ability to specify region / IP address of providers so that deals can be made in a geo-aware way (only replicate a certain amount to a given region)
-- Never deal the same CAR to the same provider! 
 - Show progress bar of how much datacap is being used for each dataset/wallet
 
 ### Reporting
