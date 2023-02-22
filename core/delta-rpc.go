@@ -11,11 +11,24 @@ type DeltaAPI struct {
 	authToken string
 }
 
-func NewDeltaAPI(url string, authToken string) *DeltaAPI {
+func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
+
+	hcError := healthCheck(url)
+	if hcError != nil {
+		return nil, hcError
+	}
+
 	return &DeltaAPI{
 		url:       url,
 		authToken: authToken,
-	}
+	}, nil
+}
+
+// Verify that Delta API is reachable
+func healthCheck(baseUrl string) error {
+	_, err := http.Get(baseUrl + "/api/v1/node/info")
+
+	return err
 }
 
 func (d *DeltaAPI) MakeOfflineDeals() (*OfflineDealResponse, error) {

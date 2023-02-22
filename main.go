@@ -11,12 +11,15 @@ import (
 )
 
 type DeltaLDM struct {
-	db *gorm.DB
+	dapi *core.DeltaAPI
+	db   *gorm.DB
 }
 
 func main() {
 	var debug bool = false
 	var dbConnStr string
+	var deltaApi string
+	var deltaAuthToken string
 
 	app := &cli.App{
 		Name:      "Delta Large Dataset Manager",
@@ -30,6 +33,21 @@ func main() {
 				EnvVars:     []string{"DB_NAME"},
 				Required:    true,
 				Destination: &dbConnStr,
+			},
+			&cli.StringFlag{
+				Name:        "delta-api",
+				Usage:       "endpoint for delta api",
+				DefaultText: "http://localhost:1414",
+				Value:       "http://localhost:1414",
+				EnvVars:     []string{"DELTA_API"},
+				Destination: &deltaApi,
+			},
+			&cli.StringFlag{
+				Name:        "delta-auth",
+				Usage:       "delta auth token",
+				EnvVars:     []string{"DELTA_AUTH"},
+				Required:    true,
+				Destination: &deltaAuthToken,
 			},
 			&cli.BoolFlag{
 				Name:        "debug",
@@ -46,10 +64,20 @@ func main() {
 			db, err := core.OpenDatabase(dbConnStr)
 			if err != nil {
 				log.Fatalf("could not connect to db: %s", err)
+			} else {
+				log.Debugf("successfully connected to delta api at %s\n", deltaApi)
+			}
+
+			dapi, err := core.NewDeltaAPI(deltaApi, deltaAuthToken)
+			if err != nil {
+				log.Fatalf("could not connect to delta api: %s", err)
+			} else {
+				log.Debugf("successfully connected to db at %s\n", deltaApi)
 			}
 
 			dldm := DeltaLDM{
-				db: db,
+				dapi: dapi,
+				db:   db,
 			}
 			dldm.serveAPI()
 
