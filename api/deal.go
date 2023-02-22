@@ -18,20 +18,20 @@ type PostReplicationBody struct {
 	PricePerDeal float64 `json:"price_per_deal,omitempty"`
 }
 
-func ConfigureReplicationRouter(e *echo.Group, db *gorm.DB) {
+func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaLDM) {
 	replication := e.Group("/replication")
 
 	replication.GET(":provider", func(c echo.Context) error {
 		var r []core.Replication
 		p := c.Param("provider")
 
-		db.Find(&r).Where("provider_actor_id = ?", p)
+		dldm.DB.Find(&r).Where("provider_actor_id = ?", p)
 
 		return c.JSON(200, r)
 	})
 
 	replication.POST("", func(c echo.Context) error {
-		return handlePostReplication(c, db)
+		return handlePostReplication(c, dldm.DB)
 	})
 
 }

@@ -7,11 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	core "github.com/application-research/delta-ldm/core"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/xerrors"
-	"gorm.io/gorm"
 )
 
 var (
@@ -44,7 +44,7 @@ type AuthResponse struct {
 }
 
 // RouterConfig configures the API node
-func InitializeEchoRouterConfig(db *gorm.DB) {
+func InitializeEchoRouterConfig(dldm *core.DeltaLDM) {
 	// Echo instance
 	e := echo.New()
 
@@ -56,9 +56,9 @@ func InitializeEchoRouterConfig(db *gorm.DB) {
 
 	apiGroup := e.Group("/api/v1")
 
-	ConfigureDatasetRouter(apiGroup, db)
-	ConfigureProvidersRouter(apiGroup, db)
-	ConfigureReplicationRouter(apiGroup, db)
+	ConfigureDatasetRouter(apiGroup, dldm)
+	ConfigureProvidersRouter(apiGroup, dldm)
+	ConfigureReplicationRouter(apiGroup, dldm)
 	// Start server
 	e.Logger.Fatal(e.Start("0.0.0.0:1314")) // configuration
 }

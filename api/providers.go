@@ -6,16 +6,15 @@ import (
 	"github.com/application-research/delta-ldm/core"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
-func ConfigureProvidersRouter(e *echo.Group, db *gorm.DB) {
+func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaLDM) {
 	providers := e.Group("/providers")
 
 	providers.GET("", func(c echo.Context) error {
 		var p []core.Provider
 
-		db.Find(&p)
+		dldm.DB.Find(&p)
 
 		return c.JSON(200, p)
 	})
@@ -29,7 +28,7 @@ func ConfigureProvidersRouter(e *echo.Group, db *gorm.DB) {
 
 		p.Key = uuid.New()
 
-		res := db.Create(&p)
+		res := dldm.DB.Create(&p)
 
 		if res.Error != nil {
 			return res.Error

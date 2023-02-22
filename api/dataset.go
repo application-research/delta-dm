@@ -5,16 +5,15 @@ import (
 
 	"github.com/application-research/delta-ldm/core"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
-func ConfigureDatasetRouter(e *echo.Group, db *gorm.DB) {
+func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaLDM) {
 	dataset := e.Group("/dataset")
 
 	dataset.GET("", func(c echo.Context) error {
 		var ds []core.Dataset
 
-		db.Find(&ds)
+		dldm.DB.Find(&ds)
 
 		return c.JSON(200, ds)
 	})
@@ -26,7 +25,7 @@ func ConfigureDatasetRouter(e *echo.Group, db *gorm.DB) {
 			return err
 		}
 
-		res := db.Create(&ads)
+		res := dldm.DB.Create(&ads)
 
 		if res.Error != nil {
 			return res.Error
@@ -44,9 +43,9 @@ func ConfigureDatasetRouter(e *echo.Group, db *gorm.DB) {
 			return fmt.Errorf("dataset must be specified")
 		}
 
-		db.Where("name = ?", d).First(&dataset)
+		dldm.DB.Where("name = ?", d).First(&dataset)
 
-		err := db.Model(&dataset).Association("Contents").Find(&content)
+		err := dldm.DB.Model(&dataset).Association("Contents").Find(&content)
 		if err != nil {
 			return err
 		}
@@ -71,7 +70,7 @@ func ConfigureDatasetRouter(e *echo.Group, db *gorm.DB) {
 			return fmt.Errorf("dataset must be specified")
 		}
 
-		res := db.Where("name = ?", d).First(&dataset)
+		res := dldm.DB.Where("name = ?", d).First(&dataset)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -81,14 +80,14 @@ func ConfigureDatasetRouter(e *echo.Group, db *gorm.DB) {
 		}
 
 		for _, cnt := range content {
-			err := db.Create(&cnt).Error
+			err := dldm.DB.Create(&cnt).Error
 			if err != nil {
 				results.Fail = append(results.Fail, cnt.CommP)
 				continue
 			}
 
 			results.Success = append(results.Success, cnt.CommP)
-			err = db.Model(&dataset).Association("Contents").Append(&cnt)
+			err = dldm.DB.Model(&dataset).Association("Contents").Append(&cnt)
 			if err != nil {
 				return err
 			}
