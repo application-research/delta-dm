@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -31,8 +32,17 @@ func healthCheck(baseUrl string) error {
 	return err
 }
 
-func (d *DeltaAPI) MakeOfflineDeals() (*OfflineDealResponse, error) {
-	req, err := http.NewRequest("POST", d.url, nil)
+type DealRequest struct {
+}
+
+// Requests offline deals to be made from Delta
+func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest) (*OfflineDealResponse, error) {
+	ds, err := json.Marshal(deals)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", d.url+"/api/v1/deal/commitment-pieces", bytes.NewBuffer(ds))
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +68,18 @@ func (d *DeltaAPI) MakeOfflineDeals() (*OfflineDealResponse, error) {
 	return &result, nil
 }
 
+type OfflineDealRequest []Deal
+
+func UnmarshalOfflineDealRequest(data []byte) (OfflineDealRequest, error) {
+	var r OfflineDealRequest
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+func (r *OfflineDealRequest) Marshal() ([]byte, error) {
+	return json.Marshal(r)
+}
+
 type OfflineDealResponse []OfflineDealResponseElement
 
 func UnmarshalOfflineDealResponse(data []byte) (OfflineDealResponse, error) {
@@ -75,13 +97,13 @@ type OfflineDealResponseElement struct {
 	Message           string `json:"message"`
 	ContentID         int64  `json:"content_id"`
 	PieceCommitmentID int64  `json:"piece_commitment_id"`
-	Meta              Meta   `json:"meta"`
+	Meta              Deal   `json:"meta"`
 }
 
-type Meta struct {
+type Deal struct {
 	Cid            string `json:"cid"`
 	Wallet         string `json:"wallet"`
-	Commp          string `json:"commp"`
+	Commp          Commp  `json:"commp"`
 	ConnectionMode string `json:"connection_mode"`
 	Size           int64  `json:"size"`
 }
@@ -89,5 +111,5 @@ type Meta struct {
 type Commp struct {
 	Piece             string `json:"piece"`
 	PaddedPieceSize   int64  `json:"padded_piece_size"`
-	UnpaddedPieceSize int64  `json:"unpadded_piece_size"`
+	UnpaddedPieceSize int64  `json:"unpadded_piece_size,omitempty"`
 }
