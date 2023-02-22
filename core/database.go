@@ -21,7 +21,6 @@ func OpenDatabase(dbName string) (*gorm.DB, error) {
 		//	Logger: logger.Default.LogMode(logger.Info),
 	})
 
-	// generate new models.
 	ConfigureModels(DB) // create models.
 
 	if err != nil {
@@ -40,7 +39,6 @@ func ConfigureModels(db *gorm.DB) {
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	// Provider     Provider  `json:"provider"`
 	Content         Content   `json:"content"`
 	DealTime        time.Time `json:"deal_time"`
 	ProposalCid     string    `json:"proposal_cid" gorm:"unique"`
@@ -50,7 +48,6 @@ type Replication struct {
 
 // A client is a Storage Provider that is being replicated to
 type Provider struct {
-	// gorm.Model
 	Key          uuid.UUID     `json:"key" gorm:"type:uuid"`
 	ActorID      string        `json:"actor_id" gorm:"primaryKey"`
 	Replications []Replication `json:"replications" gorm:"foreignKey:ProviderActorID"`
