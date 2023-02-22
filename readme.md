@@ -1,6 +1,6 @@
 # Δ LDM (Large Dataset Manager)
 
-A tool to manage deal replication tracking for onboarding large datasets to the Filecoin network via **offline storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
+A tool to manage deal replication tracking for onboarding large datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
 
 ## LDM - Data Flow
 
@@ -16,7 +16,7 @@ LDM tracks deals to Storage Providers in the network. Add a list of storage prov
 
 
 ### Replication
-Once a **Dataset**, **Content**, and **Providers** have been specified, the LDM `replication` API can be called to issue a number of offline deals out to the providers. 
+Once a **Dataset**, **Content**, and **Providers** have been specified, the LDM `replication` API can be called to issue a number of import deals out to the providers. 
 
 
 # Instructions
