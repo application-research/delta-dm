@@ -31,7 +31,7 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaLDM) {
 	})
 
 	replication.POST("", func(c echo.Context) error {
-		return handlePostReplication(c, dldm.DB)
+		return handlePostReplication(c, dldm)
 	})
 
 }
@@ -39,7 +39,7 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaLDM) {
 // POST /api/replication
 // @param num number of deals requested
 // @returns a slice of the CIDs
-func handlePostReplication(c echo.Context, db *gorm.DB) error {
+func handlePostReplication(c echo.Context, dldm *core.DeltaLDM) error {
 	var d PostReplicationBody
 
 	if err := c.Bind(&d); err != nil {
@@ -52,30 +52,53 @@ func handlePostReplication(c echo.Context, db *gorm.DB) error {
 
 	// TODO: Support num_tib to allow specifying the amount of data to replicate
 
-	toReplicate, err := findUnreplicatedContentForProvider(db, d.Provider, d.Dataset, d.NumDeals)
+	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.Dataset, d.NumDeals)
 	if err != nil {
 		return err
 	}
 
-	// Deal successfully made
-	for i, c := range toReplicate {
-		// TODO: make the deals
-		// CALL delta API
-		fmt.Printf("calling DELTA api for %+v\n\n", c)
-		// error check - if it fails, then don't update the DB and return an error
+	var dealsToMake core.OfflineDealRequest
+	fmt.Printf("calling DELTA api for %+v deals\n\n", len(toReplicate))
 
+	for _, c := range toReplicate {
+		dealsToMake = append(dealsToMake, core.Deal{
+			Cid:            c.PayloadCID, // Payload CID
+			Wallet:         core.Wallet{},
+			ConnectionMode: "offline",
+			Miner:          d.Provider,
+			Size:           c.Size,
+			// TODO: duration and start epoch
+			Commp: core.Commp{
+				Piece:           c.CommP,
+				PaddedPieceSize: c.PaddedSize,
+			},
+		})
+	}
+	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake)
+	if err != nil {
+		return fmt.Errorf("unable to make deal with delta api: %s", err)
+	}
+
+	for i, c := range *deltaResp {
 		var newReplication = core.Replication{
-			ContentCommP:    c.CommP,
+			ContentCommP:    c.Meta.Cid,
 			ProviderActorID: d.Provider,
+			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
 			ProposalCid:     fmt.Sprint(rand.Int()) + fmt.Sprint(i), // TODO: From delta
 		}
-		db.Model(&core.Replication{}).Create(&newReplication)
-		c.NumReplications += 1
-		db.Save(&c)
+
+		dldm.DB.Model(&core.Replication{}).Create(&newReplication)
+
+		for _, dbContent := range toReplicate {
+			if dbContent.CommP == c.Meta.Cid {
+				dbContent.NumReplications += 1
+				dldm.DB.Save(&dbContent)
+			}
+		}
 	}
 
-	return c.JSON(200, toReplicate)
+	return c.JSON(200, deltaResp)
 }
 
 // Query the database for all contant that does not have replications to this actor yet

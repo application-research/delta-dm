@@ -41,6 +41,7 @@ type Replication struct {
 	gorm.Model
 	Content         Content   `json:"content"`
 	DealTime        time.Time `json:"deal_time"`
+	DeltaContentID  int64     `json:"delta_content_id"`
 	ProposalCid     string    `json:"proposal_cid" gorm:"unique"`
 	ProviderActorID string    `json:"provider_actor_id"`
 	ContentCommP    string    `json:"content_commp"`
@@ -67,6 +68,7 @@ type Dataset struct {
 
 type Content struct {
 	CommP           string `json:"commp" gorm:"primaryKey"`
+	PayloadCID      string `json:"payload_cid"`
 	Size            int64  `json:"size"`
 	PaddedSize      int64  `json:"padded_size"`
 	DatasetID       int
