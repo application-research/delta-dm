@@ -7,18 +7,18 @@ A tool to manage deal replication tracking for onboarding datasets to the Fileco
 ## Data Flow
 
 ### Dataset
-The top-level logical grouping of data in LDM is the **dataset**. Datasets are identified by a name (aka "slug"), along with a replication quota, deal length, and a wallet to make the deals from.
+The top-level logical grouping of data in DDM is the **dataset**. Datasets are identified by a name (aka "slug"), along with a replication quota, deal length, and a wallet to make the deals from.
 Datasets are added independently from the content making them up. 
 
 ### Content
 Once a dataset has been created, content may be added to it. A content represents a .CAR file - archive of data that will be shipped to the SP and loaded into their operation. Content is identified by its **PieceCID** (CommP), has two sizes (raw file size, Padded Piece Size), and also contains a CID of the actual data (Payload CID).
 
 ### Providers
-LDM tracks deals to Storage Providers in the network. Add a list of storage providers to LDM before making deals to begin tracking them.
+DDM tracks deals to Storage Providers in the network. Add a list of storage providers to DDM before making deals to begin tracking them.
 
 
 ### Replication
-Once a **Dataset**, **Content**, and **Providers** have been specified, the LDM `replication` API can be called to issue a number of import deals out to the providers. 
+Once a **Dataset**, **Content**, and **Providers** have been specified, the DDM `replication` API can be called to issue a number of import deals out to the providers. 
 
 
 # Instructions
