@@ -109,7 +109,7 @@ type Deal struct { // AKA meta
 	DeltaContentID int64  `json:"content_id,omitempty"`
 	Cid            string `json:"cid"`
 	Wallet         Wallet `json:"wallet"`
-	Miner          string `json:"provider"` //TODO: rename to provider
+	Miner          string `json:"miner"` //TODO: rename to provider
 	Commp          Commp  `json:"commp"`
 	ConnectionMode string `json:"connection_mode"`
 	Size           int64  `json:"size"`

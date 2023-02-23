@@ -39,7 +39,7 @@ func ConfigureModels(db *gorm.DB) {
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	Content         Content   `json:"content"`
+	Content         Content   `json:"content"` //TODO: doesnt come back from api
 	DealTime        time.Time `json:"deal_time"`
 	DeltaContentID  int64     `json:"delta_content_id"`
 	ProposalCid     string    `json:"proposal_cid" gorm:"unique"`

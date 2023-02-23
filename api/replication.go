@@ -25,7 +25,7 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaLDM) {
 		var r []core.Replication
 		p := c.Param("provider")
 
-		dldm.DB.Find(&r).Where("provider_actor_id = ?", p)
+		dldm.DB.Model(&core.Replication{}).Preload("Content").Find(&r).Where("provider_actor_id = ?", p).Omit("content")
 
 		return c.JSON(200, r)
 	})
@@ -58,7 +58,7 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaLDM) error {
 	}
 
 	var dealsToMake core.OfflineDealRequest
-	fmt.Printf("calling DELTA api for %+v deals\n\n", len(toReplicate))
+	log.Debugf("calling DELTA api for %+v deals\n\n", len(toReplicate))
 
 	for _, c := range toReplicate {
 		dealsToMake = append(dealsToMake, core.Deal{
@@ -79,19 +79,23 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaLDM) error {
 		return fmt.Errorf("unable to make deal with delta api: %s", err)
 	}
 
-	for i, c := range *deltaResp {
+	for _, c := range *deltaResp {
+		if c.Status != "success" {
+			continue
+		}
 		var newReplication = core.Replication{
-			ContentCommP:    c.Meta.Cid,
-			ProviderActorID: d.Provider,
+			ContentCommP:    c.Meta.Commp.Piece,
+			ProviderActorID: c.Meta.Miner,
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
-			ProposalCid:     fmt.Sprint(rand.Int()) + fmt.Sprint(i), // TODO: From delta
+			ProposalCid:     "TEMP_" + fmt.Sprint(rand.Int()), // TODO: From delta
 		}
 
 		dldm.DB.Model(&core.Replication{}).Create(&newReplication)
 
+		// Update the content's num replications
 		for _, dbContent := range toReplicate {
-			if dbContent.CommP == c.Meta.Cid {
+			if dbContent.CommP == newReplication.ContentCommP {
 				dbContent.NumReplications += 1
 				dldm.DB.Save(&dbContent)
 			}
