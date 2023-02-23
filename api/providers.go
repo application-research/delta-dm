@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaLDM) {
+func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 	providers := e.Group("/providers")
 
 	providers.GET("", func(c echo.Context) error {

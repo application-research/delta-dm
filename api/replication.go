@@ -18,7 +18,7 @@ type PostReplicationBody struct {
 	PricePerDeal float64 `json:"price_per_deal,omitempty"`
 }
 
-func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaLDM) {
+func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 	replication := e.Group("/replication")
 
 	replication.GET(":provider", func(c echo.Context) error {
@@ -39,7 +39,7 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaLDM) {
 // POST /api/replication
 // @param num number of deals requested
 // @returns a slice of the CIDs
-func handlePostReplication(c echo.Context, dldm *core.DeltaLDM) error {
+func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 	var d PostReplicationBody
 
 	if err := c.Bind(&d); err != nil {

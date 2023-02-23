@@ -44,7 +44,7 @@ type AuthResponse struct {
 }
 
 // RouterConfig configures the API node
-func InitializeEchoRouterConfig(dldm *core.DeltaLDM) {
+func InitializeEchoRouterConfig(dldm *core.DeltaDM) {
 	// Echo instance
 	e := echo.New()
 

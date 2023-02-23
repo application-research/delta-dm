@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaLDM) {
+func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 	dataset := e.Group("/dataset")
 
 	dataset.GET("", func(c echo.Context) error {

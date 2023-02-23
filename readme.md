@@ -1,8 +1,8 @@
-# Δ LDM (Large Dataset Manager)
+# ΔDM (Delta Dataset Manager)
 
-A tool to manage deal replication tracking for onboarding large datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
+A tool to manage deal replication tracking for onboarding datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
 
-## LDM - Data Flow
+## Data Flow
 
 ### Dataset
 The top-level logical grouping of data in LDM is the **dataset**. Datasets are identified by a name (aka "slug"), along with a replication quota, deal length, and a wallet to make the deals from.
@@ -26,7 +26,7 @@ Once a **Dataset**, **Content**, and **Providers** have been specified, the LDM 
 ## Example Usage
 
 ```bash
-delta-ldm --db testdb
+deltadm daemon --db testdb
 ```
 
 ## API

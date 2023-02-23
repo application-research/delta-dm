@@ -20,7 +20,7 @@ func DaemonCmd() []*cli.Command {
 	var daemonCommands []*cli.Command
 	daemonCmd := &cli.Command{
 		Name:  "daemon",
-		Usage: "A server-side application for orchestrating large dataset dealmaking to Filecoin SPs",
+		Usage: "A server-side application for orchestrating dataset dealmaking to Filecoin SPs",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "db",
@@ -56,7 +56,7 @@ func DaemonCmd() []*cli.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			dldm := core.NewDeltaLDM(dbConnStr, deltaApi, deltaAuthToken)
+			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken)
 			api.InitializeEchoRouterConfig(dldm)
 			api.LoopForever()
 

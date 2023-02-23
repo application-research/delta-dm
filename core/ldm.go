@@ -4,12 +4,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type DeltaLDM struct {
+type DeltaDM struct {
 	DAPI *DeltaAPI
 	DB   *gorm.DB
 }
 
-func NewDeltaLDM(dbConnStr string, deltaApi string, deltaAuthToken string) *DeltaLDM {
+func NewDeltaDM(dbConnStr string, deltaApi string, deltaAuthToken string) *DeltaDM {
 	db, err := OpenDatabase(dbConnStr)
 	if err != nil {
 		log.Fatalf("could not connect to db: %s", err)
@@ -24,7 +24,7 @@ func NewDeltaLDM(dbConnStr string, deltaApi string, deltaAuthToken string) *Delt
 		log.Debugf("successfully connected to db at %s\n", deltaApi)
 	}
 
-	return &DeltaLDM{
+	return &DeltaDM{
 		DAPI: dapi,
 		DB:   db,
 	}
