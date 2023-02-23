@@ -21,11 +21,22 @@ type PostReplicationBody struct {
 func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 	replication := e.Group("/replication")
 
-	replication.GET(":provider", func(c echo.Context) error {
+	replication.GET("", func(c echo.Context) error {
 		var r []core.Replication
-		p := c.Param("provider")
+		p := c.QueryParam("provider")
+		ds := c.QueryParam("dataset")
 
-		dldm.DB.Model(&core.Replication{}).Preload("Content").Find(&r).Where("provider_actor_id = ?", p).Omit("content")
+		tx := dldm.DB.Model(&core.Replication{}).Preload("Content")
+
+		if p != "" {
+			tx = tx.Where("provider_actor_id = ?", p)
+		}
+		if ds != "" {
+			// TODO: Correctly join with dataset name
+			tx = tx.Where("dataset_name = ?", ds)
+		}
+
+		tx.Find(&r).Omit("Content")
 
 		return c.JSON(200, r)
 	})
