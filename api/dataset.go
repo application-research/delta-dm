@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/application-research/delta-ldm/core"
+	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
 )
 

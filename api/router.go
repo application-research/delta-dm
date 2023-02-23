@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	core "github.com/application-research/delta-ldm/core"
+	core "github.com/application-research/delta-dm/core"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

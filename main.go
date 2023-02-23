@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	cmd "github.com/application-research/delta-ldm/cmd"
+	cmd "github.com/application-research/delta-dm/cmd"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
 )

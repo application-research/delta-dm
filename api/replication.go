@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/application-research/delta-ldm/core"
+	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )

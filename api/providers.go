@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/application-research/delta-ldm/core"
+	"github.com/application-research/delta-dm/core"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )

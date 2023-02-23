@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/application-research/delta-ldm/api"
-	"github.com/application-research/delta-ldm/core"
+	"github.com/application-research/delta-dm/api"
+	"github.com/application-research/delta-dm/core"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
