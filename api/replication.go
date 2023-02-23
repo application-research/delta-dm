@@ -22,21 +22,23 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 	replication := e.Group("/replication")
 
 	replication.GET("", func(c echo.Context) error {
-		var r []core.Replication
+
 		p := c.QueryParam("provider")
 		ds := c.QueryParam("dataset")
 
-		tx := dldm.DB.Model(&core.Replication{}).Preload("Content")
+		var r []core.Replication
+
+		tx := dldm.DB.Model(&core.Replication{}).Joins("inner join contents c on c.comm_p = replications.content_comm_p").Joins("inner join datasets d on d.id = c.dataset_id")
+
+		if ds != "" {
+			tx.Where("d.name = ?", ds)
+		}
 
 		if p != "" {
-			tx = tx.Where("provider_actor_id = ?", p)
-		}
-		if ds != "" {
-			// TODO: Correctly join with dataset name
-			tx = tx.Where("dataset_name = ?", ds)
+			tx.Where("replications.provider_actor_id = ?", p)
 		}
 
-		tx.Find(&r).Omit("Content")
+		tx.Find(&r)
 
 		return c.JSON(200, r)
 	})
@@ -99,7 +101,7 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			ProviderActorID: c.Meta.Miner,
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
-			ProposalCid:     "TEMP_" + fmt.Sprint(rand.Int()), // TODO: From delta
+			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()), // TODO: From delta
 		}
 
 		dldm.DB.Model(&core.Replication{}).Create(&newReplication)
