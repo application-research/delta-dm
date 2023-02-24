@@ -44,7 +44,7 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest) (*OfflineDealRespo
 		return nil, fmt.Errorf("could not marshal from deals json: %s", err)
 	}
 
-	req, err := http.NewRequest("POST", d.url+"/api/v1/deal/commitment-pieces", bytes.NewBuffer(ds))
+	req, err := http.NewRequest("POST", d.url+"/api/v1/deal/piece-commitments", bytes.NewBuffer(ds))
 	if err != nil {
 		return nil, fmt.Errorf("could not construct http request %v", err)
 	}
@@ -102,23 +102,24 @@ type OfflineDealResponseElement struct {
 	Message           string `json:"message"`
 	ContentID         int64  `json:"content_id"`
 	PieceCommitmentID int64  `json:"piece_commitment_id"`
-	Meta              Deal   `json:"meta"`
+	RequestMeta       Deal   `json:"request_meta"`
 }
 
 type Deal struct { // AKA meta
-	DeltaContentID int64  `json:"content_id,omitempty"`
-	Cid            string `json:"cid"`
-	Wallet         Wallet `json:"wallet"`
-	Miner          string `json:"miner"` //TODO: rename to provider
-	Commp          Commp  `json:"commp"`
-	ConnectionMode string `json:"connection_mode"`
-	Size           int64  `json:"size"`
+	DeltaContentID       int64           `json:"content_id,omitempty"`
+	Cid                  string          `json:"cid"`
+	Wallet               Wallet          `json:"wallet"`
+	Miner                string          `json:"miner"` //TODO: rename to provider
+	PieceCommitment      PieceCommitment `json:"piece_commitment"`
+	ConnectionMode       string          `json:"connection_mode"`
+	Size                 int64           `json:"size"`
+	RemoveUnsealedCopies bool            `json:"remove_unsealed_copies"`
+	SkipIpniAnnounce     bool            `json:"skip_ipni_announce"`
 }
 
-type Commp struct {
-	Piece             string `json:"piece"`
-	PaddedPieceSize   int64  `json:"padded_piece_size"`
-	UnpaddedPieceSize int64  `json:"unpadded_piece_size,omitempty"`
+type PieceCommitment struct {
+	PieceCid        string `json:"piece_cid"`
+	PaddedPieceSize int64  `json:"padded_piece_size"`
 }
 
 type Wallet struct {

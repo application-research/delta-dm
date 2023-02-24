@@ -75,14 +75,16 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 
 	for _, c := range toReplicate {
 		dealsToMake = append(dealsToMake, core.Deal{
-			Cid:            c.PayloadCID, // Payload CID
-			Wallet:         core.Wallet{},
-			ConnectionMode: "offline",
-			Miner:          d.Provider,
-			Size:           c.Size,
+			Cid:                  c.PayloadCID, // Payload CID
+			Wallet:               core.Wallet{},
+			ConnectionMode:       "import",
+			Miner:                d.Provider,
+			Size:                 c.Size,
+			SkipIpniAnnounce:     false, // TODO: from dataset
+			RemoveUnsealedCopies: true,  // TODO: from dataset
 			// TODO: duration and start epoch
-			Commp: core.Commp{
-				Piece:           c.CommP,
+			PieceCommitment: core.PieceCommitment{
+				PieceCid:        c.CommP,
 				PaddedPieceSize: c.PaddedSize,
 			},
 		})
@@ -97,7 +99,7 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			continue
 		}
 		var newReplication = core.Replication{
-			ContentCommP:    c.Meta.Commp.Piece,
+			ContentCommP:    c.Meta.PieceCommitment.PieceCid,
 			ProviderActorID: c.Meta.Miner,
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
