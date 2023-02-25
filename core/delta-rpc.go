@@ -106,7 +106,7 @@ type OfflineDealResponseElement struct {
 }
 
 type Deal struct { // AKA meta
-	DeltaContentID       int64           `json:"content_id,omitempty"`
+	DeltaContentID       int64           `json:"content_id,omitempty"` // TODO: rename to delta_id
 	Cid                  string          `json:"cid"`
 	Wallet               Wallet          `json:"wallet"`
 	Miner                string          `json:"miner"` //TODO: rename to provider

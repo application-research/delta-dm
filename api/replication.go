@@ -99,8 +99,8 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			continue
 		}
 		var newReplication = core.Replication{
-			ContentCommP:    c.Meta.PieceCommitment.PieceCid,
-			ProviderActorID: c.Meta.Miner,
+			ContentCommP:    c.RequestMeta.PieceCommitment.PieceCid,
+			ProviderActorID: c.RequestMeta.Miner,
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()), // TODO: From delta
