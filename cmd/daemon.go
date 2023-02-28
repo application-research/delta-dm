@@ -26,7 +26,8 @@ func DaemonCmd() []*cli.Command {
 				Name:        "db",
 				Usage:       "connection string for postgres db",
 				EnvVars:     []string{"DB_NAME"},
-				Required:    true,
+				DefaultText: "delta-dm.db",
+				Value:       "delta-dm.db",
 				Destination: &dbConnStr,
 			},
 			&cli.StringFlag{
