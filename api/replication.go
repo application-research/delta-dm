@@ -28,10 +28,10 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 		var r []core.Replication
 
-		tx := dldm.DB.Model(&core.Replication{}).Joins("inner join contents c on c.comm_p = replications.content_comm_p").Joins("inner join datasets d on d.id = c.dataset_id")
+		tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
 
 		if ds != "" {
-			tx.Where("d.name = ?", ds)
+			tx.Where("Content.dataset_name = ?", ds)
 		}
 
 		if p != "" {
@@ -74,14 +74,20 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 	log.Debugf("calling DELTA api for %+v deals\n\n", len(toReplicate))
 
 	for _, c := range toReplicate {
+		if c.Wallet.Addr == "" {
+			return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please add a wallet for this dataset and try again. alternatively, explicitly specify a dataset in the request to force replication of one with an existing wallet", c.Dataset.Name)
+		}
+
 		dealsToMake = append(dealsToMake, core.Deal{
-			Cid:                  c.PayloadCID, // Payload CID
-			Wallet:               core.Wallet{},
+			Cid: c.PayloadCID, // Payload CID
+			Wallet: core.Wallet{
+				Addr: c.Wallet.Addr,
+			},
 			ConnectionMode:       "import",
 			Miner:                d.Provider,
 			Size:                 c.Size,
-			SkipIpniAnnounce:     false, // TODO: from dataset
-			RemoveUnsealedCopies: true,  // TODO: from dataset
+			SkipIpniAnnounce:     !c.Indexed,
+			RemoveUnsealedCopies: !c.Unsealed,
 			// TODO: duration and start epoch
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,
@@ -89,6 +95,7 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			},
 		})
 	}
+
 	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake)
 	if err != nil {
 		return fmt.Errorf("unable to make deal with delta api: %s", err)
@@ -106,28 +113,34 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()), // TODO: From delta
 		}
 
-		dldm.DB.Model(&core.Replication{}).Create(&newReplication)
+		res := dldm.DB.Model(&core.Replication{}).Create(&newReplication)
+		if res.Error != nil {
+			log.Errorf("unable to create replication in db: %s", res.Error)
+			continue
+		}
 
 		// Update the content's num replications
-		for _, dbContent := range toReplicate {
-			if dbContent.CommP == newReplication.ContentCommP {
-				dbContent.NumReplications += 1
-				dldm.DB.Save(&dbContent)
-			}
-		}
+		dldm.DB.Model(&core.Content{}).Where("comm_p = ?", newReplication.ContentCommP).Update("num_replications", gorm.Expr("num_replications + ?", 1))
+
 	}
 
 	return c.JSON(200, deltaResp)
+}
+
+type replicatedContentQueryResponse struct {
+	core.Content
+	core.Dataset
+	core.Wallet
 }
 
 // Query the database for all contant that does not have replications to this actor yet
 // Arguments: providerID - the actor ID of the provider
 // 					  datasetName (optional) - the name of the dataset to replicate
 // 					  numDeals (optional) - the number of replications (deals) to return. If nil, return all
-func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetName *string, numDeals *uint) ([]core.Content, error) {
+func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetName *string, numDeals *uint) ([]replicatedContentQueryResponse, error) {
 
 	rawQuery := "select * from datasets d inner join contents c " +
-		"on d.id = c.dataset_id where c.comm_p not in " +
+		"on d.name = c.dataset_name inner join wallets w on d.name = w.dataset_name where c.comm_p not in " +
 		"(select r.content_comm_p from replications r where r.provider_actor_id not in (select p.actor_id from providers p where p.actor_id not in (?))) " +
 		"and c.num_replications < d.replication_quota"
 	var rawValues = []interface{}{providerID}
@@ -141,7 +154,7 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
 		rawQuery += " LIMIT ?"
 		rawValues = append(rawValues, numDeals)
 	}
-	var contents []core.Content
+	var contents []replicatedContentQueryResponse
 	db.Raw(rawQuery, rawValues...).Scan(&contents)
 
 	return contents, nil
