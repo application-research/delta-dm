@@ -33,9 +33,25 @@ func healthCheck(baseUrl string) error {
 	return err
 }
 
-// func (d *DeltaAPI) AddWallet(wallet PostWalletBody) {
+func (d *DeltaAPI) AddWallet(wallet AddWalletRequest) (*AddWalletResponse, error) {
+	w, err := json.Marshal(wallet)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal from wallet json: %s", err)
+	}
 
-// }
+	body, closer, err := d.postRequest("/admin/wallet/register", w)
+	if err != nil {
+		return nil, err
+	}
+	defer closer()
+
+	result, err := UnmarshalAddWalletResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal add wallet response %s", err)
+	}
+
+	return &result, nil
+}
 
 // Requests offline deals to be made from Delta
 func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest) (*OfflineDealResponse, error) {
@@ -128,4 +144,25 @@ type Deal struct { // AKA meta
 type PieceCommitment struct {
 	PieceCid        string `json:"piece_cid"`
 	PaddedPieceSize int64  `json:"padded_piece_size"`
+}
+
+type AddWalletRequest struct {
+	Type       string `json:"type"`
+	PrivateKey string `json:"private_key"`
+}
+
+type AddWalletResponse struct {
+	Message    string `json:"message"`
+	WalletAddr string `json:"wallet_addr"`
+	WalletUuid string `json:"wallet_uuid"`
+}
+
+func UnmarshalAddWalletResponse(data []byte) (AddWalletResponse, error) {
+	var r AddWalletResponse
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+func (r *AddWalletResponse) Marshal() ([]byte, error) {
+	return json.Marshal(r)
 }

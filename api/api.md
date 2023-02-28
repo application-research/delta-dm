@@ -145,3 +145,26 @@ Permission: `admin`
   "bafy456",
 ]
 ```
+
+
+## /wallet
+### POST /
+- Add a wallet
+
+Permission: `admin`
+
+#### Params
+<nil>
+
+#### Body
+```jsonc
+{
+  Type: "secp256k1" // Wallet type
+  PrivateKey: "XXX" // Private key from wallet file
+}
+```
+
+#### Response
+> 200: Success
+> 500: Fail
+

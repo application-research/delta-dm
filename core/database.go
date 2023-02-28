@@ -60,7 +60,7 @@ type Dataset struct {
 	Name             string    `json:"name" gorm:"unique; not null"`
 	ReplicationQuota int       `json:"replication_quota"`
 	DealDuration     int       `json:"deal_duration"`
-	Wallet           string    `json:"wallet"`
+	Wallet           Wallet    `json:"wallet" gorm:"foreignKey:Address"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
 	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetID"`
@@ -74,4 +74,9 @@ type Content struct {
 	DatasetID       int
 	Replications    []Replication `json:"replications" gorm:"foreignKey:ContentCommP"`
 	NumReplications int           `json:"num_replications"`
+}
+
+type Wallet struct {
+	Address string `json:"address" gorm:"primaryKey"`
+	Type    string `json:"type"`
 }
