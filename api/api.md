@@ -34,7 +34,10 @@ Permission: `admin`
 Permission: `admin`
 
 #### Params: 
-<nil>
+```json
+?provider="f0123456" // REQUIRED - ID of provider to replicate with
+?dataset="dataset-name" // OPTIONAL - Name of dataset to replicate
+```
 
 #### Body: 
 <nil> 
@@ -169,4 +172,3 @@ Permission: `admin`
 #### Response
 > 200: Success
 > 500: Fail
-
