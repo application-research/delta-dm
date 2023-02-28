@@ -9,8 +9,8 @@ type DeltaDM struct {
 	DB   *gorm.DB
 }
 
-func NewDeltaDM(dbConnStr string, deltaApi string, deltaAuthToken string) *DeltaDM {
-	db, err := OpenDatabase(dbConnStr)
+func NewDeltaDM(dbConnStr string, deltaApi string, deltaAuthToken string, debug bool) *DeltaDM {
+	db, err := OpenDatabase(dbConnStr, debug)
 	if err != nil {
 		log.Fatalf("could not connect to db: %s", err)
 	} else {
