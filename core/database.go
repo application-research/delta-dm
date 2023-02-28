@@ -18,7 +18,7 @@ var (
 
 func OpenDatabase(dbName string) (*gorm.DB, error) {
 	DB, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{
-		//	Logger: logger.Default.LogMode(logger.Info),
+		// Logger: logger.Default.LogMode(logger.Info),
 	})
 
 	ConfigureModels(DB) // create models.
@@ -63,15 +63,15 @@ type Dataset struct {
 	Wallet           Wallet    `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
-	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetID"`
+	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
 }
 
 type Content struct {
-	CommP           string `json:"commp" gorm:"primaryKey"`
-	PayloadCID      string `json:"payload_cid"`
-	Size            int64  `json:"size"`
-	PaddedSize      int64  `json:"padded_size"`
-	DatasetID       int
+	CommP           string        `json:"commp" gorm:"primaryKey"`
+	PayloadCID      string        `json:"payload_cid"`
+	Size            int64         `json:"size"`
+	PaddedSize      int64         `json:"padded_size"`
+	DatasetName     string        `json:"dataset_name"`
 	Replications    []Replication `json:"replications" gorm:"foreignKey:ContentCommP"`
 	NumReplications int           `json:"num_replications"`
 }

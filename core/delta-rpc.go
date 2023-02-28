@@ -139,6 +139,8 @@ type Deal struct { // AKA meta
 	Size                 int64           `json:"size"`
 	RemoveUnsealedCopies bool            `json:"remove_unsealed_copies"`
 	SkipIpniAnnounce     bool            `json:"skip_ipni_announce"`
+	Duration             int64           `json:"duration,omitempty"`
+	StartEpoch           int64           `json:"start_epoch,omitempty"`
 }
 
 type PieceCommitment struct {
