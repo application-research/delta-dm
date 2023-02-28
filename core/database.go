@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	//	"gorm.io/gorm/logger"
 
@@ -16,10 +17,15 @@ var (
 	log = logging.Logger("router")
 )
 
-func OpenDatabase(dbName string) (*gorm.DB, error) {
-	DB, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{
-		// Logger: logger.Default.LogMode(logger.Info),
-	})
+func OpenDatabase(dbName string, debug bool) (*gorm.DB, error) {
+	var config = &gorm.Config{}
+	if debug {
+		config = &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		}
+	}
+
+	DB, err := gorm.Open(sqlite.Open(dbName), config)
 
 	ConfigureModels(DB) // create models.
 

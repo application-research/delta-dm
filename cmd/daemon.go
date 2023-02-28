@@ -56,7 +56,7 @@ func DaemonCmd() []*cli.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken)
+			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, debug)
 			api.InitializeEchoRouterConfig(dldm)
 			api.LoopForever()
 
