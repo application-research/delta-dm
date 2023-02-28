@@ -74,6 +74,9 @@ func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 	if err != nil {
 		return fmt.Errorf("could not add wallet %s", err)
 	}
+	if deltaResp.WalletAddr == "" {
+		return fmt.Errorf("could not add wallet, got no address back from delta. check key format and type. delta response: %s", deltaResp.Message)
+	}
 
 	newWallet := core.Wallet{
 		Addr:        deltaResp.WalletAddr,
