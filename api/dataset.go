@@ -13,7 +13,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 	dataset.GET("", func(c echo.Context) error {
 		var ds []core.Dataset
 
-		dldm.DB.Find(&ds)
+		dldm.DB.Model(&core.Dataset{}).Preload("Wallet").Find(&ds)
 
 		return c.JSON(200, ds)
 	})

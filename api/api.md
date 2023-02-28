@@ -154,7 +154,9 @@ Permission: `admin`
 Permission: `admin`
 
 #### Params
-<nil>
+```json
+?dataset="dataset-name" // name that identifies the dataset. Must already exist (add it using /datasets POST)
+```
 
 #### Body
 ```jsonc

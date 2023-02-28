@@ -47,23 +47,42 @@ type PostWalletBody struct {
 // @description add/import a wallet
 // @returns newly added wallet info
 func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
-	var d PostWalletBody
+	var w PostWalletBody
 
-	if err := c.Bind(&d); err != nil {
+	if err := c.Bind(&w); err != nil {
 		return err
 	}
 
-	deltaResp, err := dldm.DAPI.AddWallet(core.AddWalletRequest(d))
+	ds := c.QueryParam("dataset")
+
+	var exists bool
+	err := dldm.DB.Model(core.Dataset{}).
+		Select("count(*) > 0").
+		Where("name = ?", ds).
+		Find(&exists).
+		Error
+
+	if err != nil {
+		return fmt.Errorf("could not check if dataset %s exists: %s", ds, err)
+	}
+
+	if !exists {
+		return fmt.Errorf("dataset %s does not exist", ds)
+	}
+
+	deltaResp, err := dldm.DAPI.AddWallet(core.AddWalletRequest(w))
 	if err != nil {
 		return fmt.Errorf("could not add wallet %s", err)
 	}
 
 	newWallet := core.Wallet{
-		Address: deltaResp.WalletAddr,
-		Type:    d.Type,
+		Addr:        deltaResp.WalletAddr,
+		Type:        w.Type,
+		DatasetName: ds,
 	}
 
-	res := dldm.DB.Model(core.Wallet{}).Create(&newWallet)
+	// Create a new record, or update existing record for the dataset if one already exists
+	res := dldm.DB.Model(core.Wallet{}).Where("dataset_name = ?", ds).Assign(newWallet).FirstOrCreate(&newWallet)
 	if res.Error != nil {
 		return res.Error
 	}

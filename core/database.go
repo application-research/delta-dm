@@ -30,7 +30,7 @@ func OpenDatabase(dbName string) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	err := db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{})
+	err := db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{}, &Wallet{})
 	if err != nil {
 		log.Fatalf("error migrating database: %s", err)
 	}
@@ -60,7 +60,7 @@ type Dataset struct {
 	Name             string    `json:"name" gorm:"unique; not null"`
 	ReplicationQuota int       `json:"replication_quota"`
 	DealDuration     int       `json:"deal_duration"`
-	Wallet           Wallet    `json:"wallet" gorm:"foreignKey:Address"`
+	Wallet           Wallet    `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
 	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetID"`
@@ -77,6 +77,7 @@ type Content struct {
 }
 
 type Wallet struct {
-	Address string `json:"address" gorm:"primaryKey"`
-	Type    string `json:"type"`
+	Addr        string `json:"address" gorm:"primaryKey"`
+	DatasetName string `json:"dataset_name"`
+	Type        string `json:"type"`
 }
