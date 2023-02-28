@@ -33,20 +33,35 @@ func healthCheck(baseUrl string) error {
 	return err
 }
 
-type DealRequest struct {
-}
+// func (d *DeltaAPI) AddWallet(wallet PostWalletBody) {
+
+// }
 
 // Requests offline deals to be made from Delta
 func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest) (*OfflineDealResponse, error) {
-	fmt.Printf("%+v\n", deals)
 	ds, err := json.Marshal(deals)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal from deals json: %s", err)
 	}
 
-	req, err := http.NewRequest("POST", d.url+"/api/v1/deal/piece-commitments", bytes.NewBuffer(ds))
+	body, closer, err := d.postRequest("/api/v1/deal/piece-commitments", ds)
 	if err != nil {
-		return nil, fmt.Errorf("could not construct http request %v", err)
+		return nil, err
+	}
+	defer closer()
+
+	result, err := UnmarshalOfflineDealResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal offline deal response %s", err)
+	}
+
+	return &result, nil
+}
+
+func (d *DeltaAPI) postRequest(url string, raw []byte) ([]byte, func() error, error) {
+	req, err := http.NewRequest("POST", d.url+url, bytes.NewBuffer(raw))
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+d.authToken)
@@ -55,22 +70,15 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest) (*OfflineDealRespo
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("could not make http request %s", err)
+		return nil, nil, fmt.Errorf("could not make http request %s", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("could not read from response body %s", err)
+		return nil, nil, err
 	}
 
-	fmt.Printf("%+v\n", string(body))
-
-	result, err := UnmarshalOfflineDealResponse(body)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal offline deal response %s", err)
-	}
-
-	return &result, nil
+	return body, resp.Body.Close, nil
 }
 
 type OfflineDealRequest []Deal
@@ -120,7 +128,4 @@ type Deal struct { // AKA meta
 type PieceCommitment struct {
 	PieceCid        string `json:"piece_cid"`
 	PaddedPieceSize int64  `json:"padded_piece_size"`
-}
-
-type Wallet struct {
 }
