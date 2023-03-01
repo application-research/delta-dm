@@ -55,6 +55,10 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 	var d PostReplicationBody
 
+	err := RequestAuthHeaderCheck(c)
+	if err != nil {
+		return c.JSON(401, err.Error())
+	}
 	authorizationString := c.Request().Header.Get("Authorization")
 
 	if err := c.Bind(&d); err != nil {

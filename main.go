@@ -17,9 +17,10 @@ func main() {
 
 	// commands
 	commands = append(commands, cmd.DaemonCmd()...)
-	// commands = append(commands, cmd.CommpCmd()...)
+	commands = append(commands, cmd.WalletCmd()...)
 	app := &cli.App{
 		Commands: commands,
+		Usage:    "An application to facilitate dataset dealmaking with storage providers",
 	}
 
 	if err := app.Run(os.Args); err != nil {

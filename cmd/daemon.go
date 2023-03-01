@@ -7,9 +7,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type DaemonCfg struct {
-}
-
 func DaemonCmd() []*cli.Command {
 	var debug bool = false
 	var dbConnStr string

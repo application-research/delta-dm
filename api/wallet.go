@@ -48,6 +48,10 @@ type PostWalletBody struct {
 // @returns newly added wallet info
 func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 	var w PostWalletBody
+	err := RequestAuthHeaderCheck(c)
+	if err != nil {
+		return c.JSON(401, err.Error())
+	}
 
 	authorizationString := c.Request().Header.Get("Authorization")
 
@@ -58,7 +62,7 @@ func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 	ds := c.QueryParam("dataset")
 
 	var exists bool
-	err := dldm.DB.Model(core.Dataset{}).
+	err = dldm.DB.Model(core.Dataset{}).
 		Select("count(*) > 0").
 		Where("name = ?", ds).
 		Find(&exists).
