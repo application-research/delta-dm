@@ -7,8 +7,6 @@
 ### POST /
 - Add a dataset to be tracked 
 
-Permission: `admin`
-
 #### Params
 <nil>
 
@@ -18,7 +16,7 @@ Permission: `admin`
   name: "dataset-name" // Name / slug that identifies the dataset. Must be unique!
   replication_quota: 6 // Max. Number of replications that can be made
   duration: 540 // Deal length, in days
-  wallet: "f1xxx" // Wallet to be used for datacap or payment
+  wallet: "f1xxx" // Wallet to be used for datacap 
   unsealed: true // Whether unsealed copies should be created or not
   indexed: true // Whether dataset should be announced to indexer or not
 }
@@ -30,8 +28,6 @@ Permission: `admin`
 
 ### GET /
 - Returns a list of all datasets
-
-Permission: `admin`
 
 #### Params: 
 ```json
@@ -81,8 +77,6 @@ dataset: identifier (name) of dataset
 ### POST /
 - Add a storage provider
 
-Permission: `admin`
-
 #### Params
 <nil>
 
@@ -100,8 +94,6 @@ Permission: `admin`
 
 ### GET /
 - Gets list of storage providers
-
-Permission: `admin`
 
 #### Params
 <nil>
@@ -124,7 +116,7 @@ Permission: `admin`
 ### POST / 
 - Create deals
 
-Permission: `admin`
+> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
 
 #### Params
 <nil>
@@ -154,7 +146,7 @@ Permission: `admin`
 ### POST /
 - Add a wallet
 
-Permission: `admin`
+> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
 
 #### Params
 ```json

@@ -14,7 +14,7 @@ func DaemonCmd() []*cli.Command {
 	var debug bool = false
 	var dbConnStr string
 	var deltaApi string
-	var deltaAuthToken string
+	// var deltaAuthToken string
 
 	// add a command to run API node
 	var daemonCommands []*cli.Command
@@ -38,13 +38,13 @@ func DaemonCmd() []*cli.Command {
 				EnvVars:     []string{"DELTA_API"},
 				Destination: &deltaApi,
 			},
-			&cli.StringFlag{
-				Name:        "delta-auth",
-				Usage:       "delta auth token",
-				EnvVars:     []string{"DELTA_AUTH"},
-				Required:    true,
-				Destination: &deltaAuthToken,
-			},
+			// &cli.StringFlag{
+			// 	Name:        "delta-auth",
+			// 	Usage:       "delta auth token",
+			// 	EnvVars:     []string{"DELTA_AUTH"},
+			// 	Required:    true,
+			// 	Destination: &deltaAuthToken,
+			// },
 			&cli.BoolFlag{
 				Name:        "debug",
 				Usage:       "set to enable debug logging output",
@@ -57,7 +57,7 @@ func DaemonCmd() []*cli.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, debug)
+			dldm := core.NewDeltaDM(dbConnStr, deltaApi, debug)
 			api.InitializeEchoRouterConfig(dldm)
 			api.LoopForever()
 

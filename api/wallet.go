@@ -49,6 +49,8 @@ type PostWalletBody struct {
 func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 	var w PostWalletBody
 
+	authorizationString := c.Request().Header.Get("Authorization")
+
 	if err := c.Bind(&w); err != nil {
 		return err
 	}
@@ -70,7 +72,7 @@ func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("dataset %s does not exist", ds)
 	}
 
-	deltaResp, err := dldm.DAPI.AddWallet(core.AddWalletRequest(w))
+	deltaResp, err := dldm.DAPI.AddWallet(core.AddWalletRequest(w), authorizationString)
 	if err != nil {
 		return fmt.Errorf("could not add wallet %s", err)
 	}

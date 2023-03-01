@@ -55,6 +55,8 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 	var d PostReplicationBody
 
+	authorizationString := c.Request().Header.Get("Authorization")
+
 	if err := c.Bind(&d); err != nil {
 		return err
 	}
@@ -96,7 +98,7 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 		})
 	}
 
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake)
+	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, authorizationString)
 	if err != nil {
 		return fmt.Errorf("unable to make deal with delta api: %s", err)
 	}

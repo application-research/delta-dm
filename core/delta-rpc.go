@@ -13,7 +13,7 @@ type DeltaAPI struct {
 	authToken string
 }
 
-func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
+func NewDeltaAPI(url string) (*DeltaAPI, error) {
 
 	hcError := healthCheck(url)
 	if hcError != nil {
@@ -21,8 +21,7 @@ func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
 	}
 
 	return &DeltaAPI{
-		url:       url,
-		authToken: authToken,
+		url: url,
 	}, nil
 }
 
@@ -33,13 +32,13 @@ func healthCheck(baseUrl string) error {
 	return err
 }
 
-func (d *DeltaAPI) AddWallet(wallet AddWalletRequest) (*AddWalletResponse, error) {
+func (d *DeltaAPI) AddWallet(wallet AddWalletRequest, authString string) (*AddWalletResponse, error) {
 	w, err := json.Marshal(wallet)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal from wallet json: %s", err)
 	}
 
-	body, closer, err := d.postRequest("/admin/wallet/register", w)
+	body, closer, err := d.postRequest("/admin/wallet/register", w, authString)
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +53,13 @@ func (d *DeltaAPI) AddWallet(wallet AddWalletRequest) (*AddWalletResponse, error
 }
 
 // Requests offline deals to be made from Delta
-func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest) (*OfflineDealResponse, error) {
+func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest, authString string) (*OfflineDealResponse, error) {
 	ds, err := json.Marshal(deals)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal from deals json: %s", err)
 	}
 
-	body, closer, err := d.postRequest("/api/v1/deal/piece-commitments", ds)
+	body, closer, err := d.postRequest("/api/v1/deal/piece-commitments", ds, authString)
 	if err != nil {
 		return nil, err
 	}
@@ -74,13 +73,17 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest) (*OfflineDealRespo
 	return &result, nil
 }
 
-func (d *DeltaAPI) postRequest(url string, raw []byte) ([]byte, func() error, error) {
+func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byte, func() error, error) {
+	if authString == "" {
+		return nil, nil, fmt.Errorf("auth token must be provided")
+	}
+
 	req, err := http.NewRequest("POST", d.url+url, bytes.NewBuffer(raw))
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+d.authToken)
+	req.Header.Set("Authorization", authString)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
