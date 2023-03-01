@@ -1,7 +1,6 @@
 
 # API Methods
 
-
 ## /datasets
 
 ### POST /
@@ -150,7 +149,7 @@ dataset: identifier (name) of dataset
 
 #### Params
 ```json
-?dataset="dataset-name" // name that identifies the dataset. Must already exist (add it using /datasets POST)
+/"dataset-name" // name that identifies the dataset. Must already exist (add it using /datasets POST)
 ```
 
 #### Body

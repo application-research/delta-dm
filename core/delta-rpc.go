@@ -152,7 +152,7 @@ type PieceCommitment struct {
 }
 
 type AddWalletRequest struct {
-	Type       string `json:"type"`
+	Type       string `json:"key_type"`
 	PrivateKey string `json:"private_key"`
 }
 

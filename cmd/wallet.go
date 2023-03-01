@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 
 	"github.com/urfave/cli/v2"
 )
@@ -34,17 +37,77 @@ func WalletCmd() []*cli.Command {
 		},
 		Subcommands: []*cli.Command{
 			{
-				Name:  "add",
-				Usage: "Add a wallet to DDM",
+				Name:  "import",
+				Usage: "import a wallet to DDM",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "json",
+						Usage: "wallet data in json format",
+					},
+					&cli.StringFlag{
+						Name:  "file",
+						Usage: "path to wallet file",
+					},
+					&cli.StringFlag{
+						Name:     "dataset",
+						Usage:    "dataset name to associate wallet with",
+						Required: true,
+					},
+				},
 				Action: func(c *cli.Context) error {
-					_, err := NewCmdProcessor(ddmApi, deltaAuthToken)
+					cp, err := NewCmdProcessor(ddmApi, deltaAuthToken)
 
 					if err != nil {
 						return err
 					}
 
-					fmt.Println("success!")
+					walletJson := c.String("json")
+					walletPath := c.String("file")
+					dataset := c.String("dataset")
 
+					if walletJson == "" && walletPath == "" {
+						return fmt.Errorf("must provide either json or file")
+					}
+
+					if walletJson != "" && walletPath != "" {
+						return fmt.Errorf("please provide either wallet JSON or file path, not both")
+					}
+
+					var walletData WalletJSON
+
+					if walletPath != "" {
+						walletFile, err := ioutil.ReadFile(walletPath)
+						if err != nil {
+							return fmt.Errorf("failed to open wallet file: %s", err)
+						}
+
+						// Verify parsing
+						err = json.Unmarshal(walletFile, &walletData)
+						if err != nil {
+							return fmt.Errorf("failed to parse wallet file: %s", err)
+						}
+
+					} else {
+						err = json.Unmarshal([]byte(walletJson), &walletData)
+						if err != nil {
+							return fmt.Errorf("failed to parse wallet json: %s", err)
+						}
+					}
+
+					if walletData.Type == "" || walletData.PrivateKey == "" {
+						return fmt.Errorf("wallet data must contain Type and PrivateKey")
+					}
+
+					// Ignoring error here as we know it's been unmarshaled by this point
+					wb, _ := json.Marshal(walletData)
+
+					res, closer, err := cp.ddmPostRequest("/api/v1/wallet/"+dataset, wb)
+					if err != nil {
+						return err
+					}
+					defer closer()
+
+					log.Printf("Wallet import response: %s", string(res))
 					return nil
 				},
 			},
@@ -54,4 +117,9 @@ func WalletCmd() []*cli.Command {
 	walletCmds = append(walletCmds, walletCmd)
 
 	return walletCmds
+}
+
+type WalletJSON struct {
+	Type       string `json:"Type"`
+	PrivateKey string `json:"PrivateKey"`
 }

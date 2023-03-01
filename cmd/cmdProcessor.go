@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -51,4 +52,27 @@ func healthCheck(ddmUrl string, ddmApikey string) error {
 	}
 
 	return err
+}
+
+func (c *CmdProcessor) ddmPostRequest(url string, raw []byte) ([]byte, func() error, error) {
+	req, err := http.NewRequest("POST", c.ddmUrl+url, bytes.NewBuffer(raw))
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not construct http request %v", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+c.ddmApiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not make http request %s", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return body, resp.Body.Close, nil
 }

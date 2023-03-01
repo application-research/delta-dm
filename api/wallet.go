@@ -32,7 +32,7 @@ func ConfigureWalletRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(200, r)
 	})
 
-	replication.POST("", func(c echo.Context) error {
+	replication.POST("/:dataset", func(c echo.Context) error {
 		return handlePostWallet(c, dldm)
 	})
 }
@@ -59,7 +59,7 @@ func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return err
 	}
 
-	ds := c.QueryParam("dataset")
+	ds := c.Param("dataset")
 
 	var exists bool
 	err = dldm.DB.Model(core.Dataset{}).
@@ -76,7 +76,10 @@ func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("dataset %s does not exist", ds)
 	}
 
-	deltaResp, err := dldm.DAPI.AddWallet(core.AddWalletRequest(w), authorizationString)
+	deltaResp, err := dldm.DAPI.AddWallet(core.AddWalletRequest{
+		Type:       w.Type,
+		PrivateKey: w.PrivateKey,
+	}, authorizationString)
 	if err != nil {
 		return fmt.Errorf("could not add wallet %s", err)
 	}
