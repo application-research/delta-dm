@@ -120,6 +120,7 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			ProviderActorID: c.RequestMeta.Miner,
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
+			Status:          core.StatusPending,
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()), // TODO: From delta
 		}
 

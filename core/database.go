@@ -42,15 +42,25 @@ func ConfigureModels(db *gorm.DB) {
 	}
 }
 
+type ReplicationStatus string
+
+const (
+	StatusPending ReplicationStatus = "PENDING"
+	StatusSuccess ReplicationStatus = "SUCCESS"
+	StatusFailure ReplicationStatus = "FAILURE"
+)
+
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	Content         Content   `json:"content"` //TODO: doesnt come back from api
-	DealTime        time.Time `json:"deal_time"`
-	DeltaContentID  int64     `json:"delta_content_id"`
-	ProposalCid     string    `json:"proposal_cid" gorm:"unique"`
-	ProviderActorID string    `json:"provider_actor_id"`
-	ContentCommP    string    `json:"content_commp"`
+	Content         Content           `json:"content"` //TODO: doesnt come back from api
+	DealTime        time.Time         `json:"deal_time"`
+	DeltaContentID  int64             `json:"delta_content_id"`
+	ProposalCid     string            `json:"proposal_cid" gorm:"unique"`
+	ProviderActorID string            `json:"provider_actor_id"`
+	ContentCommP    string            `json:"content_commp"`
+	Status          ReplicationStatus `json:"status" gorm:"notnull"`
+	DeltaMessage    string            `json:"delta_message,omitempty"`
 }
 
 // A client is a Storage Provider that is being replicated to
