@@ -64,8 +64,8 @@ type Provider struct {
 type Dataset struct {
 	gorm.Model
 	Name             string    `json:"name" gorm:"unique; not null"`
-	ReplicationQuota int       `json:"replication_quota"`
-	DealDuration     int       `json:"deal_duration"`
+	ReplicationQuota uint      `json:"replication_quota"`
+	DealDuration     uint      `json:"deal_duration"`
 	Wallet           Wallet    `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`

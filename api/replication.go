@@ -18,6 +18,8 @@ type PostReplicationBody struct {
 	PricePerDeal float64 `json:"price_per_deal,omitempty"`
 }
 
+const EPOCHS_PER_DAY = 2880 // 86400s / 30s = 2880 epochs per day
+
 func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 	replication := e.Group("/replication")
 
@@ -94,7 +96,8 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			Size:                 c.Size,
 			SkipIpniAnnounce:     !c.Indexed,
 			RemoveUnsealedCopies: !c.Unsealed,
-			// TODO: duration and start epoch
+			Duration:             int64(c.DealDuration * EPOCHS_PER_DAY),
+			// TODO: start epoch
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,
 				PaddedPieceSize: c.PaddedSize,

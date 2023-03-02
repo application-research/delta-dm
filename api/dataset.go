@@ -25,6 +25,15 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return err
 		}
 
+		if ads.ReplicationQuota < 1 {
+			return fmt.Errorf("replication quota must be greater than 0")
+		}
+
+		// Bound deal durations between 180 and 540
+		if ads.DealDuration < 180 || ads.DealDuration > 540 {
+			return fmt.Errorf("deal duration must be between 180 and 540 days")
+		}
+
 		res := dldm.DB.Create(&ads)
 
 		if res.Error != nil {
