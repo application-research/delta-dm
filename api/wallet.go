@@ -5,6 +5,7 @@ import (
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 func ConfigureWalletRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -12,24 +13,19 @@ func ConfigureWalletRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 	replication.GET("", func(c echo.Context) error {
 
-		p := c.QueryParam("provider")
 		ds := c.QueryParam("dataset")
 
-		var r []core.Replication
+		var w []core.Wallet
 
-		tx := dldm.DB.Model(&core.Replication{}).Joins("inner join contents c on c.comm_p = replications.content_comm_p").Joins("inner join datasets d on d.id = c.dataset_id")
+		tx := dldm.DB.Model(&core.Wallet{})
 
 		if ds != "" {
-			tx.Where("d.name = ?", ds)
+			tx.Where("dataset_name = ?", ds)
 		}
 
-		if p != "" {
-			tx.Where("replications.provider_actor_id = ?", p)
-		}
+		tx.Find(&w)
 
-		tx.Find(&r)
-
-		return c.JSON(200, r)
+		return c.JSON(200, w)
 	})
 
 	replication.POST("/:dataset", func(c echo.Context) error {
@@ -87,17 +83,38 @@ func handlePostWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("could not add wallet, got no address back from delta. check key format and type. delta response: %s", deltaResp.Message)
 	}
 
-	newWallet := core.Wallet{
-		Addr:        deltaResp.WalletAddr,
-		Type:        w.Type,
-		DatasetName: ds,
-	}
+	var existingWallet core.Wallet
+	res := dldm.DB.
+		Model(core.Wallet{}).
+		Where("dataset_name = ?", ds).
+		First(&existingWallet)
 
-	// Create a new record, or update existing record for the dataset if one already exists
-	res := dldm.DB.Model(core.Wallet{}).Where("dataset_name = ?", ds).Assign(newWallet).FirstOrCreate(&newWallet)
 	if res.Error != nil {
-		return res.Error
-	}
+		if res.Error != gorm.ErrRecordNotFound {
+			return res.Error
+		} else {
+			// No existing wallet for this dataset, create it
+			newWallet := core.Wallet{
+				Addr:        deltaResp.WalletAddr,
+				Type:        w.Type,
+				DatasetName: ds,
+			}
 
-	return c.JSON(200, newWallet)
+			res = dldm.DB.Model(core.Wallet{}).Create(&newWallet)
+			if res.Error != nil {
+				return res.Error
+			}
+			return c.JSON(200, newWallet)
+		}
+	} else {
+		// Update existing wallet
+		existingWallet.Addr = deltaResp.WalletAddr
+		existingWallet.Type = w.Type
+		res := dldm.DB.Model(&core.Wallet{}).Where("dataset_name = ?", ds).Select("Addr", "Type").Updates(core.Wallet{Addr: deltaResp.WalletAddr, Type: w.Type})
+
+		if res.Error != nil {
+			return res.Error
+		}
+		return c.JSON(200, existingWallet)
+	}
 }

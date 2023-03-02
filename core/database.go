@@ -84,6 +84,6 @@ type Content struct {
 
 type Wallet struct {
 	Addr        string `json:"address" gorm:"primaryKey"`
-	DatasetName string `json:"dataset_name"`
+	DatasetName string `json:"dataset_name" gorm:"unique; not null"`
 	Type        string `json:"type"`
 }
