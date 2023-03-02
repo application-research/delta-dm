@@ -9,11 +9,11 @@ import (
 )
 
 type DeltaAPI struct {
-	url       string
-	authToken string
+	url              string
+	serviceAuthToken string
 }
 
-func NewDeltaAPI(url string) (*DeltaAPI, error) {
+func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
 
 	hcError := healthCheck(url)
 	if hcError != nil {
@@ -21,7 +21,8 @@ func NewDeltaAPI(url string) (*DeltaAPI, error) {
 	}
 
 	return &DeltaAPI{
-		url: url,
+		url:              url,
+		serviceAuthToken: authToken,
 	}, nil
 }
 
@@ -71,6 +72,27 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest, authString string)
 	}
 
 	return &result, nil
+}
+
+func (d *DeltaAPI) GetDealStatus(deltaIds []string) (*DealStatsResponse, error) {
+	dids, err := json.Marshal(deltaIds)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal from deal ids json: %s", err)
+	}
+
+	body, closer, err := d.postRequest("/api/v1/stats/contents", dids, d.serviceAuthToken)
+	if err != nil {
+		return nil, err
+	}
+	defer closer()
+
+	result, err := UnmarshalDealStatsResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal deal stats response %s", err)
+	}
+
+	return &result, nil
+
 }
 
 func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byte, func() error, error) {
@@ -170,4 +192,82 @@ func UnmarshalAddWalletResponse(data []byte) (AddWalletResponse, error) {
 
 func (r *AddWalletResponse) Marshal() ([]byte, error) {
 	return json.Marshal(r)
+}
+
+type DealStatsResponse []DealStatsResponseElement
+
+func UnmarshalDealStatsResponse(data []byte) (DealStatsResponse, error) {
+	var r DealStatsResponse
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+func (r *DealStatsResponse) Marshal() ([]byte, error) {
+	return json.Marshal(r)
+}
+
+type DealStatsResponseElement struct {
+	Content          DealStats_Content           `json:"content"`
+	DealProposals    []DealStats_DealProposal    `json:"deal_proposals"`
+	Deals            []DealStats_Deal            `json:"deals"`
+	PieceCommitments []DealStats_PieceCommitment `json:"piece_commitments"`
+}
+
+type DealStats_Content struct {
+	ID                int64  `json:"ID"`
+	Name              string `json:"name"`
+	Size              int64  `json:"size"`
+	Cid               string `json:"cid"`
+	RequestingAPIKey  string `json:"requesting_api_key"`
+	PieceCommitmentID int64  `json:"piece_commitment_id"`
+	Status            string `json:"status"`
+	ConnectionMode    string `json:"connection_mode"`
+	LastMessage       string `json:"last_message"`
+	CreatedAt         string `json:"created_at"`
+	UpdatedAt         string `json:"updated_at"`
+}
+
+type DealStats_DealProposal struct {
+	ID        int64  `json:"ID"`
+	Content   int64  `json:"content"`
+	Unsigned  string `json:"unsigned"`
+	Signed    string `json:"signed"`
+	Meta      string `json:"meta"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
+type DealStats_Deal struct {
+	ID                  int64  `json:"ID"`
+	Content             int64  `json:"content"`
+	PropCid             string `json:"propCid"`
+	DealUUID            string `json:"dealUuid"`
+	Miner               string `json:"miner"`
+	DealID              int64  `json:"dealId"`
+	Failed              bool   `json:"failed"`
+	Verified            bool   `json:"verified"`
+	Slashed             bool   `json:"slashed"`
+	FailedAt            string `json:"failedAt"`
+	DtChan              string `json:"dtChan"`
+	TransferStarted     string `json:"transferStarted"`
+	TransferFinished    string `json:"transferFinished"`
+	OnChainAt           string `json:"onChainAt"`
+	SealedAt            string `json:"sealedAt"`
+	LastMessage         string `json:"lastMessage"`
+	DealProtocolVersion string `json:"deal_protocol_version"`
+	CreatedAt           string `json:"created_at"`
+	UpdatedAt           string `json:"updated_at"`
+}
+
+type DealStats_PieceCommitment struct {
+	ID                 int64  `json:"ID"`
+	Cid                string `json:"cid"`
+	Piece              string `json:"piece"`
+	Size               int64  `json:"size"`
+	PaddedPieceSize    int64  `json:"padded_piece_size"`
+	UnnpaddedPieceSize int64  `json:"unnpadded_piece_size"`
+	Status             string `json:"status"`
+	LastMessage        string `json:"last_message"`
+	CreatedAt          string `json:"created_at"`
+	UpdatedAt          string `json:"updated_at"`
 }
