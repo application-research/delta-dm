@@ -1,23 +1,26 @@
 
 # API Methods
 
+All endpoints are prefixed with `/api/v1`.
+
+For example, `http://localhost:1314/api/v1/datasets`
+
 ## /datasets
 
 ### POST /
 - Add a dataset to be tracked 
 
-#### Params
+#### Request Params
 <nil>
 
-#### Body
+#### Request Body
 ```jsonc
 {
-  name: "dataset-name" // Name / slug that identifies the dataset. Must be unique!
-  replication_quota: 6 // Max. Number of replications that can be made
-  duration: 540 // Deal length, in days
-  wallet: "f1xxx" // Wallet to be used for datacap 
-  unsealed: true // Whether unsealed copies should be created or not
-  indexed: true // Whether dataset should be announced to indexer or not
+	"name": "delta-test",
+	"replication_quota": 6,
+	"deal_duration": 540,
+	"unsealed": false,
+	"indexed": true
 }
 ```
 
@@ -41,15 +44,36 @@
 > 200 : Success
 ```jsonc
 [
-  {
-    id: 1
-    name: "dataset-name"
-    replications: 6
-    wallet: "f1xxx"
-    duration: 540 // Deal length, in days
-    size: 38451017 // total size of CARfiles
-    cids: 10000 // Number of CIDs / files comprising the dataset
-  }
+	{
+		"ID": 1,
+		"name": "delta-test",
+		"replication_quota": 6,
+		"delay_start_epoch": 7,
+		"deal_duration": 540,
+		"wallet": {
+			"address": "f1tuoahmuwfhnxpugqigxliu4muasggezw2efuczq",
+			"dataset_name": "delta-test",
+			"type": "secp256k1"
+		},
+		"unsealed": false,
+		"indexed": true,
+		"contents": null
+	},
+	{
+		"ID": 2,
+		"name": "delta-test-2",
+		"replication_quota": 6,
+		"delay_start_epoch": 7,
+		"deal_duration": 540,
+		"wallet": {
+			"address": "f1tuoahmuwfhnxpugqigxliu4muasggezw2eaaaa",
+			"dataset_name": "delta-test-2",
+			"type": "secp256k1"
+		},
+		"unsealed": false,
+		"indexed": true,
+		"contents": null
+	}
 ]
 
 ```
@@ -57,21 +81,41 @@
 ### POST /content/:dataset
 - Add content (CAR files) to the dataset
 
-### Params:
-dataset: identifier (name) of dataset
+#### Request Params
+<none>
 
-### Body: 
+#### Request Body: 
 ```jsonc
 [
- {
-  cid: "Q1234",
-  size: 1024,
-  padded_piece_size: 4096
- },
+  {
+    "payload_cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhy",
+    "commp": "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmlq",
+    "padded_size": 34359738368,
+    "size": 18010019221
+  },
+  {
+    "payload_cid": "bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu",
+    "commp": "baga6ea4seaqcqnnwp7n5ra5ltnvwkd3xk3jxujtxg4bqrueangl3t5cyn5p6soq",
+    "padded_size": 34359738368,
+    "size": 18010019221
+  },
  ...
 ]
 ```
 
+#### Response Body
+```jsonc
+{
+	"success": [
+    "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmlq",
+		"baga6ea4seaqcqnnwp7n5ra5ltnvwkd3xk3jxujtxg4bqrueangl3t5cyn5p6soq"
+    ..
+  ],
+	"fail": []
+}
+```
+
+		
 ## /providers
 ### POST /
 - Add a storage provider
@@ -110,17 +154,16 @@ dataset: identifier (name) of dataset
 > 200: Success
 > 500: Fail
 
-## /deal
+## /replication
 
 ### POST / 
-- Create deals
+- Create replications (deals)
 
 > This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
 
 #### Params
-<nil>
+<none>
 
-#### Body 
 ```jsonc
 {
   provider: "f01234", // required! ID of the SP to create deals with
