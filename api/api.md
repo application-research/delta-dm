@@ -31,13 +31,10 @@ For example, `http://localhost:1314/api/v1/datasets`
 ### GET /
 - Returns a list of all datasets
 
-#### Params: 
-```json
-?provider="f0123456" // REQUIRED - ID of provider to replicate with
-?dataset="dataset-name" // OPTIONAL - Name of dataset to replicate
-```
+#### Request Params:
+<nil>
 
-#### Body: 
+#### Request Body
 <nil> 
 
 #### Response
@@ -82,9 +79,9 @@ For example, `http://localhost:1314/api/v1/datasets`
 - Add content (CAR files) to the dataset
 
 #### Request Params
-<none>
+<nil>
 
-#### Request Body: 
+#### Request Body
 ```jsonc
 [
   {
@@ -192,7 +189,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 #### Params
 ```json
-/"dataset-name" // name that identifies the dataset. Must already exist (add it using /datasets POST)
+/dataset-name // name that identifies the dataset. Must already exist (add it using /datasets POST)
 ```
 
 #### Body
