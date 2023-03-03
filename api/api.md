@@ -54,7 +54,15 @@ For example, `http://localhost:1314/api/v1/datasets`
 		},
 		"unsealed": false,
 		"indexed": true,
-		"contents": null
+		"contents": null,
+		"bytes_replicated": [
+			198110211431, // Raw bytes (the content itself)
+			377957122048 // Padded bytes (i.e, filecoin piece)
+		],
+		"bytes_total": [
+			1801001922192, // Raw bytes (the content itself)
+			3435973836800 // Padded bytes (i.e, filecoin piece)
+		]
 	},
 	{
 		"ID": 2,
@@ -69,7 +77,15 @@ For example, `http://localhost:1314/api/v1/datasets`
 		},
 		"unsealed": false,
 		"indexed": true,
-		"contents": null
+		"contents": null,
+		"bytes_replicated": [
+			198110211431, // Raw bytes (the content itself)
+			377957122048 // Padded bytes (i.e, filecoin piece)
+		],
+		"bytes_total": [
+			1801001922192, // Raw bytes (the content itself)
+			3435973836800 // Padded bytes (i.e, filecoin piece)
+		]
 	}
 ]
 
