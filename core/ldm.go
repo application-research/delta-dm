@@ -24,6 +24,11 @@ func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, debug bool)
 		log.Debugf("successfully connected to db at %s\n", deltaApi)
 	}
 
+	err = RunReconciliation(db, dapi)
+	if err != nil {
+		log.Fatalf("could not reconcile: %s", err)
+	}
+
 	return &DeltaDM{
 		DAPI: dapi,
 		DB:   db,

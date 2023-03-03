@@ -74,13 +74,13 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest, authString string)
 	return &result, nil
 }
 
-func (d *DeltaAPI) GetDealStatus(deltaIds []string) (*DealStatsResponse, error) {
+func (d *DeltaAPI) GetDealStatus(deltaIds []int64) (*DealStatsResponse, error) {
 	dids, err := json.Marshal(deltaIds)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal from deal ids json: %s", err)
 	}
 
-	body, closer, err := d.postRequest("/api/v1/stats/contents", dids, d.serviceAuthToken)
+	body, closer, err := d.postRequest("/api/v1/stats/contents", dids, "Bearer "+d.serviceAuthToken)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (d *DeltaAPI) GetDealStatus(deltaIds []string) (*DealStatsResponse, error) 
 
 	result, err := UnmarshalDealStatsResponse(body)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal deal stats response %s", err)
+		return nil, fmt.Errorf("could not unmarshal deal stats response %s : %s", err, string(body))
 	}
 
 	return &result, nil
