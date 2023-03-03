@@ -47,7 +47,7 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 
 	db.Model(&Replication{}).Where("status = ?", StatusPending).Select("delta_content_id").Find(&pendingReplications)
 
-	log.Debugf("reconciling %d pending replications", len(pendingReplications))
+	log.Debugf("reconciling %v\n", pendingReplications)
 	statsResponse, err := d.GetDealStatus(pendingReplications)
 	if err != nil {
 		return fmt.Errorf("could not get deal status: %s", err)
@@ -55,7 +55,7 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 
 	ru := computeReplicationUpdates(*statsResponse)
 
-	log.Debugf("updating %d replications", len(ru))
+	log.Debugf("updating %d replications\n", len(ru))
 	for _, r := range ru {
 		err := db.Model(&Replication{}).Where("delta_content_id = ?", r.DeltaContentID).Updates(r)
 
@@ -82,12 +82,15 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 				DeltaMessage:   deal.Content.LastMessage,
 			})
 		case CONTENT_DEAL_PROPOSAL_FAILED:
-			toUpdate = append(toUpdate, Replication{
+			r := Replication{
 				Status:         StatusFailure,
-				ProposalCid:    deal.DealProposals[0].Signed, // TODO: @alvin-reyes is this the right place to get proposal cid?
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
-			})
+			}
+			if deal.DealProposals != nil && len(deal.DealProposals) > 0 {
+				r.ProposalCid = deal.DealProposals[0].Signed
+			}
+			toUpdate = append(toUpdate, r)
 
 			// ? Do we need to care about any other statuses?
 		}
