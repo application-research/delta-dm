@@ -81,6 +81,8 @@ type Dataset struct {
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
 	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
+	ReplicatedBytes  [2]int64  `json:"bytes_replicated,omitempty" gorm:"-"`
+	TotalBytes       [2]int64  `json:"bytes_total,omitempty" gorm:"-"`
 }
 
 type Content struct {
