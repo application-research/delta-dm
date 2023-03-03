@@ -31,12 +31,13 @@ func (ddm *DeltaDM) WatchReplications() {
 
 func watch(db *gorm.DB, d *DeltaAPI) {
 	for {
+		time.Sleep(10 * time.Second)
+
 		err := RunReconciliation(db, d)
 
 		if err != nil {
 			log.Errorf("failed running delta reconciliation job: %s", err)
 		}
-		time.Sleep(30 * time.Second)
 	}
 }
 
