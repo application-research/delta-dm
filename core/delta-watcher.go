@@ -25,14 +25,18 @@ const (
 	DEAL_STATUS_TRANSFER_FAILED   = "transfer-failed"
 )
 
-func Watch(db *gorm.DB) {
-	go watch(db)
+func (ddm *DeltaDM) WatchReplications() {
+	go watch(ddm.DB, ddm.DAPI)
 }
 
-func watch(db *gorm.DB) {
+func watch(db *gorm.DB, d *DeltaAPI) {
 	for {
+		err := RunReconciliation(db, d)
 
-		time.Sleep(10 * time.Second)
+		if err != nil {
+			log.Errorf("failed running delta reconciliation job: %s", err)
+		}
+		time.Sleep(30 * time.Second)
 	}
 }
 
@@ -50,6 +54,7 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 
 	ru := computeReplicationUpdates(*statsResponse)
 
+	log.Debugf("updating %d replications", len(ru))
 	for _, r := range ru {
 		err := db.Model(&Replication{}).Where("delta_content_id = ?", r.DeltaContentID).Updates(r)
 
@@ -82,6 +87,8 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
 			})
+
+			// ? Do we need to care about any other statuses?
 		}
 	}
 
