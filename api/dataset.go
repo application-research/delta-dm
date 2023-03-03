@@ -18,7 +18,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		// Find  # of bytes total and replicated for each dataset
 		for i, d := range ds {
 			var rb [2]int64
-			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents c inner join replications r on r.content_comm_p = c.comm_p  where dataset_name = ?", d.Name).Row().Scan(&rb[0], &rb[1])
+			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents c inner join replications r on r.content_comm_p = c.comm_p where r.status = 'SUCCESS' AND dataset_name = ?", d.Name).Row().Scan(&rb[0], &rb[1])
 
 			var tb [2]int64
 			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents where dataset_name = ?", d.Name).Row().Scan(&tb[0], &tb[1])
