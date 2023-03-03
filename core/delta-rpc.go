@@ -47,7 +47,7 @@ func (d *DeltaAPI) AddWallet(wallet AddWalletRequest, authString string) (*AddWa
 
 	result, err := UnmarshalAddWalletResponse(body)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal add wallet response %s", err)
+		return nil, fmt.Errorf("could not unmarshal add wallet response %s : %s", err, string(body))
 	}
 
 	return &result, nil
@@ -68,7 +68,7 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest, authString string)
 
 	result, err := UnmarshalOfflineDealResponse(body)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal offline deal response %s", err)
+		return nil, fmt.Errorf("could not unmarshal offline deal response %s : %s", err, string(body))
 	}
 
 	return &result, nil
