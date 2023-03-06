@@ -75,24 +75,24 @@ type Dataset struct {
 	gorm.Model
 	Name             string    `json:"name" gorm:"unique; not null"`
 	ReplicationQuota uint      `json:"replication_quota"`
-	DelayStartEpoch  uint      `json:"deal_delay_start_epoch"`
-	DealDuration     uint      `json:"deal_duration"`
+	DelayStartEpoch  uint64    `json:"deal_delay_start_epoch"`
+	DealDuration     uint64    `json:"deal_duration"`
 	Wallet           Wallet    `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
 	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
-	ReplicatedBytes  [2]int64  `json:"bytes_replicated,omitempty" gorm:"-"`
-	TotalBytes       [2]int64  `json:"bytes_total,omitempty" gorm:"-"`
+	ReplicatedBytes  [2]uint64 `json:"bytes_replicated,omitempty" gorm:"-"`
+	TotalBytes       [2]uint64 `json:"bytes_total,omitempty" gorm:"-"`
 }
 
 type Content struct {
 	CommP           string        `json:"commp" gorm:"primaryKey"`
 	PayloadCID      string        `json:"payload_cid"`
-	Size            int64         `json:"size"`
-	PaddedSize      int64         `json:"padded_size"`
+	Size            uint64        `json:"size"`
+	PaddedSize      uint64        `json:"padded_size"`
 	DatasetName     string        `json:"dataset_name"`
 	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
-	NumReplications int           `json:"num_replications"`
+	NumReplications uint          `json:"num_replications"`
 }
 
 type Wallet struct {

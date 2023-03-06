@@ -96,9 +96,8 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			Size:                 c.Size,
 			SkipIpniAnnounce:     !c.Indexed,
 			RemoveUnsealedCopies: !c.Unsealed,
-			// TODO: DealDuration needs to be capped based on start epoch, hardcoded to 7 for now
-			Duration: int64((c.DealDuration - 7) * EPOCHS_PER_DAY),
-			// TODO: StartEpoch: c.StartEpoch
+			DurationInDays:       c.DealDuration,
+			StartEpochAtDays:     c.DelayStartEpoch,
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,
 				PaddedPieceSize: c.PaddedSize,

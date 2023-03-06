@@ -60,6 +60,8 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest, authString string)
 		return nil, fmt.Errorf("could not marshal from deals json: %s", err)
 	}
 
+	log.Debugf("delta deals request: %s", string(ds))
+
 	body, closer, err := d.postRequest("/api/v1/deal/piece-commitments", ds, authString)
 	if err != nil {
 		return nil, err
@@ -155,22 +157,22 @@ type OfflineDealResponseElement struct {
 }
 
 type Deal struct { // AKA meta
-	DeltaContentID       int64           `json:"content_id,omitempty"` // TODO: rename to delta_id
+	DeltaContentID       uint64          `json:"content_id,omitempty"` // TODO: rename to delta_id
 	Cid                  string          `json:"cid"`
 	Wallet               Wallet          `json:"wallet"`
 	Miner                string          `json:"miner"` //TODO: rename to provider
 	PieceCommitment      PieceCommitment `json:"piece_commitment"`
 	ConnectionMode       string          `json:"connection_mode"`
-	Size                 int64           `json:"size"`
+	Size                 uint64          `json:"size"`
 	RemoveUnsealedCopies bool            `json:"remove_unsealed_copies"`
 	SkipIpniAnnounce     bool            `json:"skip_ipni_announce"`
-	Duration             int64           `json:"duration,omitempty"`
-	StartEpoch           int64           `json:"start_epoch,omitempty"`
+	DurationInDays       uint64          `json:"duration_in_days,omitempty"`
+	StartEpochAtDays     uint64          `json:"start_epoch_at_days,omitempty"`
 }
 
 type PieceCommitment struct {
 	PieceCid        string `json:"piece_cid"`
-	PaddedPieceSize int64  `json:"padded_piece_size"`
+	PaddedPieceSize uint64 `json:"padded_piece_size"`
 }
 
 type AddWalletRequest struct {
