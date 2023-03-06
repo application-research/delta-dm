@@ -75,7 +75,7 @@ type Dataset struct {
 	gorm.Model
 	Name             string    `json:"name" gorm:"unique; not null"`
 	ReplicationQuota uint      `json:"replication_quota"`
-	DelayStartEpoch  uint      `json:"delay_start_epoch"`
+	DelayStartEpoch  uint      `json:"deal_delay_start_epoch"`
 	DealDuration     uint      `json:"deal_duration"`
 	Wallet           Wallet    `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
@@ -91,7 +91,7 @@ type Content struct {
 	Size            int64         `json:"size"`
 	PaddedSize      int64         `json:"padded_size"`
 	DatasetName     string        `json:"dataset_name"`
-	Replications    []Replication `json:"replications" gorm:"foreignKey:ContentCommP"`
+	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
 	NumReplications int           `json:"num_replications"`
 }
 
