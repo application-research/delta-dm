@@ -152,7 +152,7 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
 
 	rawQuery := "select * from datasets d inner join contents c " +
 		"on d.name = c.dataset_name inner join wallets w on d.name = w.dataset_name where c.comm_p not in " +
-		"(select r.content_comm_p from replications r where r.provider_actor_id not in (select p.actor_id from providers p where p.actor_id not in (?))) " +
+		"(select r.content_comm_p from replications r where r.status != 'FAILURE' and r.provider_actor_id not in (select p.actor_id from providers p where p.actor_id not in (?))) " +
 		"and c.num_replications < d.replication_quota"
 	var rawValues = []interface{}{providerID}
 
