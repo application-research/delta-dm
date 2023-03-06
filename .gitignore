@@ -3,3 +3,4 @@ testdb
 .env
 .DS_Store
 delta-dm
+*.csv
