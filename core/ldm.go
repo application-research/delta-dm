@@ -1,6 +1,7 @@
 package core
 
 import (
+	logging "github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
@@ -10,6 +11,10 @@ type DeltaDM struct {
 }
 
 func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, debug bool) *DeltaDM {
+	if debug {
+		logging.SetDebugLogging()
+	}
+
 	db, err := OpenDatabase(dbConnStr, debug)
 	if err != nil {
 		log.Fatalf("could not connect to db: %s", err)

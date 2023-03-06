@@ -55,7 +55,7 @@ type Replication struct {
 	gorm.Model
 	Content         Content           `json:"content"` //TODO: doesnt come back from api
 	DealTime        time.Time         `json:"deal_time"`
-	DeltaContentID  int64             `json:"delta_content_id"`
+	DeltaContentID  int64             `json:"delta_content_id" gorm:"unique"`
 	ProposalCid     string            `json:"proposal_cid" gorm:"unique"`
 	ProviderActorID string            `json:"provider_actor_id"`
 	ContentCommP    string            `json:"content_commp"`
