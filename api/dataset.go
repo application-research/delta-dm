@@ -25,8 +25,8 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			var tb [2]uint64
 			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents where dataset_name = ?", d.Name).Row().Scan(&tb[0], &tb[1])
 
-			ds[i].ReplicatedBytes = rb
-			ds[i].TotalBytes = tb
+			ds[i].ReplicatedBytes = core.ByteSizes{Raw: rb[0], Padded: rb[1]}
+			ds[i].TotalBytes = core.ByteSizes{Raw: tb[0], Padded: tb[1]}
 		}
 
 		return c.JSON(200, ds)

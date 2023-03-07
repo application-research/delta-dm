@@ -71,8 +71,8 @@ type Provider struct {
 }
 
 type ByteSizes struct {
-	Unpadded uint64 `json:"unpadded"`
-	Padded   uint64 `json:"padded"`
+	Raw    uint64 `json:"raw"`
+	Padded uint64 `json:"padded"`
 }
 
 // A Dataset is a collection of CAR files, and is identified by a name/slug
@@ -86,8 +86,8 @@ type Dataset struct {
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
 	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
-	ReplicatedBytes  [2]uint64 `json:"bytes_replicated,omitempty" gorm:"-"`
-	TotalBytes       [2]uint64 `json:"bytes_total,omitempty" gorm:"-"`
+	ReplicatedBytes  ByteSizes `json:"bytes_replicated,omitempty" gorm:"-"`
+	TotalBytes       ByteSizes `json:"bytes_total,omitempty" gorm:"-"`
 }
 
 type Content struct {
