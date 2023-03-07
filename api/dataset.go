@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	"github.com/application-research/delta-dm/core"
+	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo/v4"
 )
 
@@ -97,8 +99,8 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("dataset must be specified")
 		}
 
-		qt := c.QueryParam("import_type")
-		if qt == "singularity" {
+		it := c.QueryParam("import_type")
+		if it == "singularity" {
 			var sContent []SingularityJSON
 			if err := c.Bind(&sContent); err != nil {
 				return err
@@ -107,6 +109,15 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			// Marshal into core.Content
 			for _, cnt := range sContent {
 				content = append(content, cnt.toDeltaContent())
+			}
+		} else if it == "csv" {
+			csvBytes, err := ioutil.ReadAll(c.Request().Body)
+			if err != nil {
+				return err
+			}
+
+			if err := csvutil.Unmarshal(csvBytes, &content); err != nil {
+				return fmt.Errorf("error parsing csv : %s", err)
 			}
 
 		} else {

@@ -70,6 +70,11 @@ type Provider struct {
 	Replications []Replication `json:"replications" gorm:"foreignKey:ProviderActorID"`
 }
 
+type ByteSizes struct {
+	Unpadded uint64 `json:"unpadded"`
+	Padded   uint64 `json:"padded"`
+}
+
 // A Dataset is a collection of CAR files, and is identified by a name/slug
 type Dataset struct {
 	gorm.Model
@@ -86,10 +91,10 @@ type Dataset struct {
 }
 
 type Content struct {
-	CommP           string        `json:"commp" csv:"pieceCid" gorm:"primaryKey"`
+	CommP           string        `json:"commp" csv:"commP" gorm:"primaryKey"`
 	PayloadCID      string        `json:"payload_cid" csv:"payloadCid"`
-	Size            uint64        `json:"size" csv:"carSize"`
-	PaddedSize      uint64        `json:"padded_size" csv:"pieceSize"`
+	Size            uint64        `json:"size" csv:"size"`
+	PaddedSize      uint64        `json:"padded_size" csv:"paddedSize"`
 	DatasetName     string        `json:"dataset_name"`
 	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
 	NumReplications uint          `json:"num_replications"`
