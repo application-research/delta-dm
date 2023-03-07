@@ -49,7 +49,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("deal duration must be between 180 and 540 days")
 		}
 
-		if ads.DelayStartEpoch < 1 || ads.DealDuration > 14 {
+		if ads.DelayStartEpoch < 1 || ads.DelayStartEpoch > 14 {
 			return fmt.Errorf("delay start epoch must be between 1 and 14 days")
 		}
 
