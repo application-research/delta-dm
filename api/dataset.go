@@ -60,7 +60,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(200, ads)
 	})
 
-	dataset.GET("/:dataset/content", func(c echo.Context) error {
+	dataset.GET("/content/:dataset", func(c echo.Context) error {
 		var content []core.Content
 		var dataset core.Dataset
 
@@ -80,7 +80,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(200, content)
 	})
 
-	dataset.POST("/:dataset/content", func(c echo.Context) error {
+	dataset.POST("/content/:dataset", func(c echo.Context) error {
 		var content []core.Content
 		var dataset core.Dataset
 		results := struct {
@@ -97,16 +97,36 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("dataset must be specified")
 		}
 
+		qt := c.QueryParam("import_type")
+		if qt == "singularity" {
+			var sContent []SingularityJSON
+			if err := c.Bind(&sContent); err != nil {
+				return err
+			}
+
+			// Marshal into core.Content
+			for _, cnt := range sContent {
+				content = append(content, cnt.toDeltaContent())
+			}
+
+		} else {
+			if err := c.Bind(&content); err != nil {
+				return err
+			}
+		}
+
 		res := dldm.DB.Where("name = ?", d).First(&dataset)
 		if res.Error != nil {
 			return res.Error
 		}
 
-		if err := c.Bind(&content); err != nil {
-			return err
-		}
-
 		for _, cnt := range content {
+			// Check for bad data
+			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 {
+				results.Fail = append(results.Fail, cnt.CommP)
+				continue
+			}
+
 			err := dldm.DB.Create(&cnt).Error
 			if err != nil {
 				results.Fail = append(results.Fail, cnt.CommP)
@@ -122,4 +142,21 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 		return c.JSON(200, results)
 	})
+}
+
+// Field name mapping for JSON exported from singularity db
+type SingularityJSON struct {
+	CarSize   uint64 `json:"carSize"`
+	DataCid   string `json:"dataCid"`
+	PieceCid  string `json:"pieceCid"`
+	PieceSize uint64 `json:"pieceSize"`
+}
+
+func (s *SingularityJSON) toDeltaContent() core.Content {
+	return core.Content{
+		CommP:      s.PieceCid,
+		PayloadCID: s.DataCid,
+		Size:       s.CarSize,
+		PaddedSize: s.PieceSize,
+	}
 }

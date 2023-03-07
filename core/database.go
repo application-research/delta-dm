@@ -86,10 +86,10 @@ type Dataset struct {
 }
 
 type Content struct {
-	CommP           string        `json:"commp" gorm:"primaryKey"`
-	PayloadCID      string        `json:"payload_cid"`
-	Size            uint64        `json:"size"`
-	PaddedSize      uint64        `json:"padded_size"`
+	CommP           string        `json:"commp" csv:"pieceCid" gorm:"primaryKey"`
+	PayloadCID      string        `json:"payload_cid" csv:"payloadCid"`
+	Size            uint64        `json:"size" csv:"carSize"`
+	PaddedSize      uint64        `json:"padded_size" csv:"pieceSize"`
 	DatasetName     string        `json:"dataset_name"`
 	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
 	NumReplications uint          `json:"num_replications"`
