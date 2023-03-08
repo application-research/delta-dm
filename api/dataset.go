@@ -94,9 +94,14 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		}
 
 		d := c.Param("dataset")
-
 		if d == "" {
 			return fmt.Errorf("dataset must be specified")
+		}
+
+		// Check if dataset exists
+		res := dldm.DB.Where("name = ?", d).First(&dataset)
+		if res.Error != nil {
+			return fmt.Errorf("could not find dataset %s : %s", d, res.Error)
 		}
 
 		it := c.QueryParam("import_type")
@@ -126,17 +131,14 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			}
 		}
 
-		res := dldm.DB.Where("name = ?", d).First(&dataset)
-		if res.Error != nil {
-			return res.Error
-		}
-
 		for _, cnt := range content {
 			// Check for bad data
 			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 {
 				results.Fail = append(results.Fail, cnt.CommP)
 				continue
 			}
+
+			cnt.DatasetName = dataset.Name
 
 			err := dldm.DB.Create(&cnt).Error
 			if err != nil {
@@ -145,10 +147,6 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 			}
 
 			results.Success = append(results.Success, cnt.CommP)
-			err = dldm.DB.Model(&dataset).Association("Contents").Append(&cnt)
-			if err != nil {
-				return err
-			}
 		}
 
 		return c.JSON(200, results)

@@ -34,16 +34,6 @@ deltadm daemon --db testdb
 ## API
 See api docs in /api/api.md.
 
-## Wishlist
-- Ability to specify region / IP address of providers so that deals can be made in a geo-aware way (only replicate a certain amount to a given region)
-- Show progress bar of how much datacap is being used for each dataset/wallet
-
-### Reporting
-
-Dataset level 
--> see how **distributed** the data is. See which SPs 
--> match what Validation-bot does 
--> see % replicated 
-
-SP Level
--> Total list of data/CIDs replicated, which datasets
+## Importing CIDs from Singularity
+- First, create datasets and wallets in Delta (follow above guide)
+- Use the script in `scripts/singularity-import.sh` to import CIDs from Singularity into DDM. This will add the CIDs to the dataset.

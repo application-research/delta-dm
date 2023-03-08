@@ -1,12 +1,26 @@
 #!/bin/bash
 
- query = "{\"datasetName\": \"$1\"}"
+# Usage: ./singularity-import.sh <SINGULARITY datasetName> <DELTA datasetName> <deltaToken>
+query="{\"datasetName\": \"$1\", \"pieceSize\": { \"\$gt\": 0 }}"
+DELTA_TOKEN="Authorization: Bearer $3"
 
-
-mongoexport mongodb://localhost:27017 \
+mongoexport --uri='mongodb://localhost:27017' \
 	--db=singularity \
 	--collection=generationrequests \
 	--fields="dataCid,pieceCid,carSize,pieceSize" \
-	--query=$query \
-	--out="singularity-out.json" 
+	--jsonArray \
+	--query="$query" \
+	--out="singularity-out.json" \
 
+echo "Importing dataset to DDM. Please wait..."
+
+cat singularity-out.json | jq . |
+res="$(curl -X POST -d @- \
+  "http://localhost:1314/api/v1/dataset/content/$2?import_type=singularity" \
+  -H "$DELTA_TOKEN" \
+  -H "Content-Type: application/json" \
+  2>/dev/null )"
+
+rm singularity-out.json
+
+echo "Done importing CIDs to dataset"
