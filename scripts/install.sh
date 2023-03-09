@@ -28,14 +28,15 @@ else
     echo "| your DELTA API key is: $API_KEY"
     echo "| >> Please save this key for future requests"
     echo "| writing API key to env file"
-    echo "DELTA_AUTH=$API_KEY" > $DELTA_ENV
+    echo -e "set -a\nDELTA_AUTH=$API_KEY \nset +a" > $DELTA_ENV
     export DELTA_AUTH=$API_KEY
+    source $DELTA_ENV
 fi
 
 echo "| starting apps"
 nohup ./delta/delta daemon --mode=standalone >/dev/null &
-sleep 5
-nohup ./delta-dm/delta-dm daemon >/dev/null &
+sleep 20
+nohup ./delta-dm/delta-dm daemon --delta-auth=$DELTA_AUTH >/dev/null &
 sleep 5
 cd ./delta-nextjs-client && nohup npm run start >/dev/null &
 
