@@ -139,7 +139,8 @@ For example, `http://localhost:1314/api/v1/datasets`
 #### Body
 ```jsonc
 {
-  id: "f01234" // unique! SP identifier
+  actor_id: "f01234", // unique! SP identifier
+	actor_name: "Friendly name" // optional - friendly sp name 
 }
 ```
 
@@ -207,6 +208,104 @@ For example, `http://localhost:1314/api/v1/datasets`
 ]
 ```
 
+### GET /
+- Get Replications
+
+#### Params
+```json
+?provider=f01963614 // optional - filter by sp
+?dataset=delta-test // optional - filter by dataset
+```
+
+#### Response
+> 200: Success
+
+```json
+[
+		{
+		"ID": 8,
+		"CreatedAt": "2023-03-01T19:16:14.956554-08:00",
+		"UpdatedAt": "2023-03-02T17:21:17.260965-08:00",
+		"DeletedAt": null,
+		"content": {
+			"commp": "baga6ea4seaqnkkxerlx4vljfvmpffjzqmxuusz4l72lil5quf7c5b2mcg5zy2mi",
+			"payload_cid": "bafybeifoxwwx5newgdwnvojyotleh3x3sy7ckndwa2ysioe4corv4ixgti",
+			"size": 18010019221,
+			"padded_size": 34359738368,
+			"dataset_name": "delta-test",
+			"num_replications": 1
+		},
+		"deal_time": "2023-03-01T19:16:14.956401-08:00",
+		"delta_content_id": 27388,
+		"proposal_cid": "bafyreidvtrgw2z6l3m6slalibrb67rqxcnscjiexrsccjwnwr7pwhat5zq",
+		"provider_actor_id": "f01963614",
+		"content_commp": "baga6ea4seaqnkkxerlx4vljfvmpffjzqmxuusz4l72lil5quf7c5b2mcg5zy2mi",
+		"status": "SUCCESS"
+	},
+	{
+		"ID": 9,
+		"CreatedAt": "2023-03-01T19:16:14.962937-08:00",
+		"UpdatedAt": "2023-03-02T17:21:17.261791-08:00",
+		"DeletedAt": null,
+		"content": {
+			"commp": "baga6ea4seaqchqjaoycetgpptpiipeuygx7h7aeuml5mfrqp7kskrqsloi6pwia",
+			"payload_cid": "bafybeiezpv62emncxbe4adoyipxhzcdy2eqzxx3rde6rdzuqxs57gdsp2q",
+			"size": 18010019221,
+			"padded_size": 34359738368,
+			"dataset_name": "delta-test",
+			"num_replications": 1
+		},
+		"deal_time": "2023-03-01T19:16:14.962877-08:00",
+		"delta_content_id": 27389,
+		"proposal_cid": "bafyreid23uwyqqdwvgaaivnqzktmnpgxgo4ruo3hlk7efjgzs6lwcq75wy",
+		"provider_actor_id": "f01963614",
+		"content_commp": "baga6ea4seaqchqjaoycetgpptpiipeuygx7h7aeuml5mfrqp7kskrqsloi6pwia",
+		"status": "SUCCESS"
+	},
+	{
+		"ID": 18,
+		"CreatedAt": "2023-03-06T11:09:42.185496-08:00",
+		"UpdatedAt": "2023-03-06T11:09:43.997136-08:00",
+		"DeletedAt": null,
+		"content": {
+			"commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
+			"payload_cid": "bafybeiakf666idv6zs4uksckfkjr76jmvrcuu4neidldxlfngo2vh6jvfe",
+			"size": 18010019222,
+			"padded_size": 34359738368,
+			"dataset_name": "delta-test",
+			"num_replications": 3
+		},
+		"deal_time": "2023-03-06T11:09:42.185318-08:00",
+		"delta_content_id": 27874,
+		"proposal_cid": "PENDING_1508341816105618720",
+		"provider_actor_id": "f01963614",
+		"content_commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
+		"status": "FAILURE",
+		"delta_message": "illegal base64 data at input byte 0"
+	},
+	{
+		"ID": 19,
+		"CreatedAt": "2023-03-06T11:11:02.724047-08:00",
+		"UpdatedAt": "2023-03-06T11:11:15.867567-08:00",
+		"DeletedAt": null,
+		"content": {
+			"commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
+			"payload_cid": "bafybeiakf666idv6zs4uksckfkjr76jmvrcuu4neidldxlfngo2vh6jvfe",
+			"size": 18010019222,
+			"padded_size": 34359738368,
+			"dataset_name": "delta-test",
+			"num_replications": 3
+		},
+		"deal_time": "2023-03-06T11:11:02.723922-08:00",
+		"delta_content_id": 27875,
+		"proposal_cid": "bafyreic7n7josf5klvdxop46zjjfr6ju4o4ywqtom2wxhpagaswel3krd4",
+		"provider_actor_id": "f01963614",
+		"content_commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
+		"status": "FAILURE",
+		"delta_message": "deal proposal rejected: failed validation: invalid deal end epoch 4236142: cannot be more than 1555200 past current epoch 2660782"
+	}
+]
+```
 
 ## /wallet
 ### POST /
