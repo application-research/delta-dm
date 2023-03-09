@@ -156,11 +156,24 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 #### Body
 ```jsonc
-{
-  id: "f01234" // unique! SP identifier
-  replicated_bytes: 58712698 // Number of bytes replicated to SP
-  replicated_deals: 12332 // Number of deals made with SP
-}
+[
+	{
+		"key": "b3cc8a99-155a-4fff-8974-999ec313e5cc",
+		"actor_id": "f01963614",
+		"bytes_replicated": {
+			"raw": 216120230655,
+			"padded": 412316860416
+		},
+	},
+	{
+		"key": "29c0c1ce-6b13-434c-8b94-49ba5a21b7a9",
+		"actor_id": "f01886797",
+		"bytes_replicated": {
+			"raw": 0,
+			"padded": 0
+		},
+	}
+]
 ```
 
 #### Response
@@ -182,8 +195,6 @@ For example, `http://localhost:1314/api/v1/datasets`
   provider: "f01234", // required! ID of the SP to create deals with
   dataset: "test-dataset", // optional - if unspecified, will select content from any dataset
   numDeals: 10, // optional - if unspecified, then numTib must be specified. Number of deals to make
-  numTib: 2 // optional - if unspecified, then numDeals must be specified. Amount of TiB of deals to make
-  pricePerDeal : 0 // optional - amount of fil per deal. If unspecifed, makes verified deal with datacap
 }
 ```
 
