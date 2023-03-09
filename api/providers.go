@@ -16,6 +16,13 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 		dldm.DB.Find(&p)
 
+		for i, sp := range p {
+			var rb [2]uint64
+			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents c inner join replications r on r.content_comm_p = c.comm_p where r.status = 'SUCCESS' AND r.provider_actor_id = ?", sp.ActorID).Row().Scan(&rb[0], &rb[1])
+
+			p[i].ReplicatedBytes = core.ByteSizes{Raw: rb[0], Padded: rb[1]}
+		}
+
 		return c.JSON(200, p)
 	})
 

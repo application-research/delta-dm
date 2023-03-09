@@ -65,9 +65,10 @@ type Replication struct {
 
 // A client is a Storage Provider that is being replicated to
 type Provider struct {
-	Key          uuid.UUID     `json:"key" gorm:"type:uuid"`
-	ActorID      string        `json:"actor_id" gorm:"primaryKey"`
-	Replications []Replication `json:"replications" gorm:"foreignKey:ProviderActorID"`
+	Key             uuid.UUID     `json:"key" gorm:"type:uuid"`
+	ActorID         string        `json:"actor_id" gorm:"primaryKey"`
+	ReplicatedBytes ByteSizes     `json:"bytes_replicated,omitempty" gorm:"-"`
+	Replications    []Replication `json:"replications" gorm:"foreignKey:ProviderActorID"`
 }
 
 type ByteSizes struct {
