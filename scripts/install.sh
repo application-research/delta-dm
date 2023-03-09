@@ -1,6 +1,8 @@
 #!/bin/bash
 
 echo "Δ  Setting up Delta"
+mkdir delta-standalone
+cd delta-standalone
 DELTA_ENV=delta.env
 
 echo "| cloning repositories"
