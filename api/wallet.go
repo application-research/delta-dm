@@ -12,6 +12,12 @@ func ConfigureWalletRouter(e *echo.Group, dldm *core.DeltaDM) {
 	replication := e.Group("/wallet")
 
 	replication.GET("", func(c echo.Context) error {
+		err := RequestAuthHeaderCheck(c)
+		if err != nil {
+			return c.JSON(401, err.Error())
+		}
+
+		authorizationString := c.Request().Header.Get("Authorization")
 
 		ds := c.QueryParam("dataset")
 
@@ -24,6 +30,19 @@ func ConfigureWalletRouter(e *echo.Group, dldm *core.DeltaDM) {
 		}
 
 		tx.Find(&w)
+
+		for i, wallet := range w {
+			bal, err := dldm.DAPI.GetWalletBalance(wallet.Addr, authorizationString)
+			if err != nil {
+				log.Errorf("could not get wallet balance for %s: %s", wallet.Addr, err)
+				continue
+			}
+
+			w[i].Balance = core.WalletBalance{
+				BalanceFilecoin: bal.Balance.Balance,
+				BalanceDatacap:  bal.Balance.VerifiedClientBalance,
+			}
+		}
 
 		return c.JSON(200, w)
 	})

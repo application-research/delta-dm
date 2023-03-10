@@ -53,6 +53,22 @@ func (d *DeltaAPI) AddWallet(wallet AddWalletRequest, authString string) (*AddWa
 	return &result, nil
 }
 
+// Queries delta for wallet balance information
+func (d *DeltaAPI) GetWalletBalance(walletAdr string, authString string) (*GetWalletBalanceResponse, error) {
+	body, closer, err := d.getRequest("/admin/wallet/balance/"+walletAdr, authString)
+	if err != nil {
+		return nil, err
+	}
+	defer closer()
+
+	result, err := UnmarshalGetWalletBalanceResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal wallet balance response %s : %s", err, string(body))
+	}
+
+	return &result, nil
+}
+
 // Requests offline deals to be made from Delta
 func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest, authString string) (*OfflineDealResponse, error) {
 	ds, err := json.Marshal(deals)
@@ -103,6 +119,33 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byt
 	}
 
 	req, err := http.NewRequest("POST", d.url+url, bytes.NewBuffer(raw))
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not construct http request %v", err)
+	}
+
+	req.Header.Set("Authorization", authString)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not make http request %s", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return body, resp.Body.Close, nil
+}
+
+func (d *DeltaAPI) getRequest(url string, authString string) ([]byte, func() error, error) {
+	if authString == "" {
+		return nil, nil, fmt.Errorf("auth token must be provided")
+	}
+
+	req, err := http.NewRequest("GET", d.url+url, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}
@@ -272,4 +315,29 @@ type DealStats_PieceCommitment struct {
 	LastMessage        string `json:"last_message"`
 	CreatedAt          string `json:"created_at"`
 	UpdatedAt          string `json:"updated_at"`
+}
+
+func UnmarshalGetWalletBalanceResponse(data []byte) (GetWalletBalanceResponse, error) {
+	var r GetWalletBalanceResponse
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+func (r *GetWalletBalanceResponse) Marshal() ([]byte, error) {
+	return json.Marshal(r)
+}
+
+type GetWalletBalanceResponse struct {
+	Balance Balance `json:"balance"`
+	Message string  `json:"message"`
+}
+
+type Balance struct {
+	Account               string `json:"account"`
+	Balance               uint64 `json:"balance"`
+	MarketAvailable       uint64 `json:"market_available"`
+	MarketEscrow          uint64 `json:"market_escrow"`
+	MarketLocked          uint64 `json:"market_locked"`
+	VerifiedClientBalance uint64 `json:"verified_client_balance"`
+	WalletBalance         uint64 `json:"wallet_balance"`
 }

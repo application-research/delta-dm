@@ -329,3 +329,28 @@ For example, `http://localhost:1314/api/v1/datasets`
 #### Response
 > 200: Success
 > 500: Fail
+
+### GET /
+- Get all wallets
+
+> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
+
+#### Params
+<none>
+
+#### Response 
+> 200: Success
+
+```json
+[
+	{
+		"address": "f1tuoahmuwfhnxpugqigxliu4muasggezw2efuczq",
+		"dataset_name": "delta-test",
+		"type": "secp256k1",
+		"balance": {
+			"balance_filecoin": 775398756064282, // fil balance (in attofil)
+			"balance_datacap": 0 // storage power (in bytes)
+		}
+	}
+]
+```

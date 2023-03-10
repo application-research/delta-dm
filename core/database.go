@@ -68,7 +68,7 @@ type Provider struct {
 	Key             uuid.UUID     `json:"key" gorm:"type:uuid"`
 	ActorID         string        `json:"actor_id" gorm:"primaryKey"`
 	ActorName       string        `json:"actor_name"`
-	ReplicatedBytes ByteSizes     `json:"bytes_replicated,omitempty" gorm:"-"`
+	BytesReplicated ByteSizes     `json:"bytes_replicated,omitempty" gorm:"-"`
 	Replications    []Replication `json:"replications" gorm:"foreignKey:ProviderActorID"`
 }
 
@@ -88,8 +88,8 @@ type Dataset struct {
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
 	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
-	ReplicatedBytes  ByteSizes `json:"bytes_replicated,omitempty" gorm:"-"`
-	TotalBytes       ByteSizes `json:"bytes_total,omitempty" gorm:"-"`
+	BytesReplicated  ByteSizes `json:"bytes_replicated,omitempty" gorm:"-"`
+	BytesTotal       ByteSizes `json:"bytes_total,omitempty" gorm:"-"`
 }
 
 type Content struct {
@@ -103,7 +103,13 @@ type Content struct {
 }
 
 type Wallet struct {
-	Addr        string `json:"address" gorm:"primaryKey"`
-	DatasetName string `json:"dataset_name" gorm:"not null"`
-	Type        string `json:"type"`
+	Addr        string        `json:"address" gorm:"primaryKey"`
+	DatasetName string        `json:"dataset_name" gorm:"not null"`
+	Type        string        `json:"type"`
+	Balance     WalletBalance `json:"balance,omitempty" gorm:"-"`
+}
+
+type WalletBalance struct {
+	BalanceFilecoin uint64 `json:"balance_filecoin"`
+	BalanceDatacap  uint64 `json:"balance_datacap"`
 }
