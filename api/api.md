@@ -7,7 +7,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 ## /datasets
 
-### POST /
+### POST /datasets
 - Add a dataset to be tracked 
 
 #### Request Params
@@ -28,7 +28,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 > 200: Success
 > 500: Fail
 
-### GET /
+### GET /datasets
 - Returns a list of all datasets
 
 #### Request Params:
@@ -91,7 +91,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 ```
 
-### POST /content/:dataset
+### POST /datasets/content/:dataset
 - Add content (CAR files) to the dataset
 
 #### Request Params
@@ -130,7 +130,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 		
 ## /providers
-### POST /
+### POST /providers
 - Add a storage provider
 
 #### Params
@@ -149,7 +149,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 > 500: Fail
 
 
-### GET /
+### GET /providers
 - Gets list of storage providers
 
 #### Params
@@ -181,9 +181,9 @@ For example, `http://localhost:1314/api/v1/datasets`
 > 200: Success
 > 500: Fail
 
-## /replication
+## /replications
 
-### POST / 
+### POST /replications
 - Create replications (deals)
 
 > This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
@@ -208,7 +208,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 ]
 ```
 
-### GET /
+### GET /replications
 - Get Replications
 
 #### Params
@@ -307,8 +307,8 @@ For example, `http://localhost:1314/api/v1/datasets`
 ]
 ```
 
-## /wallet
-### POST /
+## /wallets
+### POST /wallets
 - Add a wallet
 
 > This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
@@ -330,7 +330,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 > 200: Success
 > 500: Fail
 
-### GET /
+### GET /wallets
 - Get all wallets
 
 > This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
@@ -353,4 +353,44 @@ For example, `http://localhost:1314/api/v1/datasets`
 		}
 	}
 ]
+```
+
+### DELETE /wallets
+- Delete a wallet
+
+> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
+
+#### Params
+```json
+/:wallet // address of wallet to delete
+```
+
+#### Response 
+> 200: Success
+
+```json
+"successfully deleted wallet" 
+```
+
+### POST /associate
+- Associate a wallet with a dataset
+
+> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
+
+#### Params
+<none>
+
+#### Body
+```json
+{
+	"address": "f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi",
+	"dataset": "delta-test"
+}
+```
+
+#### Response 
+> 200: Success
+
+```json
+"successfully associated wallet with dataset" 
 ```

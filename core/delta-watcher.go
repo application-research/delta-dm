@@ -77,7 +77,7 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 		case CONTENT_DEAL_PROPOSAL_SENT:
 			toUpdate = append(toUpdate, Replication{
 				Status:         StatusSuccess,
-				ProposalCid:    deal.DealProposals[0].Signed, // TODO: @alvin-reyes is this the right place to get proposal cid?
+				ProposalCid:    deal.DealProposals[0].Signed,
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
 			})
