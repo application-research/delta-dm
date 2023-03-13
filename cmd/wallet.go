@@ -49,9 +49,8 @@ func WalletCmd() []*cli.Command {
 						Usage: "path to wallet file",
 					},
 					&cli.StringFlag{
-						Name:     "dataset",
-						Usage:    "dataset name to associate wallet with",
-						Required: true,
+						Name:  "dataset",
+						Usage: "dataset name to associate wallet with",
 					},
 				},
 				Action: func(c *cli.Context) error {
@@ -101,7 +100,12 @@ func WalletCmd() []*cli.Command {
 					// Ignoring error here as we know it's been unmarshaled by this point
 					wb, _ := json.Marshal(walletData)
 
-					res, closer, err := cp.ddmPostRequest("/api/v1/wallet/"+dataset, wb)
+					url := "/api/v1/wallets"
+					if dataset != "" {
+						url += "?dataset=" + dataset
+					}
+
+					res, closer, err := cp.ddmPostRequest(url, wb)
 					if err != nil {
 						return err
 					}
