@@ -84,7 +84,7 @@ type Dataset struct {
 	ReplicationQuota uint      `json:"replication_quota"`
 	DelayStartEpoch  uint64    `json:"deal_delay_start_epoch"`
 	DealDuration     uint64    `json:"deal_duration"`
-	Wallet           Wallet    `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
+	Wallet           []Wallet  `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
 	Indexed          bool      `json:"indexed"`
 	Contents         []Content `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
@@ -104,7 +104,7 @@ type Content struct {
 
 type Wallet struct {
 	Addr        string        `json:"address" gorm:"primaryKey"`
-	DatasetName string        `json:"dataset_name" gorm:"not null"`
+	DatasetName string        `json:"dataset_name"`
 	Type        string        `json:"type"`
 	Balance     WalletBalance `json:"balance,omitempty" gorm:"-"`
 }

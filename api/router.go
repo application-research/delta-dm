@@ -59,7 +59,7 @@ func InitializeEchoRouterConfig(dldm *core.DeltaDM) {
 	ConfigureDatasetRouter(apiGroup, dldm)
 	ConfigureProvidersRouter(apiGroup, dldm)
 	ConfigureReplicationRouter(apiGroup, dldm)
-	ConfigureWalletRouter(apiGroup, dldm)
+	ConfigureWalletsRouter(apiGroup, dldm)
 	ConfigureHealthRouter(apiGroup, dldm)
 	// Start server
 	e.Logger.Fatal(e.Start("0.0.0.0:1314")) // configuration

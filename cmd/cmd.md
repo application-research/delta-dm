@@ -15,3 +15,6 @@ By keyfile
 
 By raw json
 `> ./delta-dm wallet import --dataset dataset-name --json {"Type":"secp256k1","PrivateKey":"XXX"}`
+
+
+the `dataset` flag is optional. If unspecified, the newly added wallet will not be associated with any dataset
