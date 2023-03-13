@@ -315,7 +315,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 #### Params
 ```json
-/dataset-name // name that identifies the dataset. Must already exist (add it using /datasets POST)
+/?dataset-name // OPTIONAL: name that identifies the dataset. Must already exist (add it using /datasets POST). Will associate the newly added wallet with this dataset
 ```
 
 #### Body
