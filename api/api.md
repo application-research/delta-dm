@@ -372,7 +372,7 @@ For example, `http://localhost:1314/api/v1/datasets`
 "successfully deleted wallet" 
 ```
 
-### POST /associate
+### POST /wallets/associate
 - Associate a wallet with a dataset
 
 > This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
