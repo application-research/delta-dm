@@ -82,14 +82,16 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 	log.Debugf("calling DELTA api for %+v deals\n\n", len(toReplicate))
 
 	for _, c := range toReplicate {
-		if c.Wallet.Addr == "" {
+		wallet, err := walletSelection(dldm.DB, &c.DatasetName)
+
+		if err != nil || wallet.Addr == "" {
 			return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please add a wallet for this dataset and try again. alternatively, explicitly specify a dataset in the request to force replication of one with an existing wallet", c.Dataset.Name)
 		}
 
 		dealsToMake = append(dealsToMake, core.Deal{
-			Cid: c.PayloadCID, // Payload CID
+			Cid: c.PayloadCID,
 			Wallet: core.Wallet{
-				Addr: c.Wallet.Addr,
+				Addr: wallet.Addr,
 			},
 			ConnectionMode:       "import",
 			Miner:                d.Provider,
@@ -140,7 +142,6 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 type replicatedContentQueryResponse struct {
 	core.Content
 	core.Dataset
-	core.Wallet
 }
 
 // Query the database for all contant that does not have replications to this actor yet
@@ -150,7 +151,7 @@ type replicatedContentQueryResponse struct {
 func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetName *string, numDeals *uint) ([]replicatedContentQueryResponse, error) {
 
 	rawQuery := "select * from datasets d inner join contents c " +
-		"on d.name = c.dataset_name inner join wallets w on d.name = w.dataset_name where c.comm_p not in " +
+		"on d.name = c.dataset_name where c.comm_p not in " +
 		"(select r.content_comm_p from replications r where r.status != 'FAILURE' and r.provider_actor_id not in (select p.actor_id from providers p where p.actor_id not in (?))) " +
 		"and c.num_replications < d.replication_quota"
 	var rawValues = []interface{}{providerID}
@@ -168,4 +169,23 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
 	db.Raw(rawQuery, rawValues...).Scan(&contents)
 
 	return contents, nil
+}
+
+// Find which wallet to use when making deals for a given dataset
+func walletSelection(db *gorm.DB, datasetName *string) (*core.Wallet, error) {
+	var w []core.Wallet
+	res := db.Model(&core.Wallet{}).Where("dataset_name = ?", datasetName).Find(&w)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	if len(w) == 0 {
+		return nil, fmt.Errorf("no wallet found for dataset '%s'", *datasetName)
+
+	}
+
+	// TODO: Wallet selection algorithm
+	// Just choose the first wallet for now
+	return &w[0], nil
 }
