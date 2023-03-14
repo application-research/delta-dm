@@ -1,9 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/application-research/delta-dm/core"
+	"github.com/filecoin-project/go-address"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -31,6 +33,12 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 		if err := c.Bind(&p); err != nil {
 			return err
+		}
+
+		// Check to ensure the actor id is valid
+		_, err := address.NewFromString(p.ActorID)
+		if err != nil {
+			return fmt.Errorf("invalid actor id %s: %s", p.ActorID, err)
 		}
 
 		p.Key = uuid.New()
