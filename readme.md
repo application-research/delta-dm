@@ -23,13 +23,17 @@ Once a **Dataset**, **Content**, and **Providers** have been specified, the DDM 
 
 # Instructions
 
-- Set `DB_NAME` env var to postgres connection string ex) `testdb`. Can also be specified as a cli argument.
+- Set `DELTA_AUTH` environment variable to Delta API key. It can also be provided as the CLI flag `--delta-auth`
+- DDM will default to a [delta](https://github.com/application-research/delta) instance running at `localhost:1414`. It must be running or DDM will not start. Override the url by providing specifying the `DELTA_API` environment variable, or CLI flag `--delta-api`
 
-## Example Usage
+## Usage
 
+DDM runs as a daemon, which is a webserver. Start it up with the `daemon` command.
 ```bash
-deltadm daemon --db testdb
+./deltadm daemon
 ```
+
+Once running, you can interact with DDM through the API.
 
 ## API
 See api docs in /api/api.md.
