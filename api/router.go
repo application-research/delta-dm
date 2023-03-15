@@ -52,6 +52,7 @@ func InitializeEchoRouterConfig(dldm *core.DeltaDM) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Pre(middleware.RemoveTrailingSlash())
+	e.Use(middleware.CORS())
 	e.HTTPErrorHandler = ErrorHandler
 
 	apiGroup := e.Group("/api/v1")
