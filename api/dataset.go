@@ -44,13 +44,8 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		}
 
 		// Bound deal durations between 180 and 540
-
 		if ads.DealDuration < 180 || ads.DealDuration > 540 {
 			return fmt.Errorf("deal duration must be between 180 and 540 days")
-		}
-
-		if ads.DelayStartEpoch < 1 || ads.DelayStartEpoch > 14 {
-			return fmt.Errorf("delay start epoch must be between 1 and 14 days")
 		}
 
 		res := dldm.DB.Create(&ads)
