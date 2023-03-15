@@ -62,6 +62,23 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 		if err.Error != nil {
 			return fmt.Errorf("could not update replication: %s", err.Error)
 		}
+
+		// Remove a replication if it failed
+		if r.Status == StatusFailure {
+			var cnt Content
+
+			err := db.Model(&Content{}).Where("comm_p = ?", r.ContentCommP).First(&cnt)
+			if err.Error != nil {
+				return fmt.Errorf("could not find associated content: %s", err.Error)
+			}
+			cnt.NumReplications -= 1
+
+			err = db.Save(&cnt)
+			if err.Error != nil {
+				return fmt.Errorf("could not update associated content: %s", err.Error)
+			}
+		}
+
 	}
 
 	return nil
@@ -78,6 +95,7 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 			toUpdate = append(toUpdate, Replication{
 				Status:         StatusSuccess,
 				ProposalCid:    deal.DealProposals[0].Signed,
+				ContentCommP:   deal.PieceCommitments[0].Piece,
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
 			})
@@ -85,6 +103,7 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 			r := Replication{
 				Status:         StatusFailure,
 				DeltaContentID: deal.Content.ID,
+				ContentCommP:   deal.PieceCommitments[0].Piece,
 				DeltaMessage:   deal.Content.LastMessage,
 			}
 			if deal.DealProposals != nil && len(deal.DealProposals) > 0 {
