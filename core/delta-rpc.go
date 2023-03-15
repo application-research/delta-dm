@@ -10,7 +10,7 @@ import (
 
 type DeltaAPI struct {
 	url              string
-	serviceAuthToken string
+	ServiceAuthToken string
 }
 
 func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
@@ -22,7 +22,7 @@ func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
 
 	return &DeltaAPI{
 		url:              url,
-		serviceAuthToken: authToken,
+		ServiceAuthToken: authToken,
 	}, nil
 }
 
@@ -98,7 +98,7 @@ func (d *DeltaAPI) GetDealStatus(deltaIds []int64) (*DealStatsResponse, error) {
 		return nil, fmt.Errorf("could not marshal from deal ids json: %s", err)
 	}
 
-	body, closer, err := d.postRequest("/api/v1/stats/contents", dids, "Bearer "+d.serviceAuthToken)
+	body, closer, err := d.postRequest("/api/v1/stats/contents", dids, "Bearer "+d.ServiceAuthToken)
 	if err != nil {
 		return nil, err
 	}

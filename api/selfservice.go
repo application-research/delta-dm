@@ -50,7 +50,7 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a piece CID")
 	}
 
-	providerToken := c.Request().Header.Get("Authorization")
+	providerToken := c.Request().Header.Get("X-DELTA-AUTH")
 
 	var p core.Provider
 	res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
@@ -60,9 +60,34 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to find provider for token")
 	}
 
-	cnt, err := findContentByCommP(dldm.DB, p.ActorID, piece)
-	if err != nil {
+	if p.ActorID == "" {
+		return fmt.Errorf("invalid delta auth token")
+	}
+
+	fmt.Printf("%+v\n\n", p)
+
+	// cnt, err := findContentByCommP(dldm.DB, p.ActorID, piece)
+	var cnt core.Content
+	res = dldm.DB.Model(&core.Content{}).Preload("Replications").Where("comm_p = ?", piece).Find(&cnt)
+	if res.Error != nil {
 		return fmt.Errorf("unable to make deal for this CID")
+	}
+
+	var ds core.Dataset
+	res = dldm.DB.Model(&core.Dataset{}).Where("name = ?", cnt.DatasetName).Find(&ds)
+	if res.Error != nil {
+		return fmt.Errorf("unable to find associated dataset %s", cnt.DatasetName)
+	}
+
+	if cnt.NumReplications >= ds.ReplicationQuota {
+		return fmt.Errorf("content '%s' has reached its replication quota of %d", piece, ds.ReplicationQuota)
+	}
+
+	// Ensure no pending/successful replications have been made for this content to this provider
+	for _, repl := range cnt.Replications {
+		if repl.ProviderActorID == p.ActorID && repl.Status != core.StatusFailure {
+			return fmt.Errorf("content '%s' is already replicated to provider '%s'", piece, p.ActorID)
+		}
 	}
 
 	var dealsToMake core.OfflineDealRequest
@@ -71,7 +96,7 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 	wallet, err := walletSelection(dldm.DB, &cnt.DatasetName)
 
 	if err != nil || wallet.Addr == "" {
-		return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please add a wallet for this dataset and try again. alternatively, explicitly specify a dataset in the request to force replication of one with an existing wallet", cnt.DatasetName)
+		return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please contact administrator", cnt.DatasetName)
 	}
 
 	dealsToMake = append(dealsToMake, core.Deal{
@@ -82,9 +107,9 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 		ConnectionMode:       "import",
 		Miner:                p.ActorID,
 		Size:                 cnt.Size,
-		SkipIpniAnnounce:     !cnt.Indexed,
-		RemoveUnsealedCopies: !cnt.Unsealed,
-		DurationInDays:       cnt.DealDuration,
+		SkipIpniAnnounce:     !ds.Indexed,
+		RemoveUnsealedCopies: !ds.Unsealed,
+		DurationInDays:       ds.DealDuration,
 		StartEpochAtDays:     delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        cnt.CommP,
@@ -92,7 +117,8 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 		},
 	})
 
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, providerToken)
+	// TODO: dont access the token directly here
+	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, "Bearer "+dldm.DAPI.ServiceAuthToken)
 	if err != nil {
 		return fmt.Errorf("unable to make deal with delta api: %s", err)
 	}
@@ -107,7 +133,7 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
 			Status:          core.StatusPending,
-			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()), // TODO: From delta
+			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
 		}
 
 		res := dldm.DB.Model(&core.Replication{}).Create(&newReplication)
@@ -121,19 +147,5 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 
 	}
 
-	return c.JSON(200, deltaResp)
-}
-
-func findContentByCommP(db *gorm.DB, providerID string, commp string) (replicatedContentQueryResponse, error) {
-
-	rawQuery := "select * from datasets d inner join contents c " +
-		"on d.name = c.dataset_name where c.comm_p not in " +
-		"(select r.content_comm_p from replications r where r.status != 'FAILURE' and r.provider_actor_id not in (select p.actor_id from providers p where p.actor_id not in (?))) " +
-		"AND c.num_replications < d.replication_quota AND c.commp = ? LIMIT 1" //TODO: cleanup query!
-	var rawValues = []interface{}{providerID, commp}
-
-	var content replicatedContentQueryResponse
-	db.Raw(rawQuery, rawValues...).Scan(&content)
-
-	return content, nil
+	return c.JSON(200, fmt.Sprintf("successfully made deal with %s", p.ActorID))
 }
