@@ -82,7 +82,6 @@ type Dataset struct {
 	gorm.Model
 	Name             string    `json:"name" gorm:"unique; not null"`
 	ReplicationQuota uint      `json:"replication_quota"`
-	DelayStartEpoch  uint64    `json:"deal_delay_start_epoch"`
 	DealDuration     uint64    `json:"deal_duration"`
 	Wallet           []Wallet  `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
