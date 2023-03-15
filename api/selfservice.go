@@ -11,12 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type SelfServiceRequestBody struct {
-	// ProviderToken string  `json:"key"`
-	// Dataset  *string `json:"dataset,omitempty"`
-	PieceCid string `json:"piece_cid,omitempty"`
-}
-
 func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 	selfService := e.Group("/self-service")
 
@@ -26,8 +20,9 @@ func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 }
 
-// POST /api/self-service/
-// @param
+// POST /api/self-service/by-cid/:piece
+// @param :piece Piece CID of content to replicate
+// @queryparam
 // @returns a slice of the CIDs
 func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 	piece := c.Param("piece")
