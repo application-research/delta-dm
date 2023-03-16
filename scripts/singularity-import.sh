@@ -16,7 +16,7 @@ echo "Importing dataset to DDM. Please wait..."
 
 cat singularity-out.json | jq . |
 res="$(curl -X POST -d @- \
-  "http://localhost:1314/api/v1/dataset/content/$2?import_type=singularity" \
+  "http://localhost:1314/api/v1/datasets/content/$2?import_type=singularity" \
   -H "$DELTA_TOKEN" \
   -H "Content-Type: application/json" \
   2>/dev/null )"
