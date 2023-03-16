@@ -33,11 +33,10 @@ DDM runs as a daemon, which is a webserver. Start it up with the `daemon` comman
 ./deltadm daemon
 ```
 
-Once running, you can interact with DDM through the API.
+Once running, you can interact with DDM through the API, CLI, or via the [Delta Web frontend](https://github.com/application-research/delta-nextjs-client/)
 
 ## API
 See api docs in [/docs/api.md](/docs/api.md).
-
 
 ## Command-Line Interface
 See cli docs in [/docs/cmd.md](/docs/cmd.md).
@@ -46,5 +45,4 @@ See cli docs in [/docs/cmd.md](/docs/cmd.md).
 See docs in [/docs/self-service.md](/docs/self-service.md).
 
 ## Importing CIDs from Singularity
-- First, create datasets and wallets in Delta (follow above guide)
-- Use the script in `scripts/singularity-import.sh` to import CIDs from Singularity into DDM. This will add the CIDs to the dataset.
+See docs in [/docs/singularity-import.md](/docs/singularity-import.md).
