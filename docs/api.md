@@ -315,14 +315,23 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 #### Params
 ```json
-/?dataset-name // OPTIONAL: name that identifies the dataset. Must already exist (add it using /datasets POST). Will associate the newly added wallet with this dataset
+?dataset-name // OPTIONAL: name that identifies the dataset. Must already exist (add it using /datasets POST). Will associate the newly added wallet with this dataset
+?hex // OPTIONAL: if true, expects wallet input in Hex format (see Hex wallet import below)
 ```
 
 #### Body
+**Private Key wallet import**
 ```jsonc
 {
   Type: "secp256k1" // Wallet type
   PrivateKey: "XXX" // Private key from wallet file
+}
+```
+
+**Hex wallet import**
+```jsonc
+{
+	hex_key: "7b2254797065..." // hex representation of wallet file i.e from `lotus wallet export <addr>` command
 }
 ```
 
