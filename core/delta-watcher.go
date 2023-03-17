@@ -47,6 +47,11 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 
 	db.Model(&Replication{}).Where("status = ?", StatusPending).Select("delta_content_id").Find(&pendingReplications)
 
+	if len(pendingReplications) == 0 {
+		log.Debug("no pending replications")
+		return nil
+	}
+
 	log.Debugf("reconciling %v\n", pendingReplications)
 	statsResponse, err := d.GetDealStatus(pendingReplications)
 	if err != nil {
