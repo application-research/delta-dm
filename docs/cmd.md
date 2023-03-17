@@ -10,11 +10,16 @@
 
 ## wallet
 ### Import a wallet
-By keyfile
-`> ./delta-dm wallet import --dataset dataset-name --file <path-to-file>`
+#### By keyfile
+`> ./delta-dm wallet import --file <path-to-file>`
 
-By raw json
-`> ./delta-dm wallet import --dataset dataset-name --json {"Type":"secp256k1","PrivateKey":"XXX"}`
+Example:
+```bash
+./delta-dm wallet import --file ~/.lotus/keystore/O5QWY3DFOQWWMMLNNVRDG3DYG5WG46TLO5ZXM2DSNFSHM4DVM5XHK6TPGRWXCMTYNJWWC53WNZTGS 
+```
 
+#### By wallet hex
+`> ./delta-dm wallet import --hex "7b2254797065...."`
 
-the `dataset` flag is optional. If unspecified, the newly added wallet will not be associated with any dataset
+#### Or directly from Lotus export to DDM Import (hex)
+`> ./delta-dm wallet import --hex $(lotus wallet export f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi)`

@@ -77,11 +77,14 @@ type PostWalletBody struct {
 	PrivateKey string `json:"PrivateKey"`
 }
 
+type PostWalletBodyHex struct {
+	HexKey string `json:"hex_key"`
+}
+
 // POST /api/wallet
 // @description add/import a wallet
 // @returns newly added wallet info
 func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
-	var w PostWalletBody
 	err := RequestAuthHeaderCheck(c)
 	if err != nil {
 		return c.JSON(401, err.Error())
@@ -89,11 +92,8 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 
 	authorizationString := c.Request().Header.Get("Authorization")
 
-	if err := c.Bind(&w); err != nil {
-		return err
-	}
-
 	ds := c.QueryParam("dataset")
+	isHex := c.QueryParam("hex")
 
 	// Pre-check: ensure dataset exists before doing anything
 	if ds != "" {
@@ -113,20 +113,42 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 		}
 	}
 
-	deltaResp, err := dldm.DAPI.AddWallet(core.AddWalletRequest{
-		Type:       w.Type,
-		PrivateKey: w.PrivateKey,
-	}, authorizationString)
-	if err != nil {
-		return fmt.Errorf("could not add wallet %s", err)
-	}
-	if deltaResp.WalletAddr == "" {
-		return fmt.Errorf("could not add wallet, got no address back from delta. check key format and type. delta response: %s", deltaResp.Message)
+	var deltaResp *core.RegisterWalletResponse
+
+	if isHex == "true" {
+		var w PostWalletBodyHex
+		if err := c.Bind(&w); err != nil {
+			return fmt.Errorf("failed to bind hex input")
+		}
+
+		deltaResp, err = dldm.DAPI.AddWalletByHexKey(core.RegisterWalletHexRequest(w), authorizationString)
+		if err != nil {
+			return fmt.Errorf("could not add wallet %s", err)
+		}
+		if deltaResp.WalletAddr == "" {
+			return fmt.Errorf("could not add wallet, got no address back from delta. check wallet hex. delta response: %s", deltaResp.Message)
+		}
+	} else {
+		// non-hex (priv key + type) wallet entry
+		var w PostWalletBody
+		if err := c.Bind(&w); err != nil {
+			return fmt.Errorf("failed to bind wallet input")
+		}
+
+		deltaResp, err = dldm.DAPI.AddWalletByPrivateKey(core.RegisterWalletRequest{
+			Type:       w.Type,
+			PrivateKey: w.PrivateKey,
+		}, authorizationString)
+		if err != nil {
+			return fmt.Errorf("could not add wallet %s", err)
+		}
+		if deltaResp.WalletAddr == "" {
+			return fmt.Errorf("could not add wallet, got no address back from delta. check key format and type. delta response: %s", deltaResp.Message)
+		}
 	}
 
 	newWallet := core.Wallet{
 		Addr: deltaResp.WalletAddr,
-		Type: w.Type,
 	}
 
 	if ds != "" {
@@ -135,6 +157,9 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 
 	res := dldm.DB.Model(core.Wallet{}).Create(&newWallet)
 	if res.Error != nil {
+		if res.Error.Error() == "UNIQUE constraint failed: wallets.addr" {
+			return fmt.Errorf("wallet %s already exists in delta", newWallet.Addr)
+		}
 		return res.Error
 	}
 	return c.JSON(200, newWallet)

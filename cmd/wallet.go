@@ -41,16 +41,12 @@ func WalletCmd() []*cli.Command {
 				Usage: "import a wallet to DDM",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "json",
-						Usage: "wallet data in json format",
-					},
-					&cli.StringFlag{
 						Name:  "file",
 						Usage: "path to wallet file",
 					},
 					&cli.StringFlag{
-						Name:  "dataset",
-						Usage: "dataset name to associate wallet with",
+						Name:  "hex",
+						Usage: "wallet data in hex (lotus export) format",
 					},
 				},
 				Action: func(c *cli.Context) error {
@@ -60,21 +56,21 @@ func WalletCmd() []*cli.Command {
 						return err
 					}
 
-					walletJson := c.String("json")
 					walletPath := c.String("file")
-					dataset := c.String("dataset")
+					walletHex := c.String("hex")
 
-					if walletJson == "" && walletPath == "" {
-						return fmt.Errorf("must provide either json or file")
+					if walletPath == "" && walletHex == "" {
+						return fmt.Errorf("must provide either wallet file, or hex wallet export")
 					}
 
-					if walletJson != "" && walletPath != "" {
-						return fmt.Errorf("please provide either wallet JSON or file path, not both")
+					if walletPath != "" && walletHex != "" {
+						return fmt.Errorf("please provide either wallet file or hex, not both")
 					}
 
-					var walletData WalletJSON
+					var walletBytes []byte
 
 					if walletPath != "" {
+						var walletData WalletJSON
 						walletFile, err := ioutil.ReadFile(walletPath)
 						if err != nil {
 							return fmt.Errorf("failed to open wallet file: %s", err)
@@ -86,28 +82,31 @@ func WalletCmd() []*cli.Command {
 							return fmt.Errorf("failed to parse wallet file: %s", err)
 						}
 
-					} else {
-						err = json.Unmarshal([]byte(walletJson), &walletData)
+						if walletData.Type == "" || walletData.PrivateKey == "" {
+							return fmt.Errorf("wallet data must contain Type and PrivateKey")
+						}
+
+						walletBytes, err = json.Marshal(walletData)
 						if err != nil {
-							return fmt.Errorf("failed to parse wallet json: %s", err)
+							return fmt.Errorf("failed to prepare wallet json: %s", err)
+						}
+					} else {
+						var walletHexRequest WalletHex = WalletHex{HexKey: walletHex}
+						// Hex import
+						walletBytes, err = json.Marshal(walletHexRequest)
+						if err != nil {
+							return fmt.Errorf("failed to parse wallet hex: %s", err)
 						}
 					}
 
-					if walletData.Type == "" || walletData.PrivateKey == "" {
-						return fmt.Errorf("wallet data must contain Type and PrivateKey")
-					}
-
-					// Ignoring error here as we know it's been unmarshaled by this point
-					wb, _ := json.Marshal(walletData)
-
 					url := "/api/v1/wallets"
-					if dataset != "" {
-						url += "?dataset=" + dataset
+					if walletHex != "" {
+						url += "?hex=true"
 					}
 
-					res, closer, err := cp.ddmPostRequest(url, wb)
+					res, closer, err := cp.ddmPostRequest(url, walletBytes)
 					if err != nil {
-						return err
+						return fmt.Errorf("DDM post request invalid: %s", err)
 					}
 					defer closer()
 
@@ -126,4 +125,7 @@ func WalletCmd() []*cli.Command {
 type WalletJSON struct {
 	Type       string `json:"Type"`
 	PrivateKey string `json:"PrivateKey"`
+}
+type WalletHex struct {
+	HexKey string `json:"hex_key"`
 }

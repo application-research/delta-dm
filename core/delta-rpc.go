@@ -33,7 +33,8 @@ func healthCheck(baseUrl string) error {
 	return err
 }
 
-func (d *DeltaAPI) AddWallet(wallet AddWalletRequest, authString string) (*AddWalletResponse, error) {
+// Register a wallet with Delta based on private key & type (i.e, from a private key file)
+func (d *DeltaAPI) AddWalletByPrivateKey(wallet RegisterWalletRequest, authString string) (*RegisterWalletResponse, error) {
 	w, err := json.Marshal(wallet)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal from wallet json: %s", err)
@@ -45,7 +46,28 @@ func (d *DeltaAPI) AddWallet(wallet AddWalletRequest, authString string) (*AddWa
 	}
 	defer closer()
 
-	result, err := UnmarshalAddWalletResponse(body)
+	result, err := UnmarshalRegisterWalletResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal add wallet response %s : %s", err, string(body))
+	}
+
+	return &result, nil
+}
+
+// Register a wallet with Delta based on hex key (i.e, from lotus wallet export)
+func (d *DeltaAPI) AddWalletByHexKey(wallet RegisterWalletHexRequest, authString string) (*RegisterWalletResponse, error) {
+	w, err := json.Marshal(wallet)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal from wallet json: %s", err)
+	}
+
+	body, closer, err := d.postRequest("/admin/wallet/register-hex", w, authString)
+	if err != nil {
+		return nil, err
+	}
+	defer closer()
+
+	result, err := UnmarshalRegisterWalletResponse(body)
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal add wallet response %s : %s", err, string(body))
 	}
@@ -133,6 +155,11 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byt
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		resp.Body.Close()
+		return nil, nil, fmt.Errorf("error in delta call %d : %s", resp.StatusCode, body)
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -160,6 +187,11 @@ func (d *DeltaAPI) getRequest(url string, authString string) ([]byte, func() err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		resp.Body.Close()
+		return nil, nil, fmt.Errorf("error in delta call %d : %s", resp.StatusCode, body)
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -218,24 +250,28 @@ type PieceCommitment struct {
 	PaddedPieceSize uint64 `json:"padded_piece_size"`
 }
 
-type AddWalletRequest struct {
+type RegisterWalletRequest struct {
 	Type       string `json:"key_type"`
 	PrivateKey string `json:"private_key"`
 }
 
-type AddWalletResponse struct {
+type RegisterWalletHexRequest struct {
+	HexKey string `json:"hex_key"`
+}
+
+type RegisterWalletResponse struct {
 	Message    string `json:"message"`
 	WalletAddr string `json:"wallet_addr"`
 	WalletUuid string `json:"wallet_uuid"`
 }
 
-func UnmarshalAddWalletResponse(data []byte) (AddWalletResponse, error) {
-	var r AddWalletResponse
+func UnmarshalRegisterWalletResponse(data []byte) (RegisterWalletResponse, error) {
+	var r RegisterWalletResponse
 	err := json.Unmarshal(data, &r)
 	return r, err
 }
 
-func (r *AddWalletResponse) Marshal() ([]byte, error) {
+func (r *RegisterWalletResponse) Marshal() ([]byte, error) {
 	return json.Marshal(r)
 }
 
