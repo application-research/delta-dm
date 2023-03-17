@@ -5,6 +5,8 @@ All endpoints are prefixed with `/api/v1`.
 
 For example, `http://localhost:1314/api/v1/datasets`
 
+All endpoints (with the exception of `/self-service`) require the `Authorization: Bearer <XXX>` header present on the request. Set this to the Delta API key.
+
 ## /datasets
 
 ### POST /datasets
@@ -186,8 +188,6 @@ For example, `http://localhost:1314/api/v1/datasets`
 ### POST /replications
 - Create replications (deals)
 
-> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
-
 #### Params
 <none>
 
@@ -311,8 +311,6 @@ For example, `http://localhost:1314/api/v1/datasets`
 ### POST /wallets
 - Add a wallet
 
-> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
-
 #### Params
 ```json
 ?dataset-name // OPTIONAL: name that identifies the dataset. Must already exist (add it using /datasets POST). Will associate the newly added wallet with this dataset
@@ -342,8 +340,6 @@ For example, `http://localhost:1314/api/v1/datasets`
 ### GET /wallets
 - Get all wallets
 
-> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
-
 #### Params
 <none>
 
@@ -367,8 +363,6 @@ For example, `http://localhost:1314/api/v1/datasets`
 ### DELETE /wallets
 - Delete a wallet
 
-> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
-
 #### Params
 ```json
 /:wallet // address of wallet to delete
@@ -383,8 +377,6 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 ### POST /wallets/associate
 - Associate a wallet with a dataset
-
-> This endpoint requires the Delta API key in the `Authorization: Bearer XXX` header
 
 #### Params
 <none>
@@ -402,4 +394,30 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 ```json
 "successfully associated wallet with dataset" 
+```
+
+
+## /self-service
+### GET /self-service/by-cid
+
+This endpoint requires the Provider's self-service key is present in the header in the form: 
+
+```sh
+X-DELTA-AUTH: b3cc8a99-155a-4fff-8974-999ec313e5cc
+```
+
+For more details, see the [Self-Service API](/docs/self-service.md) documentation.
+
+#### Params
+```s
+/:cid # CID of content to replicate 
+```
+
+#### Body
+<none>
+
+#### Response
+> 200: Success
+```sh
+"successfully made deal with f0123456"
 ```
