@@ -155,6 +155,11 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byt
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		resp.Body.Close()
+		return nil, nil, fmt.Errorf("error in delta call %d : %s", resp.StatusCode, body)
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -182,6 +187,11 @@ func (d *DeltaAPI) getRequest(url string, authString string) ([]byte, func() err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		resp.Body.Close()
+		return nil, nil, fmt.Errorf("error in delta call %d : %s", resp.StatusCode, body)
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}

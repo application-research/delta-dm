@@ -118,7 +118,7 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 	if isHex == "true" {
 		var w PostWalletBodyHex
 		if err := c.Bind(&w); err != nil {
-			return err
+			return fmt.Errorf("failed to bind hex input")
 		}
 
 		deltaResp, err = dldm.DAPI.AddWalletByHexKey(core.RegisterWalletHexRequest(w), authorizationString)
@@ -132,7 +132,7 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 		// non-hex (priv key + type) wallet entry
 		var w PostWalletBody
 		if err := c.Bind(&w); err != nil {
-			return err
+			return fmt.Errorf("failed to bind wallet input")
 		}
 
 		deltaResp, err = dldm.DAPI.AddWalletByPrivateKey(core.RegisterWalletRequest{

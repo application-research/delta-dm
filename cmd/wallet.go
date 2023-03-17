@@ -106,7 +106,7 @@ func WalletCmd() []*cli.Command {
 
 					res, closer, err := cp.ddmPostRequest(url, walletBytes)
 					if err != nil {
-						return err
+						return fmt.Errorf("DDM post request invalid: %s", err)
 					}
 					defer closer()
 
