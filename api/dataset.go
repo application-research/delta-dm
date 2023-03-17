@@ -12,6 +12,8 @@ import (
 func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 	dataset := e.Group("/datasets")
 
+	dataset.Use(dldm.AS.AuthMiddleware)
+
 	dataset.GET("", func(c echo.Context) error {
 		var ds []core.Dataset
 
