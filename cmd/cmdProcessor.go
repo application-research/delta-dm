@@ -8,31 +8,31 @@ import (
 )
 
 type CmdProcessor struct {
-	ddmUrl    string
-	ddmApiKey string
+	ddmUrl     string
+	ddmAuthKey string
 }
 
-func NewCmdProcessor(ddmUrl string, ddmApiKey string) (*CmdProcessor, error) {
-	err := healthCheck(ddmUrl, ddmApiKey)
+func NewCmdProcessor(ddmUrl string, ddmAuthKey string) (*CmdProcessor, error) {
+	err := healthCheck(ddmUrl, ddmAuthKey)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &CmdProcessor{
-		ddmUrl:    ddmUrl,
-		ddmApiKey: ddmApiKey,
+		ddmUrl:     ddmUrl,
+		ddmAuthKey: ddmAuthKey,
 	}, nil
 }
 
 // Verify that DDM API is reachable
-func healthCheck(ddmUrl string, ddmApikey string) error {
+func healthCheck(ddmUrl string, ddmAuthKey string) error {
 	req, err := http.NewRequest("GET", ddmUrl+"/api/v1/health", nil)
 	if err != nil {
 		return fmt.Errorf("could not construct http request %v", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+ddmApikey)
+	req.Header.Set("Authorization", "Bearer "+ddmAuthKey)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -60,7 +60,7 @@ func (c *CmdProcessor) ddmPostRequest(url string, raw []byte) ([]byte, func() er
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+c.ddmApiKey)
+	req.Header.Set("Authorization", "Bearer "+c.ddmAuthKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

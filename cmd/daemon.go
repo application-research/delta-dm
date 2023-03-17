@@ -12,6 +12,7 @@ func DaemonCmd() []*cli.Command {
 	var dbConnStr string
 	var deltaApi string
 	var deltaAuthToken string
+	var authUrl string
 
 	// add a command to run API node
 	var daemonCommands []*cli.Command
@@ -42,6 +43,14 @@ func DaemonCmd() []*cli.Command {
 				Required:    true,
 				Destination: &deltaAuthToken,
 			},
+			&cli.StringFlag{
+				Name:        "auth-url",
+				Usage:       "auth server URL. defaults to use official Estuary auth service. specify to use custom auth server",
+				EnvVars:     []string{"AUTH_URL"},
+				DefaultText: "https://auth.estuary.tech",
+				Value:       "https://auth.estuary.tech",
+				Destination: &authUrl,
+			},
 			&cli.BoolFlag{
 				Name:        "debug",
 				Usage:       "set to enable debug logging output",
@@ -54,7 +63,7 @@ func DaemonCmd() []*cli.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, debug)
+			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, authUrl, debug)
 			dldm.WatchReplications()
 			api.InitializeEchoRouterConfig(dldm)
 			api.LoopForever()

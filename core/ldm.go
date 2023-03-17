@@ -8,9 +8,10 @@ import (
 type DeltaDM struct {
 	DAPI *DeltaAPI
 	DB   *gorm.DB
+	AS   *AuthServer
 }
 
-func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, debug bool) *DeltaDM {
+func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, authUrl string, debug bool) *DeltaDM {
 	if debug {
 		logging.SetDebugLogging()
 	}
@@ -29,8 +30,11 @@ func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, debug bool)
 		log.Debugf("successfully connected to db at %s\n", deltaApi)
 	}
 
+	as := NewAuthServer(authUrl)
+
 	return &DeltaDM{
 		DAPI: dapi,
 		DB:   db,
+		AS:   as,
 	}
 }
