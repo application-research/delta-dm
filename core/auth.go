@@ -14,11 +14,11 @@ import (
 var AUTH_KEY = "AUTH_KEY"
 
 type AuthServer struct {
-	authUrl string
+	authServerUrl string
 }
 
-func NewAuthServer(authUrl string) *AuthServer {
-	return &AuthServer{authUrl: authUrl}
+func NewAuthServer(authServerUrl string) *AuthServer {
+	return &AuthServer{authServerUrl: authServerUrl}
 }
 
 func (as *AuthServer) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -72,7 +72,7 @@ func extractAuthKey(authorizationString string) (*string, error) {
 // Makes a request to the auth server to check if a token is valid
 func (as *AuthServer) checkAuthToken(token string) (*AuthResult, error) {
 	rqBody := strings.NewReader(fmt.Sprintf(`{"token": "%s"}`, token))
-	resp, err := http.Post(as.authUrl+"/check-api-key", "application/json", rqBody)
+	resp, err := http.Post(as.authServerUrl+"/check-api-key", "application/json", rqBody)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ type DeltaDM struct {
 	AS   *AuthServer
 }
 
-func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, authUrl string, debug bool) *DeltaDM {
+func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, authServerUrl string, debug bool) *DeltaDM {
 	if debug {
 		logging.SetDebugLogging()
 	}
@@ -30,7 +30,7 @@ func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, authUrl str
 		log.Debugf("successfully connected to db at %s\n", deltaApi)
 	}
 
-	as := NewAuthServer(authUrl)
+	as := NewAuthServer(authServerUrl)
 
 	return &DeltaDM{
 		DAPI: dapi,

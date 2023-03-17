@@ -25,6 +25,7 @@ Once a **Dataset**, **Content**, and **Providers** have been specified, the DDM 
 
 - Set `DELTA_AUTH` environment variable to Delta API key. It can also be provided as the CLI flag `--delta-auth`
 - DDM will default to a [delta](https://github.com/application-research/delta) instance running at `localhost:1414`. It must be running or DDM will not start. Override the url by providing specifying the `DELTA_API` environment variable, or CLI flag `--delta-api`
+- DDM will use the [Estuary Auth server](https://github.com/application-research/estuary-auth/) by default. It can be overridden by specifying the `AUTH_URL` environment variable, or CLI flag `--auth-url`
 
 ## Usage
 
