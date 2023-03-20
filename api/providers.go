@@ -13,6 +13,8 @@ import (
 func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 	providers := e.Group("/providers")
 
+	providers.Use(dldm.AS.AuthMiddleware)
+
 	providers.GET("", func(c echo.Context) error {
 		var p []core.Provider
 

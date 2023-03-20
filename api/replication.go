@@ -21,6 +21,8 @@ type PostReplicationBody struct {
 func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 	replication := e.Group("/replication")
 
+	replication.Use(dldm.AS.AuthMiddleware)
+
 	replication.GET("", func(c echo.Context) error {
 
 		p := c.QueryParam("provider")
@@ -55,11 +57,7 @@ func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
 func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 	var d PostReplicationBody
 
-	err := RequestAuthHeaderCheck(c)
-	if err != nil {
-		return c.JSON(401, err.Error())
-	}
-	authorizationString := c.Request().Header.Get("Authorization")
+	authKey := c.Get(core.AUTH_KEY).(string)
 
 	if err := c.Bind(&d); err != nil {
 		return err
@@ -105,7 +103,7 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 		})
 	}
 
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, authorizationString)
+	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, authKey)
 	if err != nil {
 		return fmt.Errorf("unable to make deal with delta api: %s", err)
 	}

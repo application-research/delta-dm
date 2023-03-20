@@ -10,13 +10,10 @@ import (
 func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	wallets := e.Group("/wallets")
 
-	wallets.GET("", func(c echo.Context) error {
-		err := RequestAuthHeaderCheck(c)
-		if err != nil {
-			return c.JSON(401, err.Error())
-		}
+	wallets.Use(dldm.AS.AuthMiddleware)
 
-		authorizationString := c.Request().Header.Get("Authorization")
+	wallets.GET("", func(c echo.Context) error {
+		authKey := c.Get(core.AUTH_KEY).(string)
 
 		ds := c.QueryParam("dataset")
 
@@ -31,7 +28,7 @@ func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 		tx.Find(&w)
 
 		for i, wallet := range w {
-			bal, err := dldm.DAPI.GetWalletBalance(wallet.Addr, authorizationString)
+			bal, err := dldm.DAPI.GetWalletBalance(wallet.Addr, authKey)
 			if err != nil {
 				log.Errorf("could not get wallet balance for %s: %s", wallet.Addr, err)
 				continue
@@ -85,12 +82,7 @@ type PostWalletBodyHex struct {
 // @description add/import a wallet
 // @returns newly added wallet info
 func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
-	err := RequestAuthHeaderCheck(c)
-	if err != nil {
-		return c.JSON(401, err.Error())
-	}
-
-	authorizationString := c.Request().Header.Get("Authorization")
+	authKey := c.Get(core.AUTH_KEY).(string)
 
 	ds := c.QueryParam("dataset")
 	isHex := c.QueryParam("hex")
@@ -98,7 +90,7 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 	// Pre-check: ensure dataset exists before doing anything
 	if ds != "" {
 		var exists bool
-		err = dldm.DB.Model(core.Dataset{}).
+		err := dldm.DB.Model(core.Dataset{}).
 			Select("count(*) > 0").
 			Where("name = ?", ds).
 			Find(&exists).
@@ -117,11 +109,12 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 
 	if isHex == "true" {
 		var w PostWalletBodyHex
-		if err := c.Bind(&w); err != nil {
+		var err error
+		if err = c.Bind(&w); err != nil {
 			return fmt.Errorf("failed to bind hex input")
 		}
 
-		deltaResp, err = dldm.DAPI.AddWalletByHexKey(core.RegisterWalletHexRequest(w), authorizationString)
+		deltaResp, err = dldm.DAPI.AddWalletByHexKey(core.RegisterWalletHexRequest(w), authKey)
 		if err != nil {
 			return fmt.Errorf("could not add wallet %s", err)
 		}
@@ -131,14 +124,15 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 	} else {
 		// non-hex (priv key + type) wallet entry
 		var w PostWalletBody
-		if err := c.Bind(&w); err != nil {
+		var err error
+		if err = c.Bind(&w); err != nil {
 			return fmt.Errorf("failed to bind wallet input")
 		}
 
 		deltaResp, err = dldm.DAPI.AddWalletByPrivateKey(core.RegisterWalletRequest{
 			Type:       w.Type,
 			PrivateKey: w.PrivateKey,
-		}, authorizationString)
+		}, authKey)
 		if err != nil {
 			return fmt.Errorf("could not add wallet %s", err)
 		}
@@ -175,17 +169,13 @@ type AssociateWalletBody struct {
 // @description associate a wallet with a dataset
 func handleAssociateWallet(c echo.Context, dldm *core.DeltaDM) error {
 	var awb AssociateWalletBody
-	err := RequestAuthHeaderCheck(c)
-	if err != nil {
-		return c.JSON(401, err.Error())
-	}
 
 	if err := c.Bind(&awb); err != nil {
 		return err
 	}
 
 	var exists bool
-	err = dldm.DB.Model(core.Dataset{}).
+	err := dldm.DB.Model(core.Dataset{}).
 		Select("count(*) > 0").
 		Where("name = ?", awb.Dataset).
 		Find(&exists).

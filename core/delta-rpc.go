@@ -135,8 +135,8 @@ func (d *DeltaAPI) GetDealStatus(deltaIds []int64) (*DealStatsResponse, error) {
 
 }
 
-func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byte, func() error, error) {
-	if authString == "" {
+func (d *DeltaAPI) postRequest(url string, raw []byte, authKey string) ([]byte, func() error, error) {
+	if authKey == "" {
 		return nil, nil, fmt.Errorf("auth token must be provided")
 	}
 
@@ -145,7 +145,7 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byt
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}
 
-	req.Header.Set("Authorization", authString)
+	req.Header.Set("Authorization", "Bearer "+authKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -167,8 +167,8 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authString string) ([]byt
 	return body, resp.Body.Close, nil
 }
 
-func (d *DeltaAPI) getRequest(url string, authString string) ([]byte, func() error, error) {
-	if authString == "" {
+func (d *DeltaAPI) getRequest(url string, authKey string) ([]byte, func() error, error) {
+	if authKey == "" {
 		return nil, nil, fmt.Errorf("auth token must be provided")
 	}
 
@@ -177,7 +177,7 @@ func (d *DeltaAPI) getRequest(url string, authString string) ([]byte, func() err
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}
 
-	req.Header.Set("Authorization", authString)
+	req.Header.Set("Authorization", "Bearer "+authKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
