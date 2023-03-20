@@ -10,7 +10,7 @@ func ValidateDatasetName(datasetName string) bool {
 	}
 
 	// lowercase characters and dashes
-	re := regexp.MustCompile(`^[a-z]+(-[a-z]+)*$`)
+	re := regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
 	return re.MatchString(datasetName)
 }

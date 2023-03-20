@@ -9,6 +9,8 @@ func TestValidateDatasetName(t *testing.T) {
 	}{
 		{"valid", true},
 		{"valid-dash", true},
+		{"123-this-is-valid", true},
+		{"1-2-3-4", true},
 		{"spaces are invalid", false},
 		{"--", false},
 		{"-", false},
@@ -16,7 +18,6 @@ func TestValidateDatasetName(t *testing.T) {
 		{"Invalid", false},
 		{"@nvalid", false},
 		{"-invalid-", false},
-		{"123-this-is-invalid", false},
 		{"doubledash--is-invalid", false},
 		{"fxbaohisiclyxslhlnblyytlmnuvjzchhptbouaccokwzcitoessnddsikdguqocctmahdjftcsuunaaaxrucloyarsseykmkixyveacahiecsfsseeivcwxiyfmfebtdaqxbbdduiutqttebyviankzkhqxksmueqlqzacfllnrwvanautlpdaoucumgzxmburdxfhdhbykhjetqarrqpehiypkehxjefdlfmgoerotnnyqbzmxrzcvvestxrq", false},
 	}

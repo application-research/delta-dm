@@ -52,12 +52,15 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		}
 
 		if !util.ValidateDatasetName(ads.Name) {
-			return fmt.Errorf("invalid dataset name. must contain only lowercase letters and hyphens. must begin and end with a letter. must not contain consecutive hyphens")
+			return fmt.Errorf("invalid dataset name. must contain only lowercase letters, numbers and hyphens. must begin and end with a letter. must not contain consecutive hyphens")
 		}
 
 		res := dldm.DB.Create(&ads)
 
 		if res.Error != nil {
+			if res.Error.Error() == "UNIQUE constraint failed: datasets.name" {
+				return fmt.Errorf("dataset with name %s already exists", ads.Name)
+			}
 			return res.Error
 		}
 

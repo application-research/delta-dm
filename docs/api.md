@@ -11,7 +11,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 
 ### POST /datasets
 - Add a dataset to be tracked 
-- Note: the dataset name must contain only lowercase letters and hypens, and must be less than 255 characters in length. It must start and end with a letter, and double-dashes are not allowed.
+- Note: the dataset name must contain only lowercase letters, numbers and hypens, and must be less than 255 characters in length. It must start and end with a letter, and double-dashes are not allowed.
 
 #### Request Params
 <nil>
