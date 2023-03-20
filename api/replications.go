@@ -16,43 +16,46 @@ type PostReplicationBody struct {
 	PricePerDeal float64 `json:"price_per_deal,omitempty"`
 }
 
-func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
-	replication := e.Group("/replication")
+func ConfigureReplicationsRouter(e *echo.Group, dldm *core.DeltaDM) {
+	replications := e.Group("/replications")
 
-	replication.Use(dldm.AS.AuthMiddleware)
+	replications.Use(dldm.AS.AuthMiddleware)
 
-	replication.GET("", func(c echo.Context) error {
-
-		p := c.QueryParam("provider")
-		ds := c.QueryParam("dataset")
-
-		var r []core.Replication
-
-		tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
-
-		if ds != "" {
-			tx.Where("Content.dataset_name = ?", ds)
-		}
-
-		if p != "" {
-			tx.Where("replications.provider_actor_id = ?", p)
-		}
-
-		tx.Find(&r)
-
-		return c.JSON(200, r)
+	replications.GET("", func(c echo.Context) error {
+		return handleGetReplications(c, dldm)
 	})
 
-	replication.POST("", func(c echo.Context) error {
-		return handlePostReplication(c, dldm)
+	replications.POST("", func(c echo.Context) error {
+		return handlePostReplications(c, dldm)
 	})
 
+}
+
+func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
+	p := c.QueryParam("provider")
+	ds := c.QueryParam("dataset")
+
+	var r []core.Replication
+
+	tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
+
+	if ds != "" {
+		tx.Where("Content.dataset_name = ?", ds)
+	}
+
+	if p != "" {
+		tx.Where("replications.provider_actor_id = ?", p)
+	}
+
+	tx.Find(&r)
+
+	return c.JSON(200, r)
 }
 
 // POST /api/replication
 // @param num number of deals requested
 // @returns a slice of the CIDs
-func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
+func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 	var d PostReplicationBody
 
 	authKey := c.Get(core.AUTH_KEY).(string)

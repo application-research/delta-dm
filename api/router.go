@@ -59,7 +59,7 @@ func InitializeEchoRouterConfig(dldm *core.DeltaDM) {
 
 	ConfigureDatasetRouter(apiGroup, dldm)
 	ConfigureProvidersRouter(apiGroup, dldm)
-	ConfigureReplicationRouter(apiGroup, dldm)
+	ConfigureReplicationsRouter(apiGroup, dldm)
 	ConfigureWalletsRouter(apiGroup, dldm)
 	ConfigureHealthRouter(apiGroup, dldm)
 	ConfigureSelfServiceRouter(apiGroup, dldm)
