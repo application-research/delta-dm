@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/application-research/delta-dm/core"
+	"github.com/application-research/delta-dm/util"
 	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo/v4"
 )
@@ -48,6 +49,10 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		// Bound deal durations between 180 and 540
 		if ads.DealDuration < 180 || ads.DealDuration > 540 {
 			return fmt.Errorf("deal duration must be between 180 and 540 days")
+		}
+
+		if !util.ValidateDatasetName(ads.Name) {
+			return fmt.Errorf("invalid dataset name. must contain only lowercase letters and hyphens. must begin and end with a letter. must not contain consecutive hyphens")
 		}
 
 		res := dldm.DB.Create(&ads)
