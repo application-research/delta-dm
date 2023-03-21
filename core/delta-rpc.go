@@ -33,6 +33,22 @@ func healthCheck(baseUrl string) error {
 	return err
 }
 
+func (d *DeltaAPI) GetNodeUUIDs() (*NodeUUIDsResponse, error) {
+	body, closer, err := d.getRequest("/open/node/uuids", "")
+	defer closer()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not get node uuids: %s", err)
+	}
+
+	result, err := UnmarshalNodeUUIDsResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal node uuids response %s : %s", err, string(body))
+	}
+
+	return &result, nil
+}
+
 // Register a wallet with Delta based on private key & type (i.e, from a private key file)
 func (d *DeltaAPI) AddWalletByPrivateKey(wallet RegisterWalletRequest, authString string) (*RegisterWalletResponse, error) {
 	w, err := json.Marshal(wallet)
@@ -376,4 +392,18 @@ type Balance struct {
 	MarketLocked          uint64 `json:"market_locked"`
 	VerifiedClientBalance uint64 `json:"verified_client_balance"`
 	WalletBalance         uint64 `json:"wallet_balance"`
+}
+
+func UnmarshalNodeUUIDsResponse(data []byte) (NodeUUIDsResponse, error) {
+	var r NodeUUIDsResponse
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+type NodeUUIDsResponse = []NodeUUID
+
+type NodeUUID struct {
+	Id           string `json:"id"`
+	InstanceUUID string `json:"instance_uuid"`
+	CreatedAt    string `json:"created_at"`
 }
