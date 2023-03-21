@@ -12,7 +12,8 @@ func ConfigureHealthRouter(e *echo.Group, dldm *core.DeltaDM) {
 	health.Use(dldm.AS.AuthMiddleware)
 
 	health.GET("", func(c echo.Context) error {
+		uuid := dldm.DAPI.NodeUUID
 
-		return c.JSON(200, "alive")
+		return c.JSON(200, uuid)
 	})
 }

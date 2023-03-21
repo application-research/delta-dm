@@ -9,6 +9,7 @@ import (
 )
 
 type DeltaAPI struct {
+	NodeUUID         string
 	url              string
 	ServiceAuthToken string
 }
@@ -20,10 +21,17 @@ func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
 		return nil, hcError
 	}
 
-	return &DeltaAPI{
+	dapi := &DeltaAPI{
 		url:              url,
 		ServiceAuthToken: authToken,
-	}, nil
+	}
+
+	err := dapi.populateNodeUuid()
+	if err != nil {
+		return nil, err
+	}
+
+	return dapi, nil
 }
 
 // Verify that Delta API is reachable
@@ -33,20 +41,22 @@ func healthCheck(baseUrl string) error {
 	return err
 }
 
-func (d *DeltaAPI) GetNodeUUIDs() (*NodeUUIDsResponse, error) {
+// Retrieves delta node UUID and sets it on the DeltaAPI struct
+func (d *DeltaAPI) populateNodeUuid() error {
 	body, closer, err := d.getRequest("/open/node/uuids", "")
 	defer closer()
 
 	if err != nil {
-		return nil, fmt.Errorf("could not get node uuids: %s", err)
+		return fmt.Errorf("could not get node uuids: %s", err)
 	}
 
 	result, err := UnmarshalNodeUUIDsResponse(body)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal node uuids response %s : %s", err, string(body))
+		return fmt.Errorf("could not unmarshal node uuids response %s : %s", err, string(body))
 	}
 
-	return &result, nil
+	d.NodeUUID = result[0].InstanceUUID
+	return nil
 }
 
 // Register a wallet with Delta based on private key & type (i.e, from a private key file)
