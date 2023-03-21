@@ -7,6 +7,25 @@ For example, `http://localhost:1314/api/v1/datasets`
 
 All endpoints (with the exception of `/self-service`) require the `Authorization: Bearer <XXX>` header present on the request. Set this to the Delta API key.
 
+## /health
+
+### GET /health
+- Checks to ensure delta-dm and delta are running
+- Returns back the Delta instance ID, which can be used for further troubleshooting
+
+#### Request Params
+<nil>
+
+#### Request Body 
+<nil>
+
+#### Response
+> 200: Success
+
+```jsonc
+"504fd7de-729d-44f1-a70c-e9d8cc8c59ba" // Delta instance ID
+```
+
 ## /datasets
 
 ### POST /datasets

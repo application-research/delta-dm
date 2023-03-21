@@ -9,6 +9,7 @@ import (
 )
 
 type DeltaAPI struct {
+	NodeUUID         string
 	url              string
 	ServiceAuthToken string
 }
@@ -20,10 +21,17 @@ func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
 		return nil, hcError
 	}
 
-	return &DeltaAPI{
+	dapi := &DeltaAPI{
 		url:              url,
 		ServiceAuthToken: authToken,
-	}, nil
+	}
+
+	err := dapi.populateNodeUuid()
+	if err != nil {
+		return nil, err
+	}
+
+	return dapi, nil
 }
 
 // Verify that Delta API is reachable
@@ -31,6 +39,24 @@ func healthCheck(baseUrl string) error {
 	_, err := http.Get(baseUrl + "/api/v1/node/info")
 
 	return err
+}
+
+// Retrieves delta node UUID and sets it on the DeltaAPI struct
+func (d *DeltaAPI) populateNodeUuid() error {
+	body, closer, err := d.getRequest("/open/node/uuids", d.ServiceAuthToken)
+
+	if err != nil {
+		return fmt.Errorf("could not get node uuids: %s", err)
+	}
+	defer closer()
+
+	result, err := UnmarshalNodeUUIDsResponse(body)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal node uuids response %s : %s", err, string(body))
+	}
+
+	d.NodeUUID = result[0].InstanceUUID
+	return nil
 }
 
 // Register a wallet with Delta based on private key & type (i.e, from a private key file)
@@ -376,4 +402,18 @@ type Balance struct {
 	MarketLocked          uint64 `json:"market_locked"`
 	VerifiedClientBalance uint64 `json:"verified_client_balance"`
 	WalletBalance         uint64 `json:"wallet_balance"`
+}
+
+func UnmarshalNodeUUIDsResponse(data []byte) (NodeUUIDsResponse, error) {
+	var r NodeUUIDsResponse
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+type NodeUUIDsResponse = []NodeUUID
+
+type NodeUUID struct {
+	Id           uint   `json:"id"`
+	InstanceUUID string `json:"instance_uuid"`
+	CreatedAt    string `json:"created_at"`
 }
