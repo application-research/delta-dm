@@ -120,7 +120,7 @@ func (d *DeltaAPI) GetDealStatus(deltaIds []int64) (*DealStatsResponse, error) {
 		return nil, fmt.Errorf("could not marshal from deal ids json: %s", err)
 	}
 
-	body, closer, err := d.postRequest("/api/v1/stats/contents", dids, "Bearer "+d.ServiceAuthToken)
+	body, closer, err := d.postRequest("/api/v1/stats/contents", dids, d.ServiceAuthToken)
 	if err != nil {
 		return nil, err
 	}
