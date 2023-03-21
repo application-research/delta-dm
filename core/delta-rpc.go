@@ -43,12 +43,12 @@ func healthCheck(baseUrl string) error {
 
 // Retrieves delta node UUID and sets it on the DeltaAPI struct
 func (d *DeltaAPI) populateNodeUuid() error {
-	body, closer, err := d.getRequest("/open/node/uuids", "")
-	defer closer()
+	body, closer, err := d.getRequest("/open/node/uuids", d.ServiceAuthToken)
 
 	if err != nil {
 		return fmt.Errorf("could not get node uuids: %s", err)
 	}
+	defer closer()
 
 	result, err := UnmarshalNodeUUIDsResponse(body)
 	if err != nil {
@@ -413,7 +413,7 @@ func UnmarshalNodeUUIDsResponse(data []byte) (NodeUUIDsResponse, error) {
 type NodeUUIDsResponse = []NodeUUID
 
 type NodeUUID struct {
-	Id           string `json:"id"`
+	Id           uint   `json:"id"`
 	InstanceUUID string `json:"instance_uuid"`
 	CreatedAt    string `json:"created_at"`
 }
