@@ -59,6 +59,7 @@ type Replication struct {
 	ProposalCid     string            `json:"proposal_cid" gorm:"unique"`
 	ProviderActorID string            `json:"provider_actor_id"`
 	ContentCommP    string            `json:"content_commp"`
+	IsSelfService   bool              `json:"is_self_service"`
 	Status          ReplicationStatus `json:"status" gorm:"notnull,default:'PENDING'"`
 	DeltaMessage    string            `json:"delta_message,omitempty"`
 }
