@@ -170,7 +170,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 > 200: Success
 > 500: Fail
 
-### POST /providers/:provider
+### PUT /providers/:provider
 - Update a storage provider
 
 #### Params

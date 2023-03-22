@@ -53,7 +53,7 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(http.StatusOK, p)
 	})
 
-	providers.POST("/:provider_id", func(c echo.Context) error {
+	providers.PUT("/:provider_id", func(c echo.Context) error {
 		pid := c.Param("provider_id")
 		if pid == "" {
 			return fmt.Errorf("provider id not specified")
