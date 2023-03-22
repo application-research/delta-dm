@@ -113,7 +113,7 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 	})
 
 	// TODO: dont access the token directly here
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, "Bearer "+dldm.DAPI.ServiceAuthToken)
+	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, dldm.DAPI.ServiceAuthToken)
 	if err != nil {
 		return fmt.Errorf("unable to make deal with delta api: %s", err)
 	}

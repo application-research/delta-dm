@@ -61,10 +61,9 @@ func extractAuthKey(authorizationString string) (*string, error) {
 	}
 
 	estuaryAuthKey, _ := regexp.MatchString("^(EST).*(ARY)$", authParts[1])
-	deltaAuthKey, _ := regexp.MatchString("^(DEL).*(TA)$", authParts[1])
 
-	if !estuaryAuthKey && !deltaAuthKey {
-		return nil, fmt.Errorf("malformed auth header - must be DELTA or ESTUARY key")
+	if !estuaryAuthKey {
+		return nil, fmt.Errorf("malformed auth header - must be ESTUARY key")
 	}
 	return &authParts[1], nil
 }
