@@ -170,6 +170,26 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 > 200: Success
 > 500: Fail
 
+### POST /providers/:provider
+- Update a storage provider
+
+#### Params
+```
+:provider // SP actor ID
+```
+
+#### Body
+```jsonc
+{
+	actor_name: "Friendly name" // optional - friendly sp name 
+	allow_self_service: true // allow self-service replications
+}
+```
+
+#### Response
+> 200: Success
+> 500: Fail
+
 
 ### GET /providers
 - Gets list of storage providers
