@@ -451,6 +451,32 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 #### Params
 ```s
 /:cid # CID of content to replicate 
+?start_epoch_delay # delay, in number of days, before deal starts (default: 3)
+```
+
+#### Body
+<none>
+
+#### Response
+> 200: Success
+```sh
+"successfully made deal with f0123456"
+```
+
+### GET /self-service/by-dataset
+
+This endpoint requires the Provider's self-service key is present in the header in the form: 
+
+```sh
+X-DELTA-AUTH: b3cc8a99-155a-4fff-8974-999ec313e5cc
+```
+
+For more details, see the [Self-Service API](/docs/self-service.md) documentation.
+
+#### Params
+```s
+/:dataset # name of dataset to replicate for
+?start_epoch_delay # delay, in number of days, before deal starts (default: 3)
 ```
 
 #### Body
