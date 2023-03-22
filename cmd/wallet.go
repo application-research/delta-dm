@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 
 	"github.com/urfave/cli/v2"
 )
@@ -51,9 +52,8 @@ func WalletCmd() []*cli.Command {
 				},
 				Action: func(c *cli.Context) error {
 					cp, err := NewCmdProcessor(ddmApi, deltaAuthToken)
-
 					if err != nil {
-						return err
+						return fmt.Errorf("failed to connect to ddm node: %s", err)
 					}
 
 					walletPath := c.String("file")
@@ -104,13 +104,39 @@ func WalletCmd() []*cli.Command {
 						url += "?hex=true"
 					}
 
-					res, closer, err := cp.ddmPostRequest(url, walletBytes)
+					res, closer, err := cp.ddmRequest(http.MethodPost, url, walletBytes)
 					if err != nil {
-						return fmt.Errorf("DDM post request invalid: %s", err)
+						return fmt.Errorf("ddm request invalid: %s", err)
 					}
 					defer closer()
 
 					log.Printf("Wallet import response: %s", string(res))
+					return nil
+				},
+			},
+			{
+				Name:      "delete",
+				Usage:     "Delete a wallet in DDM",
+				UsageText: "delta-dm wallet delete [wallet address]",
+				Action: func(c *cli.Context) error {
+					cp, err := NewCmdProcessor(ddmApi, deltaAuthToken)
+					if err != nil {
+						return fmt.Errorf("failed to connect to ddm node: %s", err)
+					}
+
+					w := c.Args().First()
+
+					if w == "" {
+						return fmt.Errorf("please provide a wallet address")
+					}
+
+					res, closer, err := cp.ddmRequest(http.MethodDelete, "/api/v1/wallets/"+w, nil)
+					if err != nil {
+						return fmt.Errorf("ddm request invalid: %s", err)
+					}
+					defer closer()
+
+					log.Printf("Wallet delete response: %s", string(res))
 					return nil
 				},
 			},

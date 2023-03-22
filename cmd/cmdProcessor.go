@@ -54,8 +54,8 @@ func healthCheck(ddmUrl string, ddmAuthKey string) error {
 	return err
 }
 
-func (c *CmdProcessor) ddmPostRequest(url string, raw []byte) ([]byte, func() error, error) {
-	req, err := http.NewRequest("POST", c.ddmUrl+url, bytes.NewBuffer(raw))
+func (c *CmdProcessor) ddmRequest(method string, url string, raw []byte) ([]byte, func() error, error) {
+	req, err := http.NewRequest(method, c.ddmUrl+url, bytes.NewBuffer(raw))
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}

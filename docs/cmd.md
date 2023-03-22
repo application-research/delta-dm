@@ -23,3 +23,12 @@ Example:
 
 #### Or directly from Lotus export to DDM Import (hex)
 `> ./delta-dm wallet import --hex $(lotus wallet export f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi)`
+
+
+### Delete a wallet
+`> ./delta-dm wallet delete <address>`
+
+Example:
+```bash
+./delta-dm wallet delete f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi
+```
