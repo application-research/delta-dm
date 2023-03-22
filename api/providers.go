@@ -53,4 +53,36 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(http.StatusOK, p)
 	})
 
+	providers.POST("/:provider_id", func(c echo.Context) error {
+		pid := c.Param("provider_id")
+		if pid == "" {
+			return fmt.Errorf("provider id not specified")
+		}
+
+		var p core.Provider
+
+		if err := c.Bind(&p); err != nil {
+			return err
+		}
+
+		var existing core.Provider
+		res := dldm.DB.Model(&core.Provider{}).Where("actor_id = ?", pid).First(&existing)
+
+		if res.Error != nil {
+			return fmt.Errorf("error fetching provider %s", res.Error)
+		}
+
+		if p.ActorName != "" {
+			existing.ActorName = p.ActorName
+		}
+		existing.AllowSelfService = p.AllowSelfService
+
+		res = dldm.DB.Save(&existing)
+		if res.Error != nil {
+			return fmt.Errorf("error saving provider %s", res.Error)
+		}
+
+		return c.JSON(http.StatusOK, existing)
+	})
+
 }
