@@ -118,7 +118,8 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
 			Status:          core.StatusPending,
-			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()), // TODO: From delta
+			IsSelfService:   false,
+			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
 		}
 
 		res := dldm.DB.Model(&core.Replication{}).Create(&newReplication)

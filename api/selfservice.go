@@ -128,6 +128,7 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 			DeltaContentID:  c.ContentID,
 			DealTime:        time.Now(),
 			Status:          core.StatusPending,
+			IsSelfService:   true,
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
 		}
 
