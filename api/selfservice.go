@@ -2,13 +2,10 @@ package api
 
 import (
 	"fmt"
-	"math/rand"
 	"strconv"
-	"time"
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -113,33 +110,9 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		},
 	})
 
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, dldm.DAPI.ServiceAuthToken)
+	_, err = dldm.MakeDeals(dealsToMake, dldm.DAPI.ServiceAuthToken, true)
 	if err != nil {
-		return fmt.Errorf("unable to make deal with delta api: %s", err)
-	}
-
-	for _, c := range *deltaResp {
-		if c.Status != "success" {
-			continue
-		}
-		var newReplication = core.Replication{
-			ContentCommP:    c.RequestMeta.PieceCommitment.PieceCid,
-			ProviderActorID: c.RequestMeta.Miner,
-			DeltaContentID:  c.ContentID,
-			DealTime:        time.Now(),
-			Status:          core.StatusPending,
-			IsSelfService:   true,
-			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
-		}
-
-		res := dldm.DB.Model(&core.Replication{}).Create(&newReplication)
-		if res.Error != nil {
-			log.Errorf("unable to create replication in db: %s", res.Error)
-			continue
-		}
-
-		// Update the content's num replications
-		dldm.DB.Model(&core.Content{}).Where("comm_p = ?", newReplication.ContentCommP).Update("num_replications", gorm.Expr("num_replications + ?", 1))
+		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
 	return c.JSON(200, fmt.Sprintf("successfully made deal with %s", p.ActorID))
@@ -214,33 +187,9 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		},
 	})
 
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, dldm.DAPI.ServiceAuthToken)
+	_, err = dldm.MakeDeals(dealsToMake, dldm.DAPI.ServiceAuthToken, true)
 	if err != nil {
-		return fmt.Errorf("unable to make deal with delta api: %s", err)
-	}
-
-	for _, c := range *deltaResp {
-		if c.Status != "success" {
-			continue
-		}
-		var newReplication = core.Replication{
-			ContentCommP:    c.RequestMeta.PieceCommitment.PieceCid,
-			ProviderActorID: c.RequestMeta.Miner,
-			DeltaContentID:  c.ContentID,
-			DealTime:        time.Now(),
-			Status:          core.StatusPending,
-			IsSelfService:   true,
-			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
-		}
-
-		res := dldm.DB.Model(&core.Replication{}).Create(&newReplication)
-		if res.Error != nil {
-			log.Errorf("unable to create replication in db: %s", res.Error)
-			continue
-		}
-
-		// Update the content's num replications
-		dldm.DB.Model(&core.Content{}).Where("comm_p = ?", newReplication.ContentCommP).Update("num_replications", gorm.Expr("num_replications + ?", 1))
+		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
 	return c.JSON(200, fmt.Sprintf("successfully made deal with %s", p.ActorID))
