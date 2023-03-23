@@ -86,7 +86,7 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 		return gqp
 	}
 
-	gqp.Statuses = strings.Split(statuses, ",")
+	gqp.Statuses = strings.Split(strings.ToUpper(statuses), ",")
 	gqp.Datasets = strings.Split(datasets, ",")
 	gqp.Providers = strings.Split(providers, ",")
 	gqp.Message = &message
@@ -114,19 +114,44 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 // @Tags replications
 // @Produce  json
 func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
-	p := c.QueryParam("provider")
-	ds := c.QueryParam("dataset")
+	rqp := extractGetReplicationsQueryParams(c)
 
 	var r []core.Replication
 
 	tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
 
-	if ds != "" {
-		tx.Where("Content.dataset_name = ?", ds)
+	if rqp.PieceCid != nil {
+		tx.Where("replications.piece_cid = ?", rqp.PieceCid)
+	} else if rqp.ProposalCid != nil {
+		tx.Where("replications.proposal_cid = ?", rqp.ProposalCid)
 	}
 
-	if p != "" {
-		tx.Where("replications.provider_actor_id = ?", p)
+	if len(rqp.Statuses) > 0 {
+		tx.Where("replications.status IN ?", rqp.Statuses)
+	}
+
+	if len(rqp.Datasets) > 0 {
+		tx.Where("Content.dataset_name IN ?", rqp.Datasets)
+	}
+
+	if len(rqp.Providers) > 0 {
+		tx.Where("replications.provider_actor_id IN ?", rqp.Providers)
+	}
+
+	if rqp.SelfService != nil {
+		tx.Where("replications.is_self_service = ?", rqp.SelfService)
+	}
+
+	if rqp.DealTimeStart != nil {
+		tx.Where("replications.deal_time >= ?", rqp.DealTimeStart)
+	}
+
+	if rqp.DealTimeEnd != nil {
+		tx.Where("replications.deal_time <= ?", rqp.DealTimeEnd)
+	}
+
+	if rqp.Message != nil {
+		tx.Where("replications.delta_message LIKE ?", "%"+*rqp.Message+"%")
 	}
 
 	tx.Find(&r)
