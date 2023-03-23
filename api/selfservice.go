@@ -8,8 +8,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const PROVIDER = "PROVIDER"
+
 func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 	selfService := e.Group("/self-service")
+
+	selfService.Use(selfServiceTokenMiddleware(dldm))
 
 	selfService.GET("/by-cid/:piece", func(c echo.Context) error {
 		return handleSelfServiceByCid(c, dldm)
@@ -18,7 +22,28 @@ func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 	selfService.GET("/by-dataset/:dataset", func(c echo.Context) error {
 		return handleSelfServiceByDataset(c, dldm)
 	})
+}
 
+func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			providerToken := c.Request().Header.Get("X-DELTA-AUTH")
+			var p core.Provider
+			res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
+
+			if res.Error != nil {
+				log.Errorf("error finding provider: %s", res.Error)
+				return c.JSON(401, fmt.Errorf("unable to find provider for token"))
+			}
+			if p.ActorID == "" {
+				return c.JSON(401, fmt.Errorf("invalid delta auth token"))
+			}
+
+			c.Set(PROVIDER, p)
+
+			return next(c)
+		}
+	}
 }
 
 // POST /api/self-service/by-cid/:piece
@@ -46,22 +71,10 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a piece CID")
 	}
 
-	providerToken := c.Request().Header.Get("X-DELTA-AUTH")
-
-	var p core.Provider
-	res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
-
-	if res.Error != nil {
-		log.Errorf("error finding provider: %s", res.Error)
-		return fmt.Errorf("unable to find provider for token")
-	}
-
-	if p.ActorID == "" {
-		return fmt.Errorf("invalid delta auth token")
-	}
+	p := c.Get(PROVIDER).(core.Provider)
 
 	var cnt core.Content
-	res = dldm.DB.Model(&core.Content{}).Preload("Replications").Where("comm_p = ?", piece).Find(&cnt)
+	res := dldm.DB.Model(&core.Content{}).Preload("Replications").Where("comm_p = ?", piece).Find(&cnt)
 	if res.Error != nil {
 		return fmt.Errorf("unable to make deal for this CID")
 	}
@@ -139,14 +152,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		}
 	}
 
-	providerToken := c.Request().Header.Get("X-DELTA-AUTH")
-	var p core.Provider
-	res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
-
-	if res.Error != nil {
-		log.Errorf("error finding provider: %s", res.Error)
-		return fmt.Errorf("unable to find provider for token")
-	}
+	p := c.Get(PROVIDER).(core.Provider)
 
 	// Once give one deal at a time
 	numDeals := uint(1)
