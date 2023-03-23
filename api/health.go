@@ -12,8 +12,17 @@ func ConfigureHealthRouter(e *echo.Group, dldm *core.DeltaDM) {
 	health.Use(dldm.AS.AuthMiddleware)
 
 	health.GET("", func(c echo.Context) error {
-		uuid := dldm.DAPI.NodeUUID
 
-		return c.JSON(200, uuid)
+		resp := struct {
+			UUID      string              `json:"uuid"`
+			DDMInfo   core.DeploymentInfo `json:"ddm_info"`
+			DeltaInfo core.DeploymentInfo `json:"delta_info"`
+		}{
+			UUID:      dldm.DAPI.NodeUUID,
+			DDMInfo:   dldm.Info,
+			DeltaInfo: dldm.DAPI.DeltaDeploymentInfo,
+		}
+
+		return c.JSON(200, resp)
 	})
 }

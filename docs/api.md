@@ -12,6 +12,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 ### GET /health
 - Checks to ensure delta-dm and delta are running
 - Returns back the Delta instance ID, which can be used for further troubleshooting
+- Returns versions and commit hashes of DDM and Delta
 
 #### Request Params
 <nil>
@@ -23,7 +24,17 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 > 200: Success
 
 ```jsonc
-"504fd7de-729d-44f1-a70c-e9d8cc8c59ba" // Delta instance ID
+{
+	"uuid": "504fd7de-729d-44f1-a70c-e9d8cc8c59ba",
+	"ddm_info": {
+		"commit": "6f12184",
+		"version": "v0.0.0"
+	},
+	"delta_info": {
+		"commit": "e8296f720eab063ebc230b66951fb152248b02fc",
+		"version": "v0.0.0"
+	}
+}
 ```
 
 ## /datasets

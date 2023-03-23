@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func DaemonCmd() []*cli.Command {
+func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 	var debug bool = false
 	var dbConnStr string
 	var deltaApi string
@@ -63,7 +63,7 @@ func DaemonCmd() []*cli.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, authServer, debug)
+			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, authServer, di, debug)
 			dldm.WatchReplications()
 			api.InitializeEchoRouterConfig(dldm)
 			api.LoopForever()

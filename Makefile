@@ -1,12 +1,14 @@
 SHELL=/usr/bin/env bash
 GO_BUILD_IMAGE?=golang:1.19
+VERSION=$(shell git describe --always --tag --dirty)
+COMMIT=$(shell git rev-parse --short HEAD)
 
 .PHONY: all
 all: build
 
 .PHONY: build
 build:
-	go build  -o delta-dm
+	go build -ldflags="-X 'main.Commit=$(COMMIT)' -X main.Version=$(VERSION)"  -o delta-dm
 
 .PHONE: clean
 clean:

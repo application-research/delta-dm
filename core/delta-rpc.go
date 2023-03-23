@@ -9,14 +9,14 @@ import (
 )
 
 type DeltaAPI struct {
-	NodeUUID         string
-	url              string
-	ServiceAuthToken string
+	NodeUUID            string
+	url                 string
+	ServiceAuthToken    string
+	DeltaDeploymentInfo DeploymentInfo
 }
 
 func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
-
-	hcError := healthCheck(url)
+	ni, hcError := healthCheck(url)
 	if hcError != nil {
 		return nil, hcError
 	}
@@ -24,6 +24,10 @@ func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
 	dapi := &DeltaAPI{
 		url:              url,
 		ServiceAuthToken: authToken,
+		DeltaDeploymentInfo: DeploymentInfo{
+			Commit:  ni.Commit,
+			Version: ni.Version,
+		},
 	}
 
 	err := dapi.populateNodeUuid()
@@ -35,10 +39,29 @@ func NewDeltaAPI(url string, authToken string) (*DeltaAPI, error) {
 }
 
 // Verify that Delta API is reachable
-func healthCheck(baseUrl string) error {
-	_, err := http.Get(baseUrl + "/api/v1/node/info")
+func healthCheck(baseUrl string) (*NodeInfoResponse, error) {
+	resp, err := http.Get(baseUrl + "/open/node/info")
+	if err != nil {
+		return nil, fmt.Errorf("could not reach delta api: %s", err)
+	}
 
-	return err
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read response body: %s", err)
+	}
+	if resp.StatusCode != 200 {
+		resp.Body.Close()
+		return nil, fmt.Errorf("error in delta call %d : %s", resp.StatusCode, body)
+	}
+
+	defer resp.Body.Close()
+
+	result, err := UnmarshalNodeInfoResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal node info response %s : %s", err, string(body))
+	}
+
+	return &result, nil
 }
 
 // Retrieves delta node UUID and sets it on the DeltaAPI struct
@@ -194,10 +217,6 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authKey string) ([]byte, 
 }
 
 func (d *DeltaAPI) getRequest(url string, authKey string) ([]byte, func() error, error) {
-	if authKey == "" {
-		return nil, nil, fmt.Errorf("auth token must be provided")
-	}
-
 	req, err := http.NewRequest("GET", d.url+url, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
@@ -223,6 +242,24 @@ func (d *DeltaAPI) getRequest(url string, authKey string) ([]byte, func() error,
 	}
 
 	return body, resp.Body.Close, nil
+}
+
+func UnmarshalNodeInfoResponse(data []byte) (NodeInfoResponse, error) {
+	var r NodeInfoResponse
+	err := json.Unmarshal(data, &r)
+	return r, err
+}
+
+func (r *NodeInfoResponse) Marshal() ([]byte, error) {
+	return json.Marshal(r)
+}
+
+type NodeInfoResponse struct {
+	Commit      string `json:"commit"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Version     string `json:"version"`
 }
 
 type OfflineDealRequest []Deal
