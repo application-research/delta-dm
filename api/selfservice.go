@@ -158,7 +158,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	p := c.Get(PROVIDER).(core.Provider)
 
-	// Once give one deal at a time
+	// give one deal at a time
 	numDeals := uint(1)
 	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &dataset, &numDeals)
 	if err != nil {
