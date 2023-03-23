@@ -28,15 +28,19 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			providerToken := c.Request().Header.Get("X-DELTA-AUTH")
+
+			if providerToken == "" {
+				return c.String(401, "missing provider self-service token")
+			}
 			var p core.Provider
 			res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
 
 			if res.Error != nil {
 				log.Errorf("error finding provider: %s", res.Error)
-				return c.JSON(401, fmt.Errorf("unable to find provider for token"))
+				return c.String(401, "unable to find provider for self-service token")
 			}
 			if p.ActorID == "" {
-				return c.JSON(401, fmt.Errorf("invalid delta auth token"))
+				return c.String(401, "invalid provider self-service token")
 			}
 
 			c.Set(PROVIDER, p)
