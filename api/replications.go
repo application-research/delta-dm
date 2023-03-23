@@ -2,8 +2,12 @@ package api
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/application-research/delta-dm/core"
+	"github.com/application-research/delta-dm/util"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
@@ -31,6 +35,84 @@ func ConfigureReplicationsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 }
 
+type GetReplicationsQueryParams struct {
+	Statuses      []string
+	Datasets      []string
+	Providers     []string
+	SelfService   *bool
+	DealTimeStart *time.Time
+	DealTimeEnd   *time.Time
+	ProposalCid   *string
+	PieceCid      *string
+	Message       *string
+	Limit         uint64
+	Offset        uint64
+}
+
+// Extract all the replications query parameters from the request
+func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParams {
+	var gqp GetReplicationsQueryParams
+
+	proposalCid := c.QueryParam("proposal_cid")
+	pieceCid := c.QueryParam("piece_cid")
+	statuses := c.QueryParam("statuses")
+	datasets := c.QueryParam("datasets")
+	providers := c.QueryParam("providers")
+	selfService := c.QueryParam("self_service")
+	dealTimeStart := c.QueryParam("deal_time_start")
+	dealTimeEnd := c.QueryParam("deal_time_end")
+	message := c.QueryParam("message")
+	limit := c.QueryParam("limit")
+	offset := c.QueryParam("offset")
+
+	var err error
+	gqp.Limit, err = strconv.ParseUint(limit, 10, 32)
+	if err != nil {
+		return gqp
+	}
+
+	gqp.Offset, err = strconv.ParseUint(offset, 10, 32)
+	if err != nil {
+		return gqp
+	}
+
+	// PieceCID and ProposalCID will result in a specific search, so can return them right away
+	if pieceCid != "" {
+		gqp.PieceCid = &pieceCid
+		return gqp
+	}
+	if proposalCid != "" {
+		gqp.ProposalCid = &proposalCid
+		return gqp
+	}
+
+	gqp.Statuses = strings.Split(statuses, ",")
+	gqp.Datasets = strings.Split(datasets, ",")
+	gqp.Providers = strings.Split(providers, ",")
+	gqp.Message = &message
+
+	ss, err := strconv.ParseBool(selfService)
+	if err != nil {
+		gqp.SelfService = &ss
+	}
+
+	dts, err := util.EpochStringToTime(dealTimeStart)
+	if err != nil {
+		gqp.DealTimeStart = &dts
+	}
+
+	dte, err := util.EpochStringToTime(dealTimeEnd)
+	if err != nil {
+		gqp.DealTimeEnd = &dte
+	}
+
+	return gqp
+}
+
+// handleGetReplications handles the request to get replications
+// @Summary Get replications
+// @Tags replications
+// @Produce  json
 func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	p := c.QueryParam("provider")
 	ds := c.QueryParam("dataset")
