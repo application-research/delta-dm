@@ -7,6 +7,8 @@ Currently, support is for a specific CID (PieceCID/CommP).
 After adding a provider to DDM, query `GET /api/v1/providers`, and get the `key` for the provider. This is their private authentication key, so it should be stored/transmitted safely. 
 
 ## Requesting a deal
+
+### By CID
 The provider can make a request as follows:
 
 ```bash
@@ -40,6 +42,14 @@ If it fails, a 500 error will be returned, with the error message in the body. F
 		"details": "content 'baga6ea4seaqh26gjoj72ruwjhfshu76byab4tkt6kr53xicfnplu3rjiazxtski' is already replicated to provider 'f012345'"
 	}
 }
+```
+
+### By Dataset
+The provider can request any CID to be dealt from a given dataset as follows:
+```bash
+curl --request GET \
+  --url 'http://your-delta-dm-address-here/api/v1/self-service/by-dataset/dataset-name?start_epoch_delay=3' \
+  --header 'X-DELTA-AUTH: b3cc8a99-155a-4fff-8974-999ec313e5cc'
 ```
 
 **Reasons for failure may include:**

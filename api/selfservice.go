@@ -2,29 +2,59 @@ package api
 
 import (
 	"fmt"
-	"math/rand"
 	"strconv"
-	"time"
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
+
+const PROVIDER = "PROVIDER"
 
 func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 	selfService := e.Group("/self-service")
 
+	selfService.Use(selfServiceTokenMiddleware(dldm))
+
 	selfService.GET("/by-cid/:piece", func(c echo.Context) error {
-		return handleSelfServicePostByCid(c, dldm)
+		return handleSelfServiceByCid(c, dldm)
 	})
 
+	selfService.GET("/by-dataset/:dataset", func(c echo.Context) error {
+		return handleSelfServiceByDataset(c, dldm)
+	})
+}
+
+func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			providerToken := c.Request().Header.Get("X-DELTA-AUTH")
+
+			if providerToken == "" {
+				return c.String(401, "missing provider self-service token")
+			}
+			var p core.Provider
+			res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
+
+			if res.Error != nil {
+				log.Errorf("error finding provider: %s", res.Error)
+				return c.String(401, "unable to find provider for self-service token")
+			}
+			if p.ActorID == "" {
+				return c.String(401, "invalid provider self-service token")
+			}
+
+			c.Set(PROVIDER, p)
+
+			return next(c)
+		}
+	}
 }
 
 // POST /api/self-service/by-cid/:piece
 // @param :piece Piece CID of content to replicate
 // @queryparam
 // @returns a slice of the CIDs
-func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
+func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	piece := c.Param("piece")
 	startEpochDelay := c.QueryParam("start_epoch_delay")
 	var delayDays uint64 = 3
@@ -45,25 +75,10 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a piece CID")
 	}
 
-	providerToken := c.Request().Header.Get("X-DELTA-AUTH")
+	p := c.Get(PROVIDER).(core.Provider)
 
-	var p core.Provider
-	res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
-
-	if res.Error != nil {
-		log.Errorf("error finding provider: %s", res.Error)
-		return fmt.Errorf("unable to find provider for token")
-	}
-
-	if p.ActorID == "" {
-		return fmt.Errorf("invalid delta auth token")
-	}
-
-	fmt.Printf("%+v\n\n", p)
-
-	// cnt, err := findContentByCommP(dldm.DB, p.ActorID, piece)
 	var cnt core.Content
-	res = dldm.DB.Model(&core.Content{}).Preload("Replications").Where("comm_p = ?", piece).Find(&cnt)
+	res := dldm.DB.Model(&core.Content{}).Preload("Replications").Where("comm_p = ?", piece).Find(&cnt)
 	if res.Error != nil {
 		return fmt.Errorf("unable to make deal for this CID")
 	}
@@ -112,34 +127,79 @@ func handleSelfServicePostByCid(c echo.Context, dldm *core.DeltaDM) error {
 		},
 	})
 
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, dldm.DAPI.ServiceAuthToken)
+	_, err = dldm.MakeDeals(dealsToMake, dldm.DAPI.ServiceAuthToken, true)
 	if err != nil {
-		return fmt.Errorf("unable to make deal with delta api: %s", err)
+		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
-	for _, c := range *deltaResp {
-		if c.Status != "success" {
-			continue
-		}
-		var newReplication = core.Replication{
-			ContentCommP:    c.RequestMeta.PieceCommitment.PieceCid,
-			ProviderActorID: c.RequestMeta.Miner,
-			DeltaContentID:  c.ContentID,
-			DealTime:        time.Now(),
-			Status:          core.StatusPending,
-			IsSelfService:   true,
-			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
+	return c.JSON(200, fmt.Sprintf("successfully made deal with %s", p.ActorID))
+}
+
+func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
+	dataset := c.Param("dataset")
+	startEpochDelay := c.QueryParam("start_epoch_delay")
+
+	if dataset == "" {
+		return fmt.Errorf("must provide a dataset name")
+	}
+
+	var delayDays uint64 = 3
+	if startEpochDelay != "" {
+		var err error
+		delayDays, err = strconv.ParseUint(startEpochDelay, 10, 64)
+		if err != nil {
+			return fmt.Errorf("unable to parse start_epoch_delay: %s", err)
 		}
 
-		res := dldm.DB.Model(&core.Replication{}).Create(&newReplication)
-		if res.Error != nil {
-			log.Errorf("unable to create replication in db: %s", res.Error)
-			continue
+		if delayDays < 1 || delayDays > 14 {
+			return fmt.Errorf("start_epoch_delay must be between 1 and 14 days")
 		}
+	}
 
-		// Update the content's num replications
-		dldm.DB.Model(&core.Content{}).Where("comm_p = ?", newReplication.ContentCommP).Update("num_replications", gorm.Expr("num_replications + ?", 1))
+	p := c.Get(PROVIDER).(core.Provider)
 
+	// give one deal at a time
+	numDeals := uint(1)
+	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &dataset, &numDeals)
+	if err != nil {
+		return fmt.Errorf("unable to find content for dataset: %s", err)
+	}
+
+	if len(cnt) == 0 {
+		return fmt.Errorf("no deals available for dataset")
+	}
+
+	deal := cnt[0]
+
+	wallet, err := walletSelection(dldm.DB, &deal.DatasetName)
+
+	if err != nil || wallet.Addr == "" {
+		return fmt.Errorf("dataset '%s' does not have a wallet associated. no deals were made. please contact administrator", deal.DatasetName)
+	}
+
+	var dealsToMake []core.Deal
+
+	dealsToMake = append(dealsToMake, core.Deal{
+		Cid: deal.PayloadCID,
+		Wallet: core.Wallet{
+			Addr: wallet.Addr,
+		},
+		ConnectionMode:       "import",
+		Miner:                p.ActorID,
+		Size:                 deal.Size,
+		SkipIpniAnnounce:     !deal.Indexed,
+		RemoveUnsealedCopies: !deal.Unsealed,
+		DurationInDays:       deal.DealDuration - delayDays,
+		StartEpochAtDays:     delayDays,
+		PieceCommitment: core.PieceCommitment{
+			PieceCid:        deal.CommP,
+			PaddedPieceSize: deal.PaddedSize,
+		},
+	})
+
+	_, err = dldm.MakeDeals(dealsToMake, dldm.DAPI.ServiceAuthToken, true)
+	if err != nil {
+		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
 	return c.JSON(200, fmt.Sprintf("successfully made deal with %s", p.ActorID))

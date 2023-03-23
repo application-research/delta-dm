@@ -2,8 +2,6 @@ package api
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
@@ -103,34 +101,9 @@ func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
 		})
 	}
 
-	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, authKey)
+	deltaResp, err := dldm.MakeDeals(dealsToMake, authKey, false)
 	if err != nil {
-		return fmt.Errorf("unable to make deal with delta api: %s", err)
-	}
-
-	for _, c := range *deltaResp {
-		if c.Status != "success" {
-			continue
-		}
-		var newReplication = core.Replication{
-			ContentCommP:    c.RequestMeta.PieceCommitment.PieceCid,
-			ProviderActorID: c.RequestMeta.Miner,
-			DeltaContentID:  c.ContentID,
-			DealTime:        time.Now(),
-			Status:          core.StatusPending,
-			IsSelfService:   false,
-			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
-		}
-
-		res := dldm.DB.Model(&core.Replication{}).Create(&newReplication)
-		if res.Error != nil {
-			log.Errorf("unable to create replication in db: %s", res.Error)
-			continue
-		}
-
-		// Update the content's num replications
-		dldm.DB.Model(&core.Content{}).Where("comm_p = ?", newReplication.ContentCommP).Update("num_replications", gorm.Expr("num_replications + ?", 1))
-
+		return fmt.Errorf("unable to make deals: %s", err)
 	}
 
 	return c.JSON(200, deltaResp)
