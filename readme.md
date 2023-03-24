@@ -28,7 +28,6 @@ Once a **Dataset**, **Content**, and **Providers** have been specified, the DDM 
 - DDM will use the [Estuary Auth server](https://github.com/application-research/estuary-auth/) by default. It can be overridden by specifying the `AUTH_URL` environment variable, or CLI flag `--auth-url`
 
 ## Usage
-
 DDM runs as a daemon, which is a webserver. Start it up with the `daemon` command.
 ```bash
 ./deltadm daemon

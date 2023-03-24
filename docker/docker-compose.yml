@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  app:
+    image: 0utercore/delta-dm:${TAG:-"latest"}
+    ports:
+      - "${APP_PORT:-1414}:1414"
+    environment:
+      - DELTA_AUTH=${DELTA_AUTH:-""}
