@@ -67,12 +67,12 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 
 	var err error
 	gqp.Limit, err = strconv.ParseUint(limit, 10, 32)
-	if err != nil {
+	if err == nil {
 		return gqp
 	}
 
 	gqp.Offset, err = strconv.ParseUint(offset, 10, 32)
-	if err != nil {
+	if err == nil {
 		return gqp
 	}
 
@@ -86,23 +86,34 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 		return gqp
 	}
 
-	gqp.Statuses = strings.Split(strings.ToUpper(statuses), ",")
-	gqp.Datasets = strings.Split(datasets, ",")
-	gqp.Providers = strings.Split(providers, ",")
-	gqp.Message = &message
+	if statuses != "" {
+		gqp.Statuses = strings.Split(strings.ToUpper(statuses), ",")
+	}
+
+	if datasets != "" {
+		gqp.Datasets = strings.Split(datasets, ",")
+	}
+
+	if providers != "" {
+		gqp.Providers = strings.Split(providers, ",")
+	}
+
+	if message != "" {
+		gqp.Message = &message
+	}
 
 	ss, err := strconv.ParseBool(selfService)
-	if err != nil {
+	if err == nil && selfService != "" {
 		gqp.SelfService = &ss
 	}
 
 	dts, err := util.EpochStringToTime(dealTimeStart)
-	if err != nil {
+	if err == nil {
 		gqp.DealTimeStart = &dts
 	}
 
 	dte, err := util.EpochStringToTime(dealTimeEnd)
-	if err != nil {
+	if err == nil {
 		gqp.DealTimeEnd = &dte
 	}
 
