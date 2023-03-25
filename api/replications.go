@@ -45,8 +45,8 @@ type GetReplicationsQueryParams struct {
 	ProposalCid   *string
 	PieceCid      *string
 	Message       *string
-	Limit         uint64
-	Offset        uint64
+	Limit         int
+	Offset        int
 }
 
 // Extract all the replications query parameters from the request
@@ -66,14 +66,14 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 	offset := c.QueryParam("offset")
 
 	var err error
-	gqp.Limit, err = strconv.ParseUint(limit, 10, 32)
-	if err == nil {
-		return gqp
+	gqp.Limit, err = strconv.Atoi(limit)
+	if err != nil {
+		gqp.Limit = 100
 	}
 
-	gqp.Offset, err = strconv.ParseUint(offset, 10, 32)
-	if err == nil {
-		return gqp
+	gqp.Offset, err = strconv.Atoi(offset)
+	if err != nil {
+		gqp.Offset = 0
 	}
 
 	// PieceCID and ProposalCID will result in a specific search, so can return them right away
@@ -165,7 +165,7 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 		tx.Where("replications.delta_message LIKE ?", "%"+*rqp.Message+"%")
 	}
 
-	tx.Find(&r)
+	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
 
 	return c.JSON(200, r)
 }

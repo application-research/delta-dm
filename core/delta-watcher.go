@@ -26,7 +26,7 @@ const (
 )
 
 func (ddm *DeltaDM) WatchReplications() {
-	go watch(ddm.DB, ddm.DAPI)
+	// go watch(ddm.DB, ddm.DAPI)
 }
 
 func watch(db *gorm.DB, d *DeltaAPI) {
