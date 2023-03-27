@@ -1,6 +1,6 @@
-# [WIP] ΔDM (Delta Dataset Manager)
+# ΔDM (Delta Dataset Manager)
 
-> This tool is still in very active development! Things may change/break as we add functionality and streamline the user experience.
+> DDM is still in active development! Things may change/break as we add functionality and streamline the user experience.
 
 A tool to manage deal replication tracking for onboarding datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
 
