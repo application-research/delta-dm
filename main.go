@@ -25,22 +25,13 @@ func main() {
 		Version: Version,
 	}
 
-	versionCmd := cli.Command{
-		Name:    "version",
-		Aliases: []string{"v"},
-		Action: func(c *cli.Context) error {
-			fmt.Printf("ddm version : %s+git.%s\n", di.Version, di.Commit)
-			return nil
-		},
-	}
-
 	// commands
-	commands = append(commands, &versionCmd)
 	commands = append(commands, cmd.DaemonCmd(di)...)
 	commands = append(commands, cmd.WalletCmd()...)
 	app := &cli.App{
 		Commands: commands,
 		Usage:    "An application to facilitate dataset dealmaking with storage providers",
+		Version:  fmt.Sprintf("%s+git.%s\n", di.Version, di.Commit),
 	}
 
 	if err := app.Run(os.Args); err != nil {
