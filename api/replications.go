@@ -2,8 +2,12 @@ package api
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/application-research/delta-dm/core"
+	"github.com/application-research/delta-dm/util"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
@@ -16,43 +20,160 @@ type PostReplicationBody struct {
 	PricePerDeal float64 `json:"price_per_deal,omitempty"`
 }
 
-func ConfigureReplicationRouter(e *echo.Group, dldm *core.DeltaDM) {
-	replication := e.Group("/replication")
+func ConfigureReplicationsRouter(e *echo.Group, dldm *core.DeltaDM) {
+	replications := e.Group("/replications")
 
-	replication.Use(dldm.AS.AuthMiddleware)
+	replications.Use(dldm.AS.AuthMiddleware)
 
-	replication.GET("", func(c echo.Context) error {
-
-		p := c.QueryParam("provider")
-		ds := c.QueryParam("dataset")
-
-		var r []core.Replication
-
-		tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
-
-		if ds != "" {
-			tx.Where("Content.dataset_name = ?", ds)
-		}
-
-		if p != "" {
-			tx.Where("replications.provider_actor_id = ?", p)
-		}
-
-		tx.Find(&r)
-
-		return c.JSON(200, r)
+	replications.GET("", func(c echo.Context) error {
+		return handleGetReplications(c, dldm)
 	})
 
-	replication.POST("", func(c echo.Context) error {
-		return handlePostReplication(c, dldm)
+	replications.POST("", func(c echo.Context) error {
+		return handlePostReplications(c, dldm)
 	})
 
+}
+
+type GetReplicationsQueryParams struct {
+	Statuses      []string
+	Datasets      []string
+	Providers     []string
+	SelfService   *bool
+	DealTimeStart *time.Time
+	DealTimeEnd   *time.Time
+	ProposalCid   *string
+	PieceCid      *string
+	Message       *string
+	Limit         int
+	Offset        int
+}
+
+// Extract all the replications query parameters from the request
+func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParams {
+	var gqp GetReplicationsQueryParams
+
+	proposalCid := c.QueryParam("proposal_cid")
+	pieceCid := c.QueryParam("piece_cid")
+	statuses := c.QueryParam("statuses")
+	datasets := c.QueryParam("datasets")
+	providers := c.QueryParam("providers")
+	selfService := c.QueryParam("self_service")
+	dealTimeStart := c.QueryParam("deal_time_start")
+	dealTimeEnd := c.QueryParam("deal_time_end")
+	message := c.QueryParam("message")
+	limit := c.QueryParam("limit")
+	offset := c.QueryParam("offset")
+
+	var err error
+	gqp.Limit, err = strconv.Atoi(limit)
+	if err != nil {
+		gqp.Limit = 100
+	}
+
+	gqp.Offset, err = strconv.Atoi(offset)
+	if err != nil {
+		gqp.Offset = 0
+	}
+
+	// PieceCID and ProposalCID will result in a specific search, so can return them right away
+	if pieceCid != "" {
+		gqp.PieceCid = &pieceCid
+		return gqp
+	}
+	if proposalCid != "" {
+		gqp.ProposalCid = &proposalCid
+		return gqp
+	}
+
+	if statuses != "" {
+		gqp.Statuses = strings.Split(strings.ToUpper(statuses), ",")
+	}
+
+	if datasets != "" {
+		gqp.Datasets = strings.Split(datasets, ",")
+	}
+
+	if providers != "" {
+		gqp.Providers = strings.Split(providers, ",")
+	}
+
+	if message != "" {
+		gqp.Message = &message
+	}
+
+	ss, err := strconv.ParseBool(selfService)
+	if err == nil && selfService != "" {
+		gqp.SelfService = &ss
+	}
+
+	dts, err := util.EpochStringToTime(dealTimeStart)
+	if err == nil {
+		gqp.DealTimeStart = &dts
+	}
+
+	dte, err := util.EpochStringToTime(dealTimeEnd)
+	if err == nil {
+		gqp.DealTimeEnd = &dte
+	}
+
+	return gqp
+}
+
+// handleGetReplications handles the request to get replications
+// @Summary Get replications
+// @Tags replications
+// @Produce  json
+func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
+	rqp := extractGetReplicationsQueryParams(c)
+
+	var r []core.Replication
+
+	tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
+
+	if rqp.PieceCid != nil {
+		tx.Where("replications.piece_cid = ?", rqp.PieceCid)
+	} else if rqp.ProposalCid != nil {
+		tx.Where("replications.proposal_cid = ?", rqp.ProposalCid)
+	}
+
+	if len(rqp.Statuses) > 0 {
+		tx.Where("replications.status IN ?", rqp.Statuses)
+	}
+
+	if len(rqp.Datasets) > 0 {
+		tx.Where("Content.dataset_name IN ?", rqp.Datasets)
+	}
+
+	if len(rqp.Providers) > 0 {
+		tx.Where("replications.provider_actor_id IN ?", rqp.Providers)
+	}
+
+	if rqp.SelfService != nil {
+		tx.Where("replications.is_self_service = ?", rqp.SelfService)
+	}
+
+	if rqp.DealTimeStart != nil {
+		tx.Where("replications.deal_time >= ?", rqp.DealTimeStart)
+	}
+
+	if rqp.DealTimeEnd != nil {
+		tx.Where("replications.deal_time <= ?", rqp.DealTimeEnd)
+	}
+
+	if rqp.Message != nil {
+		tx.Where("replications.delta_message LIKE ?", "%"+*rqp.Message+"%")
+	}
+
+	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
+
+	return c.JSON(200, r)
 }
 
 // POST /api/replication
 // @param num number of deals requested
 // @returns a slice of the CIDs
-func handlePostReplication(c echo.Context, dldm *core.DeltaDM) error {
+func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 	var d PostReplicationBody
 
 	authKey := c.Get(core.AUTH_KEY).(string)

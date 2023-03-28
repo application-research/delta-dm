@@ -263,9 +263,22 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 - Get Replications
 
 #### Params
+Note: When multiple parameters are specified, they are "AND"ed together. For example, if you specify `?statuses=success&providers=f012345`, then you will only get replications that are successful and were created with the provider `f012345`.
+
+Specifying a `proposal_cid` or `piece_cid` will override all other parameters.
+
 ```json
-?provider=f01963614 // optional - filter by sp
-?dataset=delta-test // optional - filter by dataset
+?statuses=success,failure,pending // can specify multiple (comma delimited), returns any that match
+?datasets=bird-sounds,university-dataset-test // can specify multiple (comma delimited), returns any that match
+?self_service=true
+?providers=f012345,f045678 // can specify multiple (comma delimited), returns any that match
+?deal_time_start=1579343980 // unix timestamp (in seconds)
+?deal_time_end=1679343980// unix timestamp (in seconds)
+?proposal_cid=bafyreib5sip7i4aflvxx3wpze4sdunsuo3ad7hfl3zu6n4mfontzxhviga // only one may be specified
+?piece_cid=baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmlq // only one may be specified
+?message=illegal // searches all replications where the message contains this text
+?limit=100 // max number of replications to return (default=100)
+?offset=0 // offset to start returning replications from (default=0)
 ```
 
 #### Response
