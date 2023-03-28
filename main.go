@@ -32,6 +32,7 @@ func main() {
 		Commands: commands,
 		Usage:    "An application to facilitate dataset dealmaking with storage providers",
 		Version:  fmt.Sprintf("%s+git.%s\n", di.Version, di.Commit),
+		Flags:    cmd.CLIConnectFlags,
 	}
 
 	if err := app.Run(os.Args); err != nil {

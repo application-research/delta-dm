@@ -5,14 +5,49 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+
+	"github.com/urfave/cli/v2"
 )
+
+var CLIConnectFlags = []cli.Flag{
+	&cli.StringFlag{
+		Name:    "ddm-api-info",
+		Usage:   "DDM API connection info",
+		EnvVars: []string{"DDM_API_INFO"},
+		Hidden:  true,
+	},
+	&cli.StringFlag{
+		Name:    "delta-auth",
+		Usage:   "delta auth token",
+		EnvVars: []string{"DELTA_AUTH"},
+		Hidden:  true,
+	},
+}
 
 type CmdProcessor struct {
 	ddmUrl     string
 	ddmAuthKey string
 }
 
-func NewCmdProcessor(ddmUrl string, ddmAuthKey string) (*CmdProcessor, error) {
+func NewCmdProcessor(c *cli.Context) (*CmdProcessor, error) {
+	ddmUrl := c.String("ddm-api-info")
+	if ddmUrl == "" {
+		ddmUrl = os.Getenv("DDM_API_INFO")
+		if ddmUrl == "" {
+			ddmUrl = "http://localhost:1314"
+		}
+	}
+
+	ddmAuthKey := c.String("delta-auth")
+	if ddmAuthKey == "" {
+		ddmAuthKey = os.Getenv("DELTA_AUTH")
+		fmt.Printf("from cli param: %s", ddmAuthKey)
+		if ddmAuthKey == "" {
+			return nil, fmt.Errorf("DELTA_AUTH env variable or --delta-auth flag is required")
+		}
+	}
+
 	err := healthCheck(ddmUrl, ddmAuthKey)
 
 	if err != nil {

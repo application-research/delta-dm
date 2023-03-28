@@ -11,31 +11,12 @@ import (
 )
 
 func WalletCmd() []*cli.Command {
-	var ddmApi string
-	var deltaAuthToken string
 
 	// add a command to run API node
 	var walletCmds []*cli.Command
 	walletCmd := &cli.Command{
 		Name:  "wallet",
 		Usage: "Interact with DDM wallets",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "ddm-api-info",
-				Usage:       "DDM API connection info",
-				EnvVars:     []string{"DDM_API_INFO"},
-				DefaultText: "http://localhost:1314",
-				Value:       "http://localhost:1314",
-				Destination: &ddmApi,
-			},
-			&cli.StringFlag{
-				Name:        "delta-auth",
-				Usage:       "delta auth token",
-				EnvVars:     []string{"DELTA_AUTH"},
-				Required:    true,
-				Destination: &deltaAuthToken,
-			},
-		},
 		Subcommands: []*cli.Command{
 			{
 				Name:  "import",
@@ -51,7 +32,7 @@ func WalletCmd() []*cli.Command {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					cp, err := NewCmdProcessor(ddmApi, deltaAuthToken)
+					cp, err := NewCmdProcessor(c)
 					if err != nil {
 						return fmt.Errorf("failed to connect to ddm node: %s", err)
 					}
@@ -119,7 +100,7 @@ func WalletCmd() []*cli.Command {
 				Usage:     "Delete a wallet in DDM",
 				UsageText: "delta-dm wallet delete [wallet address]",
 				Action: func(c *cli.Context) error {
-					cp, err := NewCmdProcessor(ddmApi, deltaAuthToken)
+					cp, err := NewCmdProcessor(c)
 					if err != nil {
 						return fmt.Errorf("failed to connect to ddm node: %s", err)
 					}
