@@ -85,7 +85,7 @@ func WalletCmd() []*cli.Command {
 						url += "?hex=true"
 					}
 
-					res, closer, err := cp.ddmRequest(http.MethodPost, url, walletBytes)
+					res, closer, err := cp.MakeRequest(http.MethodPost, url, walletBytes)
 					if err != nil {
 						return fmt.Errorf("ddm request invalid: %s", err)
 					}
@@ -111,7 +111,7 @@ func WalletCmd() []*cli.Command {
 						return fmt.Errorf("please provide a wallet address")
 					}
 
-					res, closer, err := cp.ddmRequest(http.MethodDelete, "/api/v1/wallets/"+w, nil)
+					res, closer, err := cp.MakeRequest(http.MethodDelete, "/api/v1/wallets/"+w, nil)
 					if err != nil {
 						return fmt.Errorf("ddm request invalid: %s", err)
 					}

@@ -51,7 +51,7 @@ func NewCmdProcessor(c *cli.Context) (*CmdProcessor, error) {
 	err := healthCheck(ddmUrl, ddmAuthKey)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to communicate with ddm daemon: %s", err)
 	}
 
 	return &CmdProcessor{
@@ -89,7 +89,7 @@ func healthCheck(ddmUrl string, ddmAuthKey string) error {
 	return err
 }
 
-func (c *CmdProcessor) ddmRequest(method string, url string, raw []byte) ([]byte, func() error, error) {
+func (c *CmdProcessor) MakeRequest(method string, url string, raw []byte) ([]byte, func() error, error) {
 	req, err := http.NewRequest(method, c.ddmUrl+url, bytes.NewBuffer(raw))
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
