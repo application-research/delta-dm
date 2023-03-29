@@ -10,6 +10,7 @@ import (
 )
 
 func WalletCmd() []*cli.Command {
+	var dataset string
 
 	// add a command to run API node
 	var walletCmds []*cli.Command
@@ -117,6 +118,39 @@ func WalletCmd() []*cli.Command {
 					defer closer()
 
 					fmt.Printf("%s", string(res))
+					return nil
+				},
+			},
+			{
+				Name:  "list",
+				Usage: "list wallets",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "dataset",
+						Usage:       "filter wallets by dataset",
+						Destination: &dataset,
+					},
+				},
+				Action: func(c *cli.Context) error {
+					cmd, err := NewCmdProcessor(c)
+					if err != nil {
+						return err
+					}
+
+					url := "/api/v1/wallets"
+
+					if dataset != "" {
+						url += "?dataset=" + dataset
+					}
+
+					res, closer, err := cmd.MakeRequest("GET", url, nil)
+					if err != nil {
+						return fmt.Errorf("unable to make request %s", err)
+					}
+					defer closer()
+
+					fmt.Printf("%s", string(res))
+
 					return nil
 				},
 			},

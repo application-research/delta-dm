@@ -1,6 +1,8 @@
 # DDM CLI
 
 # daemon
+
+In order for other commands to work, you must have a running daemon to connect to, and execute the commands against.
 ## Run the DDM Daemon
 `> ./delta-dm daemon`
 *Note*: you must have `DELTA_API="http://url-to-delta"` in your environment, or it will default to `http://localhost:1414`
@@ -32,3 +34,6 @@ Example:
 ```bash
 ./delta-dm wallet delete f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi
 ```
+
+### List wallets
+`> ./delta-dm wallet list [--dataset <dataset-name>]`
