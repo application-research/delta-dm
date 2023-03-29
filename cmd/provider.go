@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/urfave/cli/v2"
@@ -26,7 +25,6 @@ func ProviderCmd() []*cli.Command {
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:        "id",
-						Aliases:     []string{"id"},
 						Usage:       "storage provider id to add (i.e. f012345)",
 						Destination: &spId,
 						Required:    true,
@@ -62,7 +60,7 @@ func ProviderCmd() []*cli.Command {
 					}
 					defer closer()
 
-					log.Printf("ddm response: %s", string(res))
+					fmt.Printf("%s", string(res))
 
 					return nil
 				},
@@ -112,7 +110,27 @@ func ProviderCmd() []*cli.Command {
 					}
 					defer closer()
 
-					log.Printf("ddm response: %s", string(res))
+					fmt.Printf("%s", string(res))
+
+					return nil
+				},
+			},
+			{
+				Name:  "list",
+				Usage: "list storage providers",
+				Action: func(c *cli.Context) error {
+					cmd, err := NewCmdProcessor(c)
+					if err != nil {
+						return err
+					}
+
+					res, closer, err := cmd.MakeRequest("GET", "/api/v1/providers/", nil)
+					if err != nil {
+						return fmt.Errorf("unable to make request %s", err)
+					}
+					defer closer()
+
+					fmt.Printf("%s", string(res))
 
 					return nil
 				},

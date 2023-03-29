@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/urfave/cli/v2"
@@ -91,7 +90,7 @@ func WalletCmd() []*cli.Command {
 					}
 					defer closer()
 
-					log.Printf("Wallet import response: %s", string(res))
+					fmt.Printf("%s", string(res))
 					return nil
 				},
 			},
@@ -117,7 +116,7 @@ func WalletCmd() []*cli.Command {
 					}
 					defer closer()
 
-					log.Printf("Wallet delete response: %s", string(res))
+					fmt.Printf("%s", string(res))
 					return nil
 				},
 			},

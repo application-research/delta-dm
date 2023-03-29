@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/application-research/delta-dm/api"
 	"github.com/urfave/cli/v2"
@@ -70,7 +69,7 @@ func ReplicationCmd() []*cli.Command {
 					}
 					defer closer()
 
-					log.Printf("ddm response: %s", string(res))
+					fmt.Printf("%s", string(res))
 
 					return nil
 				},
