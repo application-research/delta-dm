@@ -31,21 +31,11 @@ type CmdProcessor struct {
 }
 
 func NewCmdProcessor(c *cli.Context) (*CmdProcessor, error) {
-	ddmUrl := c.String("ddm-api-info")
-	if ddmUrl == "" {
-		ddmUrl = os.Getenv("DDM_API_INFO")
-		if ddmUrl == "" {
-			ddmUrl = "http://localhost:1314"
-		}
-	}
+	ddmUrl := getFlagOrEnvVar(c, "ddm-api-info", "DDM_API_INFO", "http://localhost:1314")
+	ddmAuthKey := getFlagOrEnvVar(c, "delta-auth", "DELTA_AUTH", "")
 
-	ddmAuthKey := c.String("delta-auth")
 	if ddmAuthKey == "" {
-		ddmAuthKey = os.Getenv("DELTA_AUTH")
-		fmt.Printf("from cli param: %s", ddmAuthKey)
-		if ddmAuthKey == "" {
-			return nil, fmt.Errorf("DELTA_AUTH env variable or --delta-auth flag is required")
-		}
+		return nil, fmt.Errorf("DELTA_AUTH env variable or --delta-auth flag is required")
 	}
 
 	err := healthCheck(ddmUrl, ddmAuthKey)
@@ -58,6 +48,18 @@ func NewCmdProcessor(c *cli.Context) (*CmdProcessor, error) {
 		ddmUrl:     ddmUrl,
 		ddmAuthKey: ddmAuthKey,
 	}, nil
+}
+
+// If the flag is set, use it. If not, check the environment variable. If that's not set, use the default value
+func getFlagOrEnvVar(c *cli.Context, flagName, envVarName, defaultValue string) string {
+	value := c.String(flagName)
+	if value == "" {
+		value = os.Getenv(envVarName)
+		if value == "" {
+			value = defaultValue
+		}
+	}
+	return value
 }
 
 // Verify that DDM API is reachable

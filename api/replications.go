@@ -198,7 +198,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	if !providerExists {
-		return fmt.Errorf("provider %s does not exist", d.Provider)
+		return fmt.Errorf("provider %s does not exist in ddm. please add it first", d.Provider)
 	}
 
 	// TODO: Support num_tib to allow specifying the amount of data to replicate
