@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/application-research/delta-dm/api"
 	"github.com/urfave/cli/v2"
@@ -63,7 +64,7 @@ func ReplicationCmd() []*cli.Command {
 						return fmt.Errorf("unable to construct request body %s", err)
 					}
 
-					res, closer, err := cmd.MakeRequest("POST", "/api/v1/replications", b)
+					res, closer, err := cmd.MakeRequest(http.MethodPost, "/api/v1/replications", b)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}

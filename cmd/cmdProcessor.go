@@ -62,7 +62,7 @@ func NewCmdProcessor(c *cli.Context) (*CmdProcessor, error) {
 
 // Verify that DDM API is reachable
 func healthCheck(ddmUrl string, ddmAuthKey string) error {
-	req, err := http.NewRequest("GET", ddmUrl+"/api/v1/health", nil)
+	req, err := http.NewRequest(http.MethodGet, ddmUrl+"/api/v1/health", nil)
 	if err != nil {
 		return fmt.Errorf("could not construct http request %v", err)
 	}

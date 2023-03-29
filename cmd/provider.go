@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/application-research/delta-dm/api"
 	"github.com/application-research/delta-dm/core"
@@ -55,7 +56,7 @@ func ProviderCmd() []*cli.Command {
 						return fmt.Errorf("unable to construct request body %s", err)
 					}
 
-					res, closer, err := cmd.MakeRequest("POST", "/api/v1/providers", b)
+					res, closer, err := cmd.MakeRequest(http.MethodPost, "/api/v1/providers", b)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}
@@ -111,7 +112,7 @@ func ProviderCmd() []*cli.Command {
 						return fmt.Errorf("unable to construct request body %s", err)
 					}
 
-					res, closer, err := cmd.MakeRequest("PUT", "/api/v1/providers/"+spId, b)
+					res, closer, err := cmd.MakeRequest(http.MethodPut, "/api/v1/providers/"+spId, b)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}
@@ -131,7 +132,7 @@ func ProviderCmd() []*cli.Command {
 						return err
 					}
 
-					res, closer, err := cmd.MakeRequest("GET", "/api/v1/providers/", nil)
+					res, closer, err := cmd.MakeRequest(http.MethodGet, "/api/v1/providers/", nil)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}

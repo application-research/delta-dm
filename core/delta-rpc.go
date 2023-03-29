@@ -189,7 +189,7 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authKey string) ([]byte, 
 		return nil, nil, fmt.Errorf("auth token must be provided")
 	}
 
-	req, err := http.NewRequest("POST", d.url+url, bytes.NewBuffer(raw))
+	req, err := http.NewRequest(http.MethodPost, d.url+url, bytes.NewBuffer(raw))
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}
@@ -217,7 +217,7 @@ func (d *DeltaAPI) postRequest(url string, raw []byte, authKey string) ([]byte, 
 }
 
 func (d *DeltaAPI) getRequest(url string, authKey string) ([]byte, func() error, error) {
-	req, err := http.NewRequest("GET", d.url+url, nil)
+	req, err := http.NewRequest(http.MethodGet, d.url+url, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not construct http request %v", err)
 	}

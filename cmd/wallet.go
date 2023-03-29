@@ -189,7 +189,7 @@ func WalletCmd() []*cli.Command {
 						url += "?dataset=" + dataset
 					}
 
-					res, closer, err := cmd.MakeRequest("GET", url, nil)
+					res, closer, err := cmd.MakeRequest(http.MethodGet, url, nil)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}

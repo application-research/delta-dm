@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/application-research/delta-dm/util"
@@ -69,7 +70,7 @@ func DatasetCmd() []*cli.Command {
 						return fmt.Errorf("unable to construct request body %s", err)
 					}
 
-					res, closer, err := cmd.MakeRequest("POST", "/api/v1/datasets", b)
+					res, closer, err := cmd.MakeRequest(http.MethodPost, "/api/v1/datasets", b)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}
@@ -89,7 +90,7 @@ func DatasetCmd() []*cli.Command {
 						return err
 					}
 
-					res, closer, err := cmd.MakeRequest("GET", "/api/v1/datasets", nil)
+					res, closer, err := cmd.MakeRequest(http.MethodGet, "/api/v1/datasets", nil)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}
