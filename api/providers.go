@@ -10,6 +10,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type ProviderPutBody struct {
+	ActorName        string `json:"actor_name"`
+	AllowSelfService string `json:"allow_self_service"`
+}
+
 func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 	providers := e.Group("/providers")
 
@@ -59,7 +64,7 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("provider id not specified")
 		}
 
-		var p core.Provider
+		var p ProviderPutBody
 
 		if err := c.Bind(&p); err != nil {
 			return err
@@ -75,7 +80,12 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 		if p.ActorName != "" {
 			existing.ActorName = p.ActorName
 		}
-		existing.AllowSelfService = p.AllowSelfService
+
+		if p.AllowSelfService == "on" {
+			existing.AllowSelfService = true
+		} else if p.AllowSelfService == "off" {
+			existing.AllowSelfService = false
+		}
 
 		res = dldm.DB.Save(&existing)
 		if res.Error != nil {

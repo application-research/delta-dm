@@ -17,7 +17,7 @@ type PostReplicationBody struct {
 	Dataset  *string `json:"dataset,omitempty"`
 	NumDeals *uint   `json:"num_deals,omitempty"`
 	// NumTib       *int    `json:"num_tib,omitempty"`
-	PricePerDeal float64 `json:"price_per_deal,omitempty"`
+	// PricePerDeal float64 `json:"price_per_deal,omitempty"`
 }
 
 func ConfigureReplicationsRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -186,6 +186,21 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must specify num_deals")
 	}
 
+	var providerExists bool
+	err := dldm.DB.Model(core.Provider{}).
+		Select("count(*) > 0").
+		Where("actor_id = ?", d.Provider).
+		Find(&providerExists).
+		Error
+
+	if err != nil {
+		return fmt.Errorf("could not check if provider %s exists: %s", d.Provider, err)
+	}
+
+	if !providerExists {
+		return fmt.Errorf("provider %s does not exist in ddm. please add it first", d.Provider)
+	}
+
 	// TODO: Support num_tib to allow specifying the amount of data to replicate
 
 	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.Dataset, d.NumDeals)
@@ -213,7 +228,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 			Size:                 c.Size,
 			SkipIpniAnnounce:     !c.Indexed,
 			RemoveUnsealedCopies: !c.Unsealed,
-			DurationInDays:       c.DealDuration - 3, // TODO: Allow specifying duration, with default
+			DurationInDays:       c.DealDuration, // TODO: Allow specifying duration, with default
 			StartEpochAtDays:     3,
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,

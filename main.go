@@ -28,10 +28,14 @@ func main() {
 	// commands
 	commands = append(commands, cmd.DaemonCmd(di)...)
 	commands = append(commands, cmd.WalletCmd()...)
+	commands = append(commands, cmd.ReplicationCmd()...)
+	commands = append(commands, cmd.ProviderCmd()...)
+	commands = append(commands, cmd.DatasetCmd()...)
 	app := &cli.App{
 		Commands: commands,
 		Usage:    "An application to facilitate dataset dealmaking with storage providers",
 		Version:  fmt.Sprintf("%s+git.%s\n", di.Version, di.Commit),
+		Flags:    cmd.CLIConnectFlags,
 	}
 
 	if err := app.Run(os.Args); err != nil {

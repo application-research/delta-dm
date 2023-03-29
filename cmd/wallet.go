@@ -4,38 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
+	"github.com/application-research/delta-dm/api"
 	"github.com/urfave/cli/v2"
 )
 
 func WalletCmd() []*cli.Command {
-	var ddmApi string
-	var deltaAuthToken string
+	var dataset string
+	var walletAddress string
 
 	// add a command to run API node
 	var walletCmds []*cli.Command
 	walletCmd := &cli.Command{
 		Name:  "wallet",
 		Usage: "Interact with DDM wallets",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "ddm-api-info",
-				Usage:       "DDM API connection info",
-				EnvVars:     []string{"DDM_API_INFO"},
-				DefaultText: "http://localhost:1314",
-				Value:       "http://localhost:1314",
-				Destination: &ddmApi,
-			},
-			&cli.StringFlag{
-				Name:        "delta-auth",
-				Usage:       "delta auth token",
-				EnvVars:     []string{"DELTA_AUTH"},
-				Required:    true,
-				Destination: &deltaAuthToken,
-			},
-		},
 		Subcommands: []*cli.Command{
 			{
 				Name:  "import",
@@ -51,7 +34,7 @@ func WalletCmd() []*cli.Command {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					cp, err := NewCmdProcessor(ddmApi, deltaAuthToken)
+					cp, err := NewCmdProcessor(c)
 					if err != nil {
 						return fmt.Errorf("failed to connect to ddm node: %s", err)
 					}
@@ -104,22 +87,22 @@ func WalletCmd() []*cli.Command {
 						url += "?hex=true"
 					}
 
-					res, closer, err := cp.ddmRequest(http.MethodPost, url, walletBytes)
+					res, closer, err := cp.MakeRequest(http.MethodPost, url, walletBytes)
 					if err != nil {
 						return fmt.Errorf("ddm request invalid: %s", err)
 					}
 					defer closer()
 
-					log.Printf("Wallet import response: %s", string(res))
+					fmt.Printf("%s", string(res))
 					return nil
 				},
 			},
 			{
 				Name:      "delete",
-				Usage:     "Delete a wallet in DDM",
+				Usage:     "delete a wallet",
 				UsageText: "delta-dm wallet delete [wallet address]",
 				Action: func(c *cli.Context) error {
-					cp, err := NewCmdProcessor(ddmApi, deltaAuthToken)
+					cp, err := NewCmdProcessor(c)
 					if err != nil {
 						return fmt.Errorf("failed to connect to ddm node: %s", err)
 					}
@@ -130,13 +113,90 @@ func WalletCmd() []*cli.Command {
 						return fmt.Errorf("please provide a wallet address")
 					}
 
-					res, closer, err := cp.ddmRequest(http.MethodDelete, "/api/v1/wallets/"+w, nil)
+					res, closer, err := cp.MakeRequest(http.MethodDelete, "/api/v1/wallets/"+w, nil)
 					if err != nil {
 						return fmt.Errorf("ddm request invalid: %s", err)
 					}
 					defer closer()
 
-					log.Printf("Wallet delete response: %s", string(res))
+					fmt.Printf("%s", string(res))
+					return nil
+				},
+			},
+			{
+				Name:      "associate",
+				Usage:     "associate wallet with dataset",
+				UsageText: "delta-dm wallet associate [wallet address]",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "dataset",
+						Usage:       "dataset name",
+						Destination: &dataset,
+						Required:    true,
+					},
+					&cli.StringFlag{
+						Name:        "address",
+						Usage:       "wallet address to associate",
+						Destination: &walletAddress,
+						Required:    true,
+					},
+				},
+				Action: func(c *cli.Context) error {
+					cp, err := NewCmdProcessor(c)
+					if err != nil {
+						return fmt.Errorf("failed to connect to ddm node: %s", err)
+					}
+
+					awb := api.AssociateWalletBody{
+						Address: walletAddress,
+						Dataset: dataset,
+					}
+
+					b, err := json.Marshal(awb)
+					if err != nil {
+						return fmt.Errorf("unable to construct request body %s", err)
+					}
+
+					res, closer, err := cp.MakeRequest(http.MethodPost, "/api/v1/wallets/associate", b)
+					if err != nil {
+						return fmt.Errorf("ddm request invalid: %s", err)
+					}
+					defer closer()
+
+					fmt.Printf("%s", string(res))
+					return nil
+				},
+			},
+			{
+				Name:  "list",
+				Usage: "list wallets",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "dataset",
+						Usage:       "filter wallets by dataset",
+						Destination: &dataset,
+					},
+				},
+				Action: func(c *cli.Context) error {
+					cmd, err := NewCmdProcessor(c)
+					if err != nil {
+						return err
+					}
+
+					url := "/api/v1/wallets"
+
+					if dataset != "" {
+						url += "?dataset=" + dataset
+					}
+
+					res, closer, err := cmd.MakeRequest(http.MethodGet, url, nil)
+					if err != nil {
+						return fmt.Errorf("unable to make request %s", err)
+					}
+					defer closer()
+
+					fmt.Printf("%s", string(res))
+
 					return nil
 				},
 			},

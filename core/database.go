@@ -83,7 +83,7 @@ type ByteSizes struct {
 type Dataset struct {
 	gorm.Model
 	Name             string    `json:"name" gorm:"unique; not null"`
-	ReplicationQuota uint      `json:"replication_quota"`
+	ReplicationQuota uint64    `json:"replication_quota"`
 	DealDuration     uint64    `json:"deal_duration"`
 	Wallet           []Wallet  `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
 	Unsealed         bool      `json:"unsealed"`
@@ -100,7 +100,7 @@ type Content struct {
 	PaddedSize      uint64        `json:"padded_size" csv:"paddedSize"`
 	DatasetName     string        `json:"dataset_name"`
 	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
-	NumReplications uint          `json:"num_replications"`
+	NumReplications uint64        `json:"num_replications"`
 }
 
 type Wallet struct {
