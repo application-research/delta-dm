@@ -29,6 +29,7 @@ func main() {
 	commands = append(commands, cmd.DaemonCmd(di)...)
 	commands = append(commands, cmd.WalletCmd()...)
 	commands = append(commands, cmd.ReplicationCmd()...)
+	commands = append(commands, cmd.ProviderCmd()...)
 	app := &cli.App{
 		Commands: commands,
 		Usage:    "An application to facilitate dataset dealmaking with storage providers",

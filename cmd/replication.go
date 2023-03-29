@@ -18,7 +18,7 @@ func ReplicationCmd() []*cli.Command {
 	var replicationCmds []*cli.Command
 	replicationCmd := &cli.Command{
 		Name:  "replication",
-		Usage: "Dataset Replications",
+		Usage: "Dataset Replications Commands",
 		Subcommands: []*cli.Command{
 			{
 				Name:  "create",
@@ -26,12 +26,14 @@ func ReplicationCmd() []*cli.Command {
 				Flags: []cli.Flag{
 					&cli.UintFlag{
 						Name:        "num",
+						Aliases:     []string{"n"},
 						Usage:       "number of deals to make",
 						Destination: &num,
 						Required:    true,
 					},
 					&cli.StringFlag{
 						Name:        "provider",
+						Aliases:     []string{"p"},
 						Usage:       "storage provider to make deals with",
 						Destination: &provider,
 						Required:    true,
@@ -62,13 +64,13 @@ func ReplicationCmd() []*cli.Command {
 						return fmt.Errorf("unabel to construct request body %s", err)
 					}
 
-					res, closer, err := cmd.MakeRequest("POST", "/api/v1/replications/", b)
+					res, closer, err := cmd.MakeRequest("POST", "/api/v1/replications", b)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}
 					defer closer()
 
-					log.Printf("replication response: %s", string(res))
+					log.Printf("ddm response: %s", string(res))
 
 					return nil
 				},
