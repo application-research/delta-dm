@@ -81,7 +81,6 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 			existing.ActorName = p.ActorName
 		}
 
-		fmt.Println("allow self service", p.AllowSelfService)
 		if p.AllowSelfService == "on" {
 			existing.AllowSelfService = true
 		} else if p.AllowSelfService == "off" {
