@@ -228,7 +228,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 			Size:                 c.Size,
 			SkipIpniAnnounce:     !c.Indexed,
 			RemoveUnsealedCopies: !c.Unsealed,
-			DurationInDays:       c.DealDuration - 3, // TODO: Allow specifying duration, with default
+			DurationInDays:       c.DealDuration, // TODO: Allow specifying duration, with default
 			StartEpochAtDays:     3,
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,

@@ -119,7 +119,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		Size:                 cnt.Size,
 		SkipIpniAnnounce:     !ds.Indexed,
 		RemoveUnsealedCopies: !ds.Unsealed,
-		DurationInDays:       ds.DealDuration - delayDays,
+		DurationInDays:       ds.DealDuration,
 		StartEpochAtDays:     delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        cnt.CommP,

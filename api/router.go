@@ -57,7 +57,7 @@ func InitializeEchoRouterConfig(dldm *core.DeltaDM) {
 
 	apiGroup := e.Group("/api/v1")
 
-	ConfigureDatasetRouter(apiGroup, dldm)
+	ConfigureDatasetsRouter(apiGroup, dldm)
 	ConfigureProvidersRouter(apiGroup, dldm)
 	ConfigureReplicationsRouter(apiGroup, dldm)
 	ConfigureWalletsRouter(apiGroup, dldm)

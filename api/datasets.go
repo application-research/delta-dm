@@ -10,12 +10,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
-	dataset := e.Group("/datasets")
+func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
+	datasets := e.Group("/datasets")
 
-	dataset.Use(dldm.AS.AuthMiddleware)
+	datasets.Use(dldm.AS.AuthMiddleware)
 
-	dataset.GET("", func(c echo.Context) error {
+	datasets.GET("", func(c echo.Context) error {
 		var ds []core.Dataset
 
 		dldm.DB.Model(&core.Dataset{}).Preload("Wallet").Find(&ds)
@@ -35,7 +35,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(200, ds)
 	})
 
-	dataset.POST("", func(c echo.Context) error {
+	datasets.POST("", func(c echo.Context) error {
 		var ads core.Dataset
 
 		if err := c.Bind(&ads); err != nil {
@@ -67,7 +67,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(200, ads)
 	})
 
-	dataset.GET("/content/:dataset", func(c echo.Context) error {
+	datasets.GET("/content/:dataset", func(c echo.Context) error {
 		var content []core.Content
 		var dataset core.Dataset
 
@@ -87,7 +87,7 @@ func ConfigureDatasetRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return c.JSON(200, content)
 	})
 
-	dataset.POST("/content/:dataset", func(c echo.Context) error {
+	datasets.POST("/content/:dataset", func(c echo.Context) error {
 		var content []core.Content
 		var dataset core.Dataset
 		results := struct {
