@@ -149,7 +149,7 @@ func (d *DeltaAPI) MakeOfflineDeals(deals OfflineDealRequest, authString string)
 
 	log.Debugf("delta deals request: %s", string(ds))
 
-	body, closer, err := d.postRequest("/api/v1/deal/piece-commitments", ds, authString)
+	body, closer, err := d.postRequest("/api/v1/deal/imports", ds, authString)
 	if err != nil {
 		return nil, err
 	}
