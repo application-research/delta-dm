@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/application-research/delta-dm/api"
 	"github.com/application-research/delta-dm/core"
 	"github.com/urfave/cli/v2"
 )
@@ -11,7 +12,7 @@ import (
 func ProviderCmd() []*cli.Command {
 	var spId string
 	var spName string
-	var allowSelfService bool
+	var allowSelfService string
 
 	// add a command to run API node
 	var providerCmds []*cli.Command
@@ -71,20 +72,20 @@ func ProviderCmd() []*cli.Command {
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:        "id",
-						Aliases:     []string{"id"},
 						Usage:       "storage provider id to modify (i.e. f012345)",
 						Destination: &spId,
 						Required:    true,
 					},
 					&cli.StringFlag{
 						Name:        "name",
+						Aliases:     []string{"n"},
 						Usage:       "update friendly name of storage provider",
 						Destination: &spName,
 					},
-					&cli.BoolFlag{
+					&cli.StringFlag{
 						Name:        "allow-selfserve",
-						Aliases:     []string{"id"},
-						Usage:       "update enable self-service for provider",
+						Aliases:     []string{"ss"},
+						Usage:       "enable self-service for provider (on|off)",
 						Destination: &allowSelfService,
 					},
 				},
@@ -94,7 +95,13 @@ func ProviderCmd() []*cli.Command {
 						return err
 					}
 
-					body := core.Provider{
+					if allowSelfService != "" {
+						if allowSelfService != "on" && allowSelfService != "off" {
+							return fmt.Errorf("allow-selfserve must be 'on' or 'off'")
+						}
+					}
+
+					body := api.ProviderPutBody{
 						ActorName:        spName,
 						AllowSelfService: allowSelfService,
 					}
@@ -104,7 +111,7 @@ func ProviderCmd() []*cli.Command {
 						return fmt.Errorf("unable to construct request body %s", err)
 					}
 
-					res, closer, err := cmd.MakeRequest("POST", "/api/v1/providers/"+spId, b)
+					res, closer, err := cmd.MakeRequest("PUT", "/api/v1/providers/"+spId, b)
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
 					}

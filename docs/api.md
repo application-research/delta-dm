@@ -193,7 +193,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 ```jsonc
 {
 	actor_name: "Friendly name" // optional - friendly sp name 
-	allow_self_service: true // allow self-service replications
+	allow_self_service: "on" // allow self-service replications ("on" or "off")
 }
 ```
 
