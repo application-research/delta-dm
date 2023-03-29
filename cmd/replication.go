@@ -60,7 +60,7 @@ func ReplicationCmd() []*cli.Command {
 
 					b, err := json.Marshal(body)
 					if err != nil {
-						return fmt.Errorf("unabel to construct request body %s", err)
+						return fmt.Errorf("unable to construct request body %s", err)
 					}
 
 					res, closer, err := cmd.MakeRequest("POST", "/api/v1/replications", b)

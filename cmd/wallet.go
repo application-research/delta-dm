@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/application-research/delta-dm/api"
 	"github.com/urfave/cli/v2"
 )
 
 func WalletCmd() []*cli.Command {
 	var dataset string
+	var walletAddress string
 
 	// add a command to run API node
 	var walletCmds []*cli.Command
@@ -97,7 +99,7 @@ func WalletCmd() []*cli.Command {
 			},
 			{
 				Name:      "delete",
-				Usage:     "Delete a wallet in DDM",
+				Usage:     "delete a wallet",
 				UsageText: "delta-dm wallet delete [wallet address]",
 				Action: func(c *cli.Context) error {
 					cp, err := NewCmdProcessor(c)
@@ -112,6 +114,50 @@ func WalletCmd() []*cli.Command {
 					}
 
 					res, closer, err := cp.MakeRequest(http.MethodDelete, "/api/v1/wallets/"+w, nil)
+					if err != nil {
+						return fmt.Errorf("ddm request invalid: %s", err)
+					}
+					defer closer()
+
+					fmt.Printf("%s", string(res))
+					return nil
+				},
+			},
+			{
+				Name:      "associate",
+				Usage:     "associate wallet with dataset",
+				UsageText: "delta-dm wallet associate [wallet address]",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "dataset",
+						Usage:       "dataset name",
+						Destination: &dataset,
+						Required:    true,
+					},
+					&cli.StringFlag{
+						Name:        "address",
+						Usage:       "wallet address to associate",
+						Destination: &walletAddress,
+						Required:    true,
+					},
+				},
+				Action: func(c *cli.Context) error {
+					cp, err := NewCmdProcessor(c)
+					if err != nil {
+						return fmt.Errorf("failed to connect to ddm node: %s", err)
+					}
+
+					awb := api.AssociateWalletBody{
+						Address: walletAddress,
+						Dataset: dataset,
+					}
+
+					b, err := json.Marshal(awb)
+					if err != nil {
+						return fmt.Errorf("unable to construct request body %s", err)
+					}
+
+					res, closer, err := cp.MakeRequest(http.MethodPost, "/api/v1/wallets/associate", b)
 					if err != nil {
 						return fmt.Errorf("ddm request invalid: %s", err)
 					}

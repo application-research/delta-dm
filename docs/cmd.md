@@ -1,5 +1,7 @@
 # DDM CLI
 
+> Square brackets (ex, `[--dataset <dataset-name>]`) indicate optional arguments.
+
 # daemon
 
 In order for other commands to work, you must have a running daemon to connect to, and execute the commands against.
@@ -21,9 +23,9 @@ Example:
 ```
 
 #### By wallet hex
-`> ./delta-dm wallet import --hex "7b2254797065...."`
+`> ./delta-dm wallet import --hex <wallet hex>`
 
-#### Or directly from Lotus export to DDM Import (hex)
+Example: Import directly from lotus wallet export (hex)
 `> ./delta-dm wallet import --hex $(lotus wallet export f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi)`
 
 
@@ -35,5 +37,55 @@ Example:
 ./delta-dm wallet delete f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi
 ```
 
+### Associate wallet with dataset
+`> ./delta-dm wallet associate --address <address> --dataset <dataset-name>`
+
+Example:
+```bash
+./delta-dm wallet associate --address f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi --dataset delta-test
+```
+
 ### List wallets
 `> ./delta-dm wallet list [--dataset <dataset-name>]`
+
+
+## provider
+### Add a provider
+`> ./delta-dm provider add --id <sp-actor-id> [--name <friendly-name>]`
+
+Example:
+```bash
+./delta-dm provider add --id f01000 --name "My Provider"
+```
+
+### Modify a provider
+`> ./delta-dm provider modify --id <sp-actor-id> [--name <friendly-name>] [--allow-self-service <on|off>]`
+
+Example:
+```bash
+./delta-dm provider modify --id f01000 --name "My Provider" --allow-self-service on
+```
+
+### List providers
+`> ./delta-dm provider list`
+
+## dataset
+### Add a dataset
+`> ./delta-dm dataset add --name <dataset-name> [--replication-quota <quota>] [--duration <deal-duration-days>]`
+
+Example:
+```bash
+./delta-dm dataset add --name delta-test --replication-quota 6 --duration 540
+```
+
+### List datasets
+`> ./delta-dm dataset list`
+
+## replication
+### Create a replication
+`> ./delta-dm replication create --provider <sp-actor-id> -num <num-deals-to-make> [--dataset <dataset-name>]`
+
+Example:
+```bash
+./delta-dm replication create --provider f01000 --num 3 --dataset delta-test
+```
