@@ -194,6 +194,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 {
 	actor_name: "Friendly name" // optional - friendly sp name 
 	allow_self_service: "on" // allow self-service replications ("on" or "off")
+	allowed_datasets: ["delta-test", "delta-test-2"] // list of datasets allowed to be replicated by this SP
 }
 ```
 

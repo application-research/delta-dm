@@ -14,6 +14,7 @@ func ProviderCmd() []*cli.Command {
 	var spId string
 	var spName string
 	var allowSelfService string
+	var allowedDatasets cli.StringSlice
 
 	// add a command to run API node
 	var providerCmds []*cli.Command
@@ -89,6 +90,11 @@ func ProviderCmd() []*cli.Command {
 						Usage:       "enable self-service for provider (on|off)",
 						Destination: &allowSelfService,
 					},
+					&cli.StringSliceFlag{
+						Name:        "allowed-datasets",
+						Usage:       "datasets the provider is permitted to replicate (comma separated list)",
+						Destination: &allowedDatasets,
+					},
 				},
 				Action: func(c *cli.Context) error {
 					cmd, err := NewCmdProcessor(c)
@@ -105,6 +111,7 @@ func ProviderCmd() []*cli.Command {
 					body := api.ProviderPutBody{
 						ActorName:        spName,
 						AllowSelfService: allowSelfService,
+						AllowedDatasets:  allowedDatasets.Value(),
 					}
 
 					b, err := json.Marshal(body)
