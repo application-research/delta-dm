@@ -8,6 +8,7 @@ import (
 	"github.com/application-research/delta-dm/util"
 	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -18,7 +19,9 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	datasets.GET("", func(c echo.Context) error {
 		var ds []core.Dataset
 
-		dldm.DB.Model(&core.Dataset{}).Preload("Wallet").Find(&ds)
+		dldm.DB.Preload("Wallet").Preload("AllowedProviders", func(db *gorm.DB) *gorm.DB {
+			return db.Select("actor_id")
+		}).Find(&ds)
 
 		// Find  # of bytes total and replicated for each dataset
 		for i, d := range ds {

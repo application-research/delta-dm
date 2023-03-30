@@ -59,11 +59,11 @@ Example:
 ```
 
 ### Modify a provider
-`> ./delta-dm provider modify --id <sp-actor-id> [--name <friendly-name>] [--allow-self-service <on|off>]`
+`> ./delta-dm provider modify --id <sp-actor-id> [--name <friendly-name>] [--allowed-datasets <datasets>] [--allow-self-service <on|off>] `
 
 Example:
 ```bash
-./delta-dm provider modify --id f01000 --name "My Provider" --allow-self-service on
+./delta-dm provider modify --id f01000 --name "My Provider" --allowed-datasets delta-test,delta-test-2 --allow-self-service on
 ```
 
 ### List providers

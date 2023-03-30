@@ -33,7 +33,7 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 				return c.String(401, "missing provider self-service token")
 			}
 			var p core.Provider
-			res := dldm.DB.Model(&core.Provider{}).Where("key = ?", providerToken).Find(&p)
+			res := dldm.DB.Model(&core.Provider{}).Preload("AllowedDatasets").Where("key = ?", providerToken).Find(&p)
 
 			if res.Error != nil {
 				log.Errorf("error finding provider: %s", res.Error)
@@ -87,6 +87,18 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	res = dldm.DB.Model(&core.Dataset{}).Where("name = ?", cnt.DatasetName).Find(&ds)
 	if res.Error != nil {
 		return fmt.Errorf("unable to find associated dataset %s", cnt.DatasetName)
+	}
+
+	isAllowed := false
+	for _, allowedDs := range p.AllowedDatasets {
+		if allowedDs.Name == ds.Name {
+			isAllowed = true
+			break
+		}
+	}
+
+	if !isAllowed {
+		return fmt.Errorf("provider '%s' is not allowed to replicate dataset '%s'", p.ActorID, ds.Name)
 	}
 
 	if cnt.NumReplications >= ds.ReplicationQuota {
@@ -157,6 +169,18 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	p := c.Get(PROVIDER).(core.Provider)
+
+	isAllowed := false
+	for _, ds := range p.AllowedDatasets {
+		if ds.Name == dataset {
+			isAllowed = true
+			break
+		}
+	}
+
+	if !isAllowed {
+		return fmt.Errorf("provider '%s' is not allowed to replicate dataset '%s'", p.ActorID, dataset)
+	}
 
 	// give one deal at a time
 	numDeals := uint(1)

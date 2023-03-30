@@ -208,6 +208,10 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 		return err
 	}
 
+	if len(toReplicate) == 0 {
+		return fmt.Errorf("no content to replicate to this provider was found. check dataset-provider allowances, replication quota")
+	}
+
 	var dealsToMake core.OfflineDealRequest
 	log.Debugf("calling DELTA api for %+v deals\n\n", len(toReplicate))
 
@@ -256,11 +260,30 @@ type replicatedContentQueryResponse struct {
 // 					  numDeals (optional) - the number of replications (deals) to return. If nil, return all
 func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetName *string, numDeals *uint) ([]replicatedContentQueryResponse, error) {
 
-	rawQuery := "select * from datasets d inner join contents c " +
-		"on d.name = c.dataset_name where c.comm_p not in " +
-		"(select r.content_comm_p from replications r where r.status != 'FAILURE' and r.provider_actor_id not in (select p.actor_id from providers p where p.actor_id not in (?))) " +
-		"and c.num_replications < d.replication_quota"
-	var rawValues = []interface{}{providerID}
+	rawQuery := `
+  SELECT *
+  FROM datasets d
+  INNER JOIN contents c ON d.name = c.dataset_name
+	-- Only select content that does not have a non-failed replication to this provider
+  WHERE c.comm_p NOT IN (
+    SELECT r.content_comm_p 
+    FROM replications r 
+    WHERE r.status != 'FAILURE' 
+    AND r.provider_actor_id NOT IN (
+      SELECT p.actor_id 
+      FROM providers p 
+      WHERE p.actor_id <> ?
+    )
+  )
+	-- Only select content from datasets that this provider is allowed to replicate
+  AND d.id IN (
+    SELECT dataset_id 
+    FROM provider_allowed_datasets 
+    WHERE provider_actor_id = ?
+  )
+  AND c.num_replications < d.replication_quota 
+	`
+	var rawValues = []interface{}{providerID, providerID}
 
 	if datasetName != nil {
 		rawQuery += " AND d.name = ?"
