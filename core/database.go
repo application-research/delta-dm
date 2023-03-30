@@ -73,7 +73,7 @@ type Provider struct {
 	AllowSelfService bool          `json:"allow_self_service,omitempty" gorm:"notnull,default:true"`
 	BytesReplicated  ByteSizes     `json:"bytes_replicated,omitempty" gorm:"-"`
 	Replications     []Replication `json:"replications,omitempty" gorm:"foreignKey:ProviderActorID"`
-	AllowedDatasets  []Dataset     `json:"allowed_datasets,omitempty" gorm:"many2many:provider_allowed_datasets;"`
+	AllowedDatasets  []Dataset     `json:"allowed_datasets" gorm:"many2many:provider_allowed_datasets;"`
 }
 
 type ProviderAllowedDatasets struct {

@@ -212,22 +212,50 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 #### Body
 ```jsonc
 [
-	{
+{
 		"key": "b3cc8a99-155a-4fff-8974-999ec313e5cc",
-		"actor_id": "f01963614",
+		"actor_id": "f0123456",
+		"actor_name": "jason",
+		"allow_self_service": false,
 		"bytes_replicated": {
-			"raw": 216120230655,
-			"padded": 412316860416
+			"raw": 234130249877,
+			"padded": 446676598784
 		},
+		"allowed_datasets": [
+			{
+				"ID": 1,
+				"CreatedAt": "2023-02-28T13:50:15.591038-08:00",
+				"UpdatedAt": "2023-02-28T13:50:23.928193-08:00",
+				"DeletedAt": null,
+				"name": "delta-test",
+				"replication_quota": 6,
+				"deal_duration": 540,
+				"unsealed": false,
+				"indexed": true,
+				"contents": null,
+				"bytes_replicated": {
+					"raw": 0,
+					"padded": 0
+				},
+				"bytes_total": {
+					"raw": 0,
+					"padded": 0
+				},
+				"allowed_providers": null
+			}
+		]
 	},
 	{
 		"key": "29c0c1ce-6b13-434c-8b94-49ba5a21b7a9",
-		"actor_id": "f01886797",
+		"actor_id": "f0998272",
+		"actor_name": "test sp",
+		"allow_self_service": true,
+		"allowed_datasets": [],
 		"bytes_replicated": {
 			"raw": 0,
 			"padded": 0
-		},
-	}
+		}
+	},
 ]
 ```
 
