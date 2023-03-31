@@ -20,9 +20,9 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 			continue
 		}
 		var newReplication = Replication{
-			ContentCommP:    c.RequestMeta.PieceCommitment.PieceCid,
-			ProviderActorID: c.RequestMeta.Miner,
-			DeltaContentID:  c.ContentID,
+			ContentCommP:    c.DealRequestMeta.PieceCommitment.PieceCid,
+			ProviderActorID: c.DealRequestMeta.Miner,
+			DeltaContentID:  c.DeltaContentID,
 			DealTime:        time.Now(),
 			Status:          StatusPending,
 			IsSelfService:   isSelfService,

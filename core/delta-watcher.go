@@ -76,7 +76,10 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 			if err.Error != nil {
 				return fmt.Errorf("could not find associated content: %s", err.Error)
 			}
-			cnt.NumReplications -= 1
+			// This condition should always be true, but just in case
+			if cnt.NumReplications > 0 {
+				cnt.NumReplications -= 1
+			}
 
 			err = db.Save(&cnt)
 			if err.Error != nil {
