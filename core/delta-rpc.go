@@ -287,15 +287,15 @@ func (r *OfflineDealResponse) Marshal() ([]byte, error) {
 }
 
 type OfflineDealResponseElement struct {
-	Status            string `json:"status"`
-	Message           string `json:"message"`
-	ContentID         int64  `json:"content_id"`
-	PieceCommitmentID int64  `json:"piece_commitment_id"`
-	RequestMeta       Deal   `json:"request_meta"`
+	Status                           string           `json:"status"`
+	Message                          string           `json:"message"`
+	DeltaContentID                   int64            `json:"content_id"`
+	PieceCommitmentID                int64            `json:"piece_commitment_id"`
+	DealRequestMeta                  Deal             `json:"deal_request_meta"`
+	DealProposalParameterRequestMeta ParamRequestMeta `json:"deal_proposal_parameter_request_meta"`
 }
 
 type Deal struct { // AKA meta
-	DeltaContentID       uint64          `json:"content_id,omitempty"` // TODO: rename to delta_id
 	Cid                  string          `json:"cid"`
 	Wallet               Wallet          `json:"wallet"`
 	Miner                string          `json:"miner"` //TODO: rename to provider
@@ -306,6 +306,16 @@ type Deal struct { // AKA meta
 	SkipIpniAnnounce     bool            `json:"skip_ipni_announce"`
 	DurationInDays       uint64          `json:"duration_in_days,omitempty"`
 	StartEpochAtDays     uint64          `json:"start_epoch_at_days,omitempty"`
+}
+
+type ParamRequestMeta struct {
+	ID                 uint64 `json:"ID"`
+	Content            uint64 `json:"content"`
+	Label              string `json:"label"`
+	Duration           uint64 `json:"duration"`
+	RemoveUnsealedCopy bool   `json:"remove_unsealed_copy"`
+	CreatedAt          string `json:"created_at"`
+	UpdatedAt          string `json:"updated_at"`
 }
 
 type PieceCommitment struct {
