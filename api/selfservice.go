@@ -132,7 +132,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		SkipIpniAnnounce:     !ds.Indexed,
 		RemoveUnsealedCopies: !ds.Unsealed,
 		DurationInDays:       ds.DealDuration,
-		StartEpochAtDays:     delayDays,
+		StartEpochInDays:     delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        cnt.CommP,
 			PaddedPieceSize: cnt.PaddedSize,
@@ -214,7 +214,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		SkipIpniAnnounce:     !deal.Indexed,
 		RemoveUnsealedCopies: !deal.Unsealed,
 		DurationInDays:       deal.DealDuration - delayDays,
-		StartEpochAtDays:     delayDays,
+		StartEpochInDays:     delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        deal.CommP,
 			PaddedPieceSize: deal.PaddedSize,

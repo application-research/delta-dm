@@ -305,7 +305,7 @@ type Deal struct { // AKA meta
 	RemoveUnsealedCopies bool            `json:"remove_unsealed_copies"`
 	SkipIpniAnnounce     bool            `json:"skip_ipni_announce"`
 	DurationInDays       uint64          `json:"duration_in_days,omitempty"`
-	StartEpochAtDays     uint64          `json:"start_epoch_at_days,omitempty"`
+	StartEpochInDays     uint64          `json:"start_epoch_in_days,omitempty"`
 }
 
 type ParamRequestMeta struct {
