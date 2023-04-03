@@ -15,12 +15,19 @@ func ContentCmd() []*cli.Command {
 	var contentCmds []*cli.Command
 	contentCmd := &cli.Command{
 		Name:  "content",
-		Usage: "Contents (CAR files) Commands",
+		Usage: "Content (CAR files) Commands",
 		Subcommands: []*cli.Command{
 			{
 				Name:  "add",
 				Usage: "add content to a dataset",
 				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "dataset",
+						Aliases:     []string{"d"},
+						Usage:       "dataset name (slug)",
+						Destination: &datasetName,
+						Required:    true,
+					},
 					&cli.StringFlag{
 						Name:        "dataset",
 						Aliases:     []string{"d"},
