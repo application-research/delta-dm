@@ -212,6 +212,21 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 		delayStartEpoch = *d.DelayStartDays
 	}
 
+	if d.Dataset != nil && *d.Dataset != "" {
+		var datasetExists bool
+		err = dldm.DB.Model(core.Dataset{}).
+			Select("count(*) > 0").
+			Where("name = ?", d.Dataset).
+			Find(&datasetExists).
+			Error
+		if err != nil {
+			return fmt.Errorf("could not check if dataset %s exists: %s", *d.Dataset, err)
+		}
+		if !datasetExists {
+			return fmt.Errorf("dataset %s does not exist in ddm. please add it first", *d.Dataset)
+		}
+	}
+
 	// TODO: Support num_tib to allow specifying the amount of data to replicate
 
 	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.Dataset, d.NumDeals)
@@ -296,7 +311,7 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
 	`
 	var rawValues = []interface{}{providerID, providerID}
 
-	if datasetName != nil {
+	if datasetName != nil && *datasetName != "" {
 		rawQuery += " AND d.name = ?"
 		rawValues = append(rawValues, datasetName)
 	}
