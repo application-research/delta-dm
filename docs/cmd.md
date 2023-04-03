@@ -83,11 +83,11 @@ Example:
 
 ## replication
 ### Create a replication
-`> ./delta-dm replication create --provider <sp-actor-id> -num <num-deals-to-make> [--dataset <dataset-name>]`
+`> ./delta-dm replication create --provider <sp-actor-id> -num <num-deals-to-make> [--dataset <dataset-name>] [--delay-start <delay-start-days>]`
 
 Example:
 ```bash
-./delta-dm replication create --provider f01000 --num 3 --dataset delta-test
+./delta-dm replication create --provider f01000 --num 3 --dataset delta-test --delay-start 3
 ```
 
 ## content

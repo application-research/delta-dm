@@ -57,7 +57,7 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	piece := c.Param("piece")
 	startEpochDelay := c.QueryParam("start_epoch_delay")
-	var delayDays uint64 = 3
+	var delayDays uint64 = DEFAULT_DELAY_DAYS
 
 	if startEpochDelay != "" {
 		var err error

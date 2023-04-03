@@ -13,6 +13,7 @@ func ReplicationCmd() []*cli.Command {
 	var num uint
 	var provider string
 	var dataset string
+	var delayStartDays uint64
 
 	// add a command to run API node
 	var replicationCmds []*cli.Command
@@ -43,6 +44,11 @@ func ReplicationCmd() []*cli.Command {
 						Usage:       "dataset to replicate",
 						Destination: &dataset,
 					},
+					&cli.Uint64Flag{
+						Name:        "delay-start",
+						Usage:       "number of days to delay start of deal",
+						Destination: &delayStartDays,
+					},
 				},
 				Action: func(c *cli.Context) error {
 					cmd, err := NewCmdProcessor(c)
@@ -57,6 +63,10 @@ func ReplicationCmd() []*cli.Command {
 
 					if dataset != "" {
 						body.Dataset = &dataset
+					}
+
+					if delayStartDays != 0 {
+						body.DelayStartDays = &delayStartDays
 					}
 
 					b, err := json.Marshal(body)
