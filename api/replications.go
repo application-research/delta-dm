@@ -12,10 +12,13 @@ import (
 	"gorm.io/gorm"
 )
 
+const DEFAULT_DELAY_DAYS = 3
+
 type PostReplicationBody struct {
-	Provider string  `json:"provider"`
-	Dataset  *string `json:"dataset,omitempty"`
-	NumDeals *uint   `json:"num_deals,omitempty"`
+	Provider       string  `json:"provider"`
+	Dataset        *string `json:"dataset,omitempty"`
+	NumDeals       *uint   `json:"num_deals,omitempty"`
+	DelayStartDays *uint64 `json:"delay_start_days,omitempty"`
 	// NumTib       *int    `json:"num_tib,omitempty"`
 	// PricePerDeal float64 `json:"price_per_deal,omitempty"`
 }
@@ -201,6 +204,14 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("provider %s does not exist in ddm. please add it first", d.Provider)
 	}
 
+	var delayStartEpoch uint64 = DEFAULT_DELAY_DAYS
+	if d.DelayStartDays != nil {
+		if *d.DelayStartDays < 1 || *d.DelayStartDays > 14 {
+			return fmt.Errorf("delay_start_epoch must be between 1 and 14")
+		}
+		delayStartEpoch = *d.DelayStartDays
+	}
+
 	// TODO: Support num_tib to allow specifying the amount of data to replicate
 
 	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.Dataset, d.NumDeals)
@@ -233,7 +244,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 			SkipIpniAnnounce:     !c.Indexed,
 			RemoveUnsealedCopies: !c.Unsealed,
 			DurationInDays:       c.DealDuration,
-			StartEpochInDays:     3, // TODO: Allow specifying duration, with default
+			StartEpochInDays:     delayStartEpoch,
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,
 				PaddedPieceSize: c.PaddedSize,

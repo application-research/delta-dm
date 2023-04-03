@@ -346,7 +346,8 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 {
   provider: "f01234", // required! ID of the SP to create deals with
   dataset: "test-dataset", // optional - if unspecified, will select content from any dataset
-  numDeals: 10, // optional - if unspecified, then numTib must be specified. Number of deals to make
+  num_deals: 10, // Number of deals to make
+	delay_start_days: 3 // Optional - delay start of deals by this many days. Default is 3. Must be between 1 and 14.
 }
 ```
 
