@@ -57,7 +57,7 @@ func ContentCmd() []*cli.Command {
 					}
 
 					var body []byte
-					url := "/contents/" + datasetName
+					url := "/api/v1/contents/" + datasetName
 
 					if jsonData != "" {
 						body = []byte(jsonData)
