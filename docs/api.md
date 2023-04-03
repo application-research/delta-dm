@@ -124,13 +124,20 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 
 ```
 
-### POST /datasets/content/:dataset
+
+## /contents
+### POST /contents/:dataset
 - Add content (CAR files) to the dataset
+- Accepts three types of input - standard (delta-dm) format, singularity format, or CSV- as defined below
 
 #### Request Params
-<nil>
+```jsonc
+?import_type=<type> // singularity or csv. omit for standard format.
+```
 
 #### Request Body
+
+##### delta-dm format
 ```jsonc
 [
   {
@@ -149,6 +156,31 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 ]
 ```
 
+##### singularity format
+```jsonc
+[
+	{
+		"carSize": 24692724205,
+		"dataCid": "bafybeien5jzez2bsn3eluylu2mcdubnnz7bqbx6umw7ijxwl7ghauaaxjq",
+		"pieceCid": "baga6ea4seaqjtm4sapz4vlxur6m37griffry266er5jwrwvpoodfg7mfl33ukcy",
+		"pieceSize": 34359738368
+	},
+	{
+		"carSize": 20709814175,
+		"dataCid": "bafybeif2bu5bdqc6bkcpzg3h24vnavkva7lhjmemd6cwzrjehrtose7pfy",
+		"pieceCid": "baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi",
+		"pieceSize": 34359738368
+	}
+]
+```
+
+##### CSV format
+```csv
+commP,payloadCid,size,paddedSize
+baga6ea4seaqjtm4sapz4vlxur6m37griffry266er5jwrwvpoodfg7mfl33ukcy,bafybeien5jzez2bsn3eluylu2mcdubnnz7bqbx6umw7ijxwl7ghauaaxjq,24692724205,34359738368
+baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdqc6bkcpzg3h24vnavkva7lhjmemd6cwzrjehrtose7pfy,20709814175,34359738368
+```
+
 #### Response Body
 ```jsonc
 {
@@ -162,6 +194,45 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 ```
 
 		
+
+### GET /contents/:dataset
+- Get list of contents in a dataset
+
+#### Request Params
+```jsonc
+:dataset // dataset name to get contents for
+```
+
+
+
+#### Request Body
+<nil>
+
+#### Response
+> 200: Success
+> 500: Fail
+
+```json
+[
+	{
+		"commp": "baga6ea4seaqlxodkgpb5j34cq2bamnhcn73wdma763d3ylxk5wemldpjrpxnkmy",
+		"payload_cid": "bafybeifyaefzfalorttcqfcvago2rbide3mnm72geau6xxdl6iewc5leki",
+		"size": 26619574156,
+		"padded_size": 34359738368,
+		"dataset_name": "delta-test",
+		"num_replications": 0
+	},
+	{
+		"commp": "baga6ea4seaqaqoogvy2fkicdzm5xbmpcn4vsffapc54tfl4nbrlbfczkqsuxooi",
+		"payload_cid": "bafybeiaupshs7vgsgs5e4y6n7tqkz4ghuyt3teqmqqad6ee5drlbg6dcfq",
+		"size": 24389555373,
+		"padded_size": 34359738368,
+		"dataset_name": "delta-test",
+		"num_replications": 0
+	}
+]
+```
+
 ## /providers
 ### POST /providers
 - Add a storage provider

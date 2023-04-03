@@ -31,6 +31,8 @@ func main() {
 	commands = append(commands, cmd.ReplicationCmd()...)
 	commands = append(commands, cmd.ProviderCmd()...)
 	commands = append(commands, cmd.DatasetCmd()...)
+	commands = append(commands, cmd.ContentCmd()...)
+
 	app := &cli.App{
 		Commands: commands,
 		Usage:    "An application to facilitate dataset dealmaking with storage providers",
