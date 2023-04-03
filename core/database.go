@@ -100,6 +100,7 @@ type Dataset struct {
 	Contents         []Content  `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
 	BytesReplicated  ByteSizes  `json:"bytes_replicated,omitempty" gorm:"-"`
 	BytesTotal       ByteSizes  `json:"bytes_total,omitempty" gorm:"-"`
+	CountReplicated  uint64     `json:"count_replicated" gorm:"-"`
 	AllowedProviders []Provider `json:"allowed_providers" gorm:"many2many:provider_allowed_datasets;"`
 }
 

@@ -88,6 +88,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"unsealed": false,
 		"indexed": true,
 		"contents": null,
+		"count_replicated": 21, // # of successful replications/storage deals 
 		"bytes_replicated": [
 			198110211431, // Raw bytes (the content itself)
 			377957122048 // Padded bytes (i.e, filecoin piece)
@@ -111,6 +112,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"unsealed": false,
 		"indexed": true,
 		"contents": null,
+		"count_replicated": 14, // # of successful replications/storage deals 
 		"bytes_replicated": [
 			198110211431, // Raw bytes (the content itself)
 			377957122048 // Padded bytes (i.e, filecoin piece)

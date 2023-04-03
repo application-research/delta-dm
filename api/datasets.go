@@ -31,6 +31,11 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 			ds[i].BytesReplicated = core.ByteSizes{Raw: rb[0], Padded: rb[1]}
 			ds[i].BytesTotal = core.ByteSizes{Raw: tb[0], Padded: tb[1]}
+
+			var countReplicated uint64 = 0
+			dldm.DB.Raw("select count(*) cr FROM contents c inner join replications r on r.content_comm_p = c.comm_p where r.status = 'SUCCESS' AND dataset_name = ?", d.Name).Row().Scan(&countReplicated)
+
+			ds[i].CountReplicated = countReplicated
 		}
 
 		return c.JSON(200, ds)
