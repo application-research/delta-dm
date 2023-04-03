@@ -89,3 +89,19 @@ Example:
 ```bash
 ./delta-dm replication create --provider f01000 --num 3 --dataset delta-test
 ```
+
+## content
+### Import content to a dataset
+`> ./delta-dm content import --dataset <dataset-name> [--json <path-to-json-file>] [--csv <path-to-csv-file>] [--singularity <path-to-singularity-export-json-file>]`
+
+One of `--json`, `--csv`, or `--singularity` must be provided.
+
+For the expected file format, see the [api docs](api.md##/contents)
+
+Example:
+```bash
+./delta-dm content import --dataset delta-test --json ./content.json
+```
+
+### List content in a dataset
+`> ./delta-dm content list --dataset <dataset-name>`
