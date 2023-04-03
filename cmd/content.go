@@ -30,7 +30,7 @@ func ContentCmd() []*cli.Command {
 					&cli.StringFlag{
 						Name:    "json",
 						Aliases: []string{"j"},
-						Usage:   "content in ddm json format",
+						Usage:   "filename of content in ddm json format",
 					},
 					&cli.StringFlag{
 						Name:    "csv",
@@ -40,7 +40,7 @@ func ContentCmd() []*cli.Command {
 					&cli.StringFlag{
 						Name:    "singularity",
 						Aliases: []string{"s"},
-						Usage:   "content in singularity json export format",
+						Usage:   "filename of content in singularity json export format",
 					},
 				},
 				Action: func(c *cli.Context) error {
@@ -48,19 +48,23 @@ func ContentCmd() []*cli.Command {
 					if err != nil {
 						return err
 					}
-					jsonData := c.String("json")
+					jsonFilename := c.String("json")
 					csvFilename := c.String("csv")
-					singularityData := c.String("singularity")
+					singularityDataFilename := c.String("singularity")
 
-					if jsonData == "" && csvFilename == "" && singularityData == "" {
+					if jsonFilename == "" && csvFilename == "" && singularityDataFilename == "" {
 						return fmt.Errorf("must either json, singularity or csv flag")
 					}
 
 					var body []byte
 					url := "/api/v1/contents/" + datasetName
 
-					if jsonData != "" {
-						body = []byte(jsonData)
+					if jsonFilename != "" {
+						jsonFile, err := ioutil.ReadFile(jsonFilename)
+						if err != nil {
+							return fmt.Errorf("failed to open json file: %s", err)
+						}
+						body = jsonFile
 					} else if csvFilename != "" {
 						csvFile, err := ioutil.ReadFile(csvFilename)
 						if err != nil {
@@ -68,12 +72,16 @@ func ContentCmd() []*cli.Command {
 						}
 						body = csvFile
 						url += "?import_type=csv"
-					} else if singularityData != "" {
-						body = []byte(singularityData)
+					} else if singularityDataFilename != "" {
+						singularityFile, err := ioutil.ReadFile(singularityDataFilename)
+						if err != nil {
+							return fmt.Errorf("failed to open singularity json file: %s", err)
+						}
+						body = singularityFile
 						url += "?import_type=singularity"
 					}
 
-					res, closer, err := cmd.MakeRequest("POST", fmt.Sprintf("/contents/%s", datasetName), body)
+					res, closer, err := cmd.MakeRequest("POST", url, body)
 
 					if err != nil {
 						return fmt.Errorf("unable to make request %s", err)
