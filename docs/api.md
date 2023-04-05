@@ -89,6 +89,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"indexed": true,
 		"contents": null,
 		"count_replicated": 21, // # of successful replications/storage deals 
+		"count_total": 210, // total # of contents for this dataset
 		"bytes_replicated": [
 			198110211431, // Raw bytes (the content itself)
 			377957122048 // Padded bytes (i.e, filecoin piece)
@@ -113,6 +114,7 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"indexed": true,
 		"contents": null,
 		"count_replicated": 14, // # of successful replications/storage deals 
+		"count_total": 440, // total # of contents for this dataset
 		"bytes_replicated": [
 			198110211431, // Raw bytes (the content itself)
 			377957122048 // Padded bytes (i.e, filecoin piece)

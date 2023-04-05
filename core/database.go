@@ -101,6 +101,7 @@ type Dataset struct {
 	BytesReplicated  ByteSizes  `json:"bytes_replicated,omitempty" gorm:"-"`
 	BytesTotal       ByteSizes  `json:"bytes_total,omitempty" gorm:"-"`
 	CountReplicated  uint64     `json:"count_replicated" gorm:"-"`
+	CountTotal       uint64     `json:"count_total" gorm:"-"`
 	AllowedProviders []Provider `json:"allowed_providers" gorm:"many2many:provider_allowed_datasets;"`
 }
 
