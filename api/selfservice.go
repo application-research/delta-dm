@@ -10,6 +10,10 @@ import (
 
 const PROVIDER = "PROVIDER"
 
+type SelfServiceResponse struct {
+	Cid string `json:"cid"`
+}
+
 func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 	selfService := e.Group("/self-service")
 
@@ -122,7 +126,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	dealsToMake = append(dealsToMake, core.Deal{
-		Cid: cnt.PayloadCID,
+		PayloadCID: cnt.PayloadCID,
 		Wallet: core.Wallet{
 			Addr: wallet.Addr,
 		},
@@ -144,7 +148,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
-	return c.JSON(200, fmt.Sprintf("successfully made deal with %s", p.ActorID))
+	return c.JSON(200, SelfServiceResponse{Cid: cnt.CommP})
 }
 
 func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
@@ -204,7 +208,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 	var dealsToMake []core.Deal
 
 	dealsToMake = append(dealsToMake, core.Deal{
-		Cid: deal.PayloadCID,
+		PayloadCID: deal.PayloadCID,
 		Wallet: core.Wallet{
 			Addr: wallet.Addr,
 		},
@@ -226,5 +230,5 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
-	return c.JSON(200, fmt.Sprintf("successfully made deal with %s", p.ActorID))
+	return c.JSON(200, SelfServiceResponse{Cid: deal.CommP})
 }

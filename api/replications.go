@@ -249,7 +249,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 		}
 
 		dealsToMake = append(dealsToMake, core.Deal{
-			Cid: c.PayloadCID,
+			PayloadCID: c.PayloadCID,
 			Wallet: core.Wallet{
 				Addr: wallet.Addr,
 			},

@@ -296,7 +296,7 @@ type OfflineDealResponseElement struct {
 }
 
 type Deal struct { // AKA meta
-	Cid                  string          `json:"cid"`
+	PayloadCID           string          `json:"cid"` // Payload CID
 	Wallet               Wallet          `json:"wallet"`
 	Miner                string          `json:"miner"` //TODO: rename to provider
 	PieceCommitment      PieceCommitment `json:"piece_commitment"`
