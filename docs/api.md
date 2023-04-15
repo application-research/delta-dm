@@ -296,6 +296,7 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 			"raw": 234130249877,
 			"padded": 446676598784
 		},
+		"count_replicated": 12,
 		"allowed_datasets": [
 			{
 				"ID": 1,
@@ -329,7 +330,8 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 		"bytes_replicated": {
 			"raw": 0,
 			"padded": 0
-		}
+		},
+		"count_replicated": 0,
 	},
 ]
 ```
