@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,7 +18,11 @@ var (
 	log = logging.Logger("router")
 )
 
-func OpenDatabase(dbName string, debug bool) (*gorm.DB, error) {
+// Opens a database connection, and returns a gorm DB object.
+// It will automatically detect either Postgres DSN or, or will fallback to sqlite
+func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
+	var DB *gorm.DB
+	var err error
 	var config = &gorm.Config{}
 	if debug {
 		config = &gorm.Config{
@@ -25,8 +30,13 @@ func OpenDatabase(dbName string, debug bool) (*gorm.DB, error) {
 		}
 	}
 
-	DB, err := gorm.Open(sqlite.Open(dbName), config)
+	if dbDsn[:8] == "postgres" {
+		DB, err = gorm.Open(postgres.Open(dbDsn), config)
+	} else {
+		DB, err = gorm.Open(sqlite.Open(dbDsn), config)
+	}
 
+	// generate new models.
 	ConfigureModels(DB) // create models.
 
 	if err != nil {

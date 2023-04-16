@@ -22,7 +22,7 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "db",
-				Usage:       "connection string for postgres db",
+				Usage:       "connection string for postgres db or sqlite db filename",
 				EnvVars:     []string{"DB_NAME"},
 				DefaultText: "delta-dm.db",
 				Value:       "delta-dm.db",
