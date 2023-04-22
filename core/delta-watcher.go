@@ -100,20 +100,30 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 
 		// Success!
 		case CONTENT_DEAL_PROPOSAL_SENT:
-			toUpdate = append(toUpdate, Replication{
+			r := Replication{
 				Status:         StatusSuccess,
-				ProposalCid:    deal.DealProposals[0].Signed,
-				ContentCommP:   deal.PieceCommitments[0].Piece,
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
-			})
+			}
+			if len(deal.Deals) > 0 {
+				r.ProposalCid = deal.Deals[0].PropCid
+			}
+			if len(deal.PieceCommitments) > 0 {
+				r.ContentCommP = deal.PieceCommitments[0].Piece
+			}
+
+			toUpdate = append(toUpdate, r)
+
 		case CONTENT_DEAL_PROPOSAL_FAILED:
 			r := Replication{
 				Status:         StatusFailure,
 				DeltaContentID: deal.Content.ID,
-				ContentCommP:   deal.PieceCommitments[0].Piece,
 				DeltaMessage:   deal.Content.LastMessage,
 			}
+			if len(deal.PieceCommitments) > 0 {
+				r.ContentCommP = deal.PieceCommitments[0].Piece
+			}
+
 			if deal.DealProposals != nil && len(deal.DealProposals) > 0 {
 				r.ProposalCid = deal.DealProposals[0].Signed
 			}

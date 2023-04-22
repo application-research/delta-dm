@@ -25,14 +25,14 @@ func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, authServerU
 	if err != nil {
 		log.Fatalf("could not connect to db: %s", err)
 	} else {
-		log.Debugf("successfully connected to delta api at %s\n", deltaApi)
+		log.Debugf("successfully connected to delta db at %s\n", deltaApi)
 	}
 
 	dapi, err := NewDeltaAPI(deltaApi, authToken)
 	if err != nil {
 		log.Fatalf("could not connect to delta api: %s", err)
 	} else {
-		log.Debugf("successfully connected to db at %s\n", deltaApi)
+		log.Debugf("successfully connected to api at %s\n", deltaApi)
 	}
 
 	as := NewAuthServer(authServerUrl)
