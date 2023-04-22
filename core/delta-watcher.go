@@ -96,7 +96,6 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 	toUpdate := []Replication{}
 
 	for _, deal := range dealStats {
-		log.Debug(deal.Content.ID)
 		switch deal.Content.Status {
 
 		// Success!
