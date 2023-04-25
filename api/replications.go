@@ -123,14 +123,17 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 	return gqp
 }
 
+type ReplicationResponse struct {
+	Data       []core.Replication `json:"data"`
+	TotalCount int64              `json:"totalCount"`
+}
+
 // handleGetReplications handles the request to get replications
 // @Summary Get replications
 // @Tags replications
 // @Produce  json
 func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	rqp := extractGetReplicationsQueryParams(c)
-
-	var r []core.Replication
 
 	tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
 
@@ -168,9 +171,18 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 		tx.Where("replications.delta_message LIKE ?", "%"+*rqp.Message+"%")
 	}
 
-	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
+	var r []core.Replication
+	var totalCount int64
 
-	return c.JSON(200, r)
+	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
+	tx.Count(&totalCount)
+
+	response := ReplicationResponse{
+		Data:       r,
+		TotalCount: totalCount,
+	}
+
+	return c.JSON(200, response)
 }
 
 // POST /api/replication

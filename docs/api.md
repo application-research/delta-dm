@@ -391,8 +391,11 @@ Specifying a `proposal_cid` or `piece_cid` will override all other parameters.
 #### Response
 > 200: Success
 
+Note the response contains two properties. `totalCount` is the total number of replications given the filter parameters (ignoring limit/offset), and `data` contains the actual replication data.
+
 ```json
-[
+{
+	"data": [
 		{
 		"ID": 8,
 		"CreatedAt": "2023-03-01T19:16:14.956554-08:00",
@@ -474,8 +477,10 @@ Specifying a `proposal_cid` or `piece_cid` will override all other parameters.
 		"content_commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
 		"status": "FAILURE",
 		"delta_message": "deal proposal rejected: failed validation: invalid deal end epoch 4236142: cannot be more than 1555200 past current epoch 2660782"
-	}
-]
+		}
+	],
+	"totalCount": 4,
+}
 ```
 
 ## /wallets
