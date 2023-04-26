@@ -296,16 +296,16 @@ type OfflineDealResponseElement struct {
 }
 
 type Deal struct { // AKA meta
-	PayloadCID           string          `json:"cid"` // Payload CID
-	Wallet               Wallet          `json:"wallet"`
-	Miner                string          `json:"miner"` //TODO: rename to provider
-	PieceCommitment      PieceCommitment `json:"piece_commitment"`
-	ConnectionMode       string          `json:"connection_mode"`
-	Size                 uint64          `json:"size"`
-	RemoveUnsealedCopies bool            `json:"remove_unsealed_copies"`
-	SkipIpniAnnounce     bool            `json:"skip_ipni_announce"`
-	DurationInDays       uint64          `json:"duration_in_days,omitempty"`
-	StartEpochInDays     uint64          `json:"start_epoch_in_days,omitempty"`
+	PayloadCID         string          `json:"cid"` // Payload CID
+	Wallet             Wallet          `json:"wallet"`
+	Miner              string          `json:"miner"` //TODO: rename to provider
+	PieceCommitment    PieceCommitment `json:"piece_commitment"`
+	ConnectionMode     string          `json:"connection_mode"`
+	Size               uint64          `json:"size"`
+	RemoveUnsealedCopy bool            `json:"remove_unsealed_copy"`
+	SkipIpniAnnounce   bool            `json:"skip_ipni_announce"`
+	DurationInDays     uint64          `json:"duration_in_days,omitempty"`
+	StartEpochInDays   uint64          `json:"start_epoch_in_days,omitempty"`
 }
 
 type ParamRequestMeta struct {
