@@ -19,7 +19,7 @@ func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 		var w []core.Wallet
 
-		tx := dldm.DB.Model(&core.Wallet{})
+		tx := dldm.DB.Model(&core.Wallet{}).Preload("Datasets")
 
 		if ds != "" {
 			tx.Where("dataset_name = ?", ds)
@@ -84,26 +84,7 @@ type PostWalletBodyHex struct {
 func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 	authKey := c.Get(core.AUTH_KEY).(string)
 
-	ds := c.QueryParam("dataset")
 	isHex := c.QueryParam("hex")
-
-	// Pre-check: ensure dataset exists before doing anything
-	if ds != "" {
-		var exists bool
-		err := dldm.DB.Model(core.Dataset{}).
-			Select("count(*) > 0").
-			Where("name = ?", ds).
-			Find(&exists).
-			Error
-
-		if err != nil {
-			return fmt.Errorf("could not check if dataset %s exists: %s", ds, err)
-		}
-
-		if !exists {
-			return fmt.Errorf("dataset %s does not exist", ds)
-		}
-	}
 
 	var deltaResp *core.RegisterWalletResponse
 
@@ -145,10 +126,6 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 		Addr: deltaResp.WalletAddr,
 	}
 
-	if ds != "" {
-		newWallet.DatasetName = ds
-	}
-
 	res := dldm.DB.Model(core.Wallet{}).Create(&newWallet)
 	if res.Error != nil {
 		if res.Error.Error() == "UNIQUE constraint failed: wallets.addr" {
@@ -161,8 +138,8 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 }
 
 type AssociateWalletBody struct {
-	Address string `json:"address"`
-	Dataset string `json:"dataset"`
+	Address  string   `json:"address"`
+	Datasets []string `json:"datasets"`
 }
 
 // POST /api/wallet/associate
@@ -174,30 +151,44 @@ func handleAssociateWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return err
 	}
 
-	var exists bool
-	err := dldm.DB.Model(core.Dataset{}).
-		Select("count(*) > 0").
-		Where("name = ?", awb.Dataset).
-		Find(&exists).
-		Error
+	var wallet core.Wallet
+	findWallet := dldm.DB.Model(core.Wallet{}).Where("addr = ?", awb.Address).Find(&wallet)
+	if findWallet.Error != nil {
+		return fmt.Errorf("could not find wallet %s : %s", awb.Address, findWallet.Error)
+	}
 
+	if wallet.Addr == "" {
+		return fmt.Errorf("wallet %s does not exist", awb.Address)
+	}
+
+	if len(awb.Datasets) == 0 {
+		return fmt.Errorf("no datasets provided")
+	}
+
+	var newDatasets []core.Dataset
+	for _, datasetName := range awb.Datasets {
+
+		var dataset core.Dataset
+		err := dldm.DB.Model(core.Dataset{}).
+			Where("name = ?", datasetName).
+			Find(&dataset).
+			Error
+
+		if err != nil {
+			return fmt.Errorf("could not check for dataset %s : %s", datasetName, err)
+		}
+
+		if dataset.ID == 0 {
+			return fmt.Errorf("dataset %s does not exist", datasetName)
+		}
+
+		newDatasets = append(newDatasets, dataset)
+	}
+
+	err := dldm.DB.Model(&wallet).Association("Datasets").Replace(newDatasets)
 	if err != nil {
-		return fmt.Errorf("could not check if dataset %s exists: %s", awb.Dataset, err)
+		return fmt.Errorf("could not associate wallet with dataset: %s", err)
 	}
 
-	if !exists {
-		return fmt.Errorf("dataset %s does not exist", awb.Dataset)
-	}
-
-	res := dldm.DB.Model(&core.Wallet{}).Find(&core.Wallet{Addr: awb.Address}).Update("dataset_name", awb.Dataset)
-
-	if res.RowsAffected == 0 {
-		return fmt.Errorf("wallet not found %s", awb.Address)
-	}
-
-	if res.Error != nil {
-		return fmt.Errorf("could not associate wallet with dataset: %s", res.Error)
-	}
-
-	return c.JSON(200, "successfully associated wallet")
+	return c.JSON(200, "successfully associated wallet with datasets")
 }

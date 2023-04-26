@@ -5,11 +5,19 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/application-research/delta-dm/util"
 	"gorm.io/gorm"
 )
 
 // Make deals for the given OfflineDealRequests, and update DDM database accordingly
 func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, isSelfService bool) (*OfflineDealResponse, error) {
+	if dldm.DryRunMode {
+		fmt.Println(util.Red + "-- DRY RUN MODE (NO DEALS MADE) --" + util.Reset)
+		fmt.Printf("\n\n %+v \n\n", dealsToMake)
+		fmt.Println(util.Red + "---------------------------------" + util.Reset)
+		return &OfflineDealResponse{}, nil
+	}
+
 	deltaResp, err := dldm.DAPI.MakeOfflineDeals(dealsToMake, authKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to make deal with delta api: %s", err)

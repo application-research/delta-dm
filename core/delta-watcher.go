@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/application-research/delta-dm/util"
 	"gorm.io/gorm"
 )
 
@@ -26,6 +27,10 @@ const (
 )
 
 func (ddm *DeltaDM) WatchReplications() {
+	if ddm.DryRunMode {
+		fmt.Println(util.Red + "disabling Delta watcher in dry run mode" + util.Reset)
+		return
+	}
 	go watch(ddm.DB, ddm.DAPI)
 }
 

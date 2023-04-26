@@ -38,11 +38,11 @@ Example:
 ```
 
 ### Associate wallet with dataset
-`> ./delta-dm wallet associate --address <address> --dataset <dataset-name>`
+`> ./delta-dm wallet associate --address <address> --datasets <dataset-name-1>,<dataset-name-2>`
 
 Example:
 ```bash
-./delta-dm wallet associate --address f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi --dataset delta-test
+./delta-dm wallet associate --address f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi --datasets delta-test,delta-test-2
 ```
 
 ### List wallets
