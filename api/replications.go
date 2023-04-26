@@ -329,11 +329,20 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
 // Find which wallet to use when making deals for a given dataset
 func walletSelection(db *gorm.DB, datasetName *string) (*core.Wallet, error) {
 	var w []core.Wallet
-	res := db.Model(&core.Wallet{}).Where("dataset_name = ?", datasetName).Find(&w)
+
+	// res := db.Model(&core.Dataset{}).Where("name = ?", datasetName).Find(&ds)
+	res := db.Raw("select * from wallets w inner join wallet_datasets wd on w.addr = wd.wallet_addr inner join datasets d on wd.dataset_id = d.id where d.name = ?", datasetName).Scan(&w)
+
+	// err := db.Model(&core.Dataset{}).Where("name = ?", datasetName).Association("Wallets").Find(&w)
 
 	if res.Error != nil {
 		return nil, res.Error
 	}
+
+	// err := db.Model(&core.WalletDatasets{}).Where("dataset_id = ?", ds.ID).Association("Wallets").Find(&w)
+	// if err != nil {
+	// 	return nil, res.Error
+	// }
 
 	if len(w) == 0 {
 		return nil, fmt.Errorf("no wallet found for dataset '%s'", *datasetName)

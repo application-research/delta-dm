@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/application-research/delta-dm/api"
 	"github.com/application-research/delta-dm/core"
+	"github.com/application-research/delta-dm/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
 func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 	var debug bool = false
+	var dryRun bool = false
 	var dbConnStr string
 	var deltaApi string
 	var deltaAuthToken string
@@ -56,6 +60,12 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 				Usage:       "set to enable debug logging output",
 				Destination: &debug,
 			},
+			&cli.BoolFlag{
+				Name:        "dry-run",
+				Hidden:      true,
+				Usage:       "don't actually make deals (for development and testing)",
+				Destination: &dryRun,
+			},
 		},
 
 		Action: func(cctx *cli.Context) error {
@@ -63,7 +73,15 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 				log.SetLevel(log.DebugLevel)
 			}
 
-			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, authServer, di, debug)
+			fmt.Println(util.Green + "Delta DM - By Protocol Labs - Outercore Engineering" + util.Reset)
+
+			fmt.Println(util.Blue + "Starting DDM daemon..." + util.Reset)
+
+			if dryRun {
+				fmt.Println(util.Yellow + "Running in dry-run mode. No deals will be made." + util.Reset)
+			}
+
+			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, authServer, di, debug, dryRun)
 			dldm.WatchReplications()
 			api.InitializeEchoRouterConfig(dldm)
 			api.LoopForever()
