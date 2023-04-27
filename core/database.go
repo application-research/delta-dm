@@ -105,7 +105,7 @@ type Dataset struct {
 	Name             string     `json:"name" gorm:"unique; not null"`
 	ReplicationQuota uint64     `json:"replication_quota"`
 	DealDuration     uint64     `json:"deal_duration"`
-	Wallets          []Wallet   `json:"wallet,omitempty" gorm:"many2many:wallet_datasets;"`
+	Wallets          []Wallet   `json:"wallets,omitempty" gorm:"many2many:wallet_datasets;"`
 	Unsealed         bool       `json:"unsealed"`
 	Indexed          bool       `json:"indexed"`
 	Contents         []Content  `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`

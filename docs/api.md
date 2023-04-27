@@ -80,11 +80,13 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"replication_quota": 6,
 		"delay_start_epoch": 7,
 		"deal_duration": 540,
-		"wallet": {
+		"wallets": [
+			{
 			"address": "f1tuoahmuwfhnxpugqigxliu4muasggezw2efuczq",
 			"dataset_name": "delta-test",
 			"type": "secp256k1"
-		},
+			}
+		],
 		"unsealed": false,
 		"indexed": true,
 		"contents": null,
