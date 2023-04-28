@@ -15,10 +15,11 @@ var AUTH_KEY = "AUTH_KEY"
 
 type AuthServer struct {
 	authServerUrl string
+	authToken     string
 }
 
-func NewAuthServer(authServerUrl string) *AuthServer {
-	return &AuthServer{authServerUrl: authServerUrl}
+func NewAuthServer(authServerUrl string, authToken string) *AuthServer {
+	return &AuthServer{authServerUrl: authServerUrl, authToken: authToken}
 }
 
 func (as *AuthServer) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -29,7 +30,7 @@ func (as *AuthServer) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(401, err.Error())
 		}
 
-		res, err := as.checkAuthToken(*authKey)
+		res, err := as.checkEstuaryAuthToken(*authKey)
 		if err != nil {
 			return c.JSON(401, err.Error())
 		}
@@ -38,10 +39,14 @@ func (as *AuthServer) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(401, res.Details)
 		}
 
+		valid := as.checkLocalAuthToken(*authKey)
+		if !valid {
+			return c.JSON(401, "this auth key is not permitted to access this instance of DDM")
+		}
+
 		c.Set(AUTH_KEY, *authKey)
 
 		return next(c)
-
 	}
 }
 
@@ -69,7 +74,7 @@ func extractAuthKey(authorizationString string) (*string, error) {
 }
 
 // Makes a request to the auth server to check if a token is valid
-func (as *AuthServer) checkAuthToken(token string) (*AuthResult, error) {
+func (as *AuthServer) checkEstuaryAuthToken(token string) (*AuthResult, error) {
 	rqBody := strings.NewReader(fmt.Sprintf(`{"token": "%s"}`, token))
 	resp, err := http.Post(as.authServerUrl+"/check-api-key", "application/json", rqBody)
 	if err != nil {
@@ -93,6 +98,11 @@ func (as *AuthServer) checkAuthToken(token string) (*AuthResult, error) {
 	}
 
 	return &ar.Result, nil
+}
+
+// Check the local DB to see if a token is valid
+func (as *AuthServer) checkLocalAuthToken(token string) bool {
+	return token == as.authToken
 }
 
 type AuthResponse struct {
