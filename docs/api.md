@@ -5,7 +5,7 @@ All endpoints are prefixed with `/api/v1`.
 
 For example, `http://localhost:1314/api/v1/datasets`
 
-All endpoints (with the exception of `/self-service`) require the `Authorization: Bearer <XXX>` header present on the request. Set this to the Delta API key.
+All endpoints (with the exception of `/self-service`) require the `Authorization: Bearer <XXX>` header present on the request. It must match the `Delta API Key` that is passed into `delta-dm daemon` in order to be permitted to make requests.
 
 ## /health
 

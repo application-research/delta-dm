@@ -9,18 +9,17 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 var AUTH_KEY = "AUTH_KEY"
 
 type AuthServer struct {
 	authServerUrl string
-	db            *gorm.DB
+	authToken     string
 }
 
-func NewAuthServer(authServerUrl string, db *gorm.DB) *AuthServer {
-	return &AuthServer{authServerUrl: authServerUrl, db: db}
+func NewAuthServer(authServerUrl string, authToken string) *AuthServer {
+	return &AuthServer{authServerUrl: authServerUrl, authToken: authToken}
 }
 
 func (as *AuthServer) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -40,11 +39,9 @@ func (as *AuthServer) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(401, res.Details)
 		}
 
-		valid, err := as.checkLocalAuthToken(*authKey)
-		if err != nil {
-			return c.JSON(401, err.Error())
-		} else if !valid {
-			return c.JSON(401, "auth key is not registered in ddm")
+		valid := as.checkLocalAuthToken(*authKey)
+		if !valid {
+			return c.JSON(401, "this auth key is not permitted to access this instance of DDM")
 		}
 
 		c.Set(AUTH_KEY, *authKey)
@@ -104,19 +101,8 @@ func (as *AuthServer) checkEstuaryAuthToken(token string) (*AuthResult, error) {
 }
 
 // Check the local DB to see if a token is valid
-func (as *AuthServer) checkLocalAuthToken(token string) (bool, error) {
-	var at Auth
-	res := as.db.Model(&Auth{}).Where("auth_token = ?", token).First(&at)
-
-	if res.Error != nil {
-		return false, res.Error
-	}
-
-	if at.AuthToken != token {
-		return false, nil
-	}
-
-	return true, nil
+func (as *AuthServer) checkLocalAuthToken(token string) bool {
+	return token == as.authToken
 }
 
 type AuthResponse struct {
