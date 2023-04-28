@@ -46,7 +46,7 @@ func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	err := db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{}, &WalletDatasets{})
+	err := db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{}, &WalletDatasets{}, &Auth{})
 
 	if err != nil {
 		log.Fatalf("error migrating database: %s", err)
@@ -60,6 +60,10 @@ const (
 	StatusSuccess ReplicationStatus = "SUCCESS"
 	StatusFailure ReplicationStatus = "FAILURE"
 )
+
+type Auth struct {
+	AuthToken string `json:"auth_token" gorm:"primaryKey"`
+}
 
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
