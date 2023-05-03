@@ -182,8 +182,6 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	p := c.Get(PROVIDER).(core.Provider)
 
-	fmt.Printf("\n\n%+v\n\n", p)
-
 	isAllowed := false
 	for _, rp := range p.ReplicationProfiles {
 		if rp.DatasetID == ds.ID {

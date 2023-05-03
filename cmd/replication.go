@@ -15,7 +15,6 @@ func ReplicationCmd() []*cli.Command {
 	var dataset string
 	var delayStartDays uint64
 
-	// add a command to run API node
 	var replicationCmds []*cli.Command
 	replicationCmd := &cli.Command{
 		Name:  "replication",

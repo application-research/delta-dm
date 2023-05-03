@@ -18,7 +18,6 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 	var deltaAuthToken string
 	var authServer string
 
-	// add a command to run API node
 	var daemonCommands []*cli.Command
 	daemonCmd := &cli.Command{
 		Name:  "daemon",

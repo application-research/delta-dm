@@ -15,7 +15,6 @@ func DatasetCmd() []*cli.Command {
 	var replicationQuota uint64
 	var dealDuration uint64
 
-	// add a command to run API node
 	var datasetCmds []*cli.Command
 	datasetCmd := &cli.Command{
 		Name:  "dataset",
