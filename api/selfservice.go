@@ -93,10 +93,12 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to find associated dataset %s", cnt.DatasetName)
 	}
 
+	var rp core.ReplicationProfile
 	isAllowed := false
-	for _, rp := range p.ReplicationProfiles {
-		if rp.DatasetID == ds.ID {
+	for _, thisRp := range p.ReplicationProfiles {
+		if thisRp.DatasetID == ds.ID {
 			isAllowed = true
+			rp = thisRp
 			break
 		}
 	}
@@ -130,13 +132,13 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		Wallet: core.Wallet{
 			Addr: wallet.Addr,
 		},
-		ConnectionMode: "import",
-		Miner:          p.ActorID,
-		Size:           cnt.Size,
-		// SkipIpniAnnounce:   !ds.Indexed,
-		// RemoveUnsealedCopy: !ds.Unsealed,
-		DurationInDays:   ds.DealDuration,
-		StartEpochInDays: delayDays,
+		ConnectionMode:     "import",
+		Miner:              p.ActorID,
+		Size:               cnt.Size,
+		SkipIpniAnnounce:   !rp.Indexed,
+		RemoveUnsealedCopy: !rp.Unsealed,
+		DurationInDays:     ds.DealDuration,
+		StartEpochInDays:   delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        cnt.CommP,
 			PaddedPieceSize: cnt.PaddedSize,
@@ -220,13 +222,13 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		Wallet: core.Wallet{
 			Addr: wallet.Addr,
 		},
-		ConnectionMode: "import",
-		Miner:          p.ActorID,
-		Size:           deal.Size,
-		// SkipIpniAnnounce:   !deal.Indexed,
-		// RemoveUnsealedCopy: !deal.Unsealed,
-		DurationInDays:   deal.DealDuration - delayDays,
-		StartEpochInDays: delayDays,
+		ConnectionMode:     "import",
+		Miner:              p.ActorID,
+		Size:               deal.Size,
+		SkipIpniAnnounce:   !deal.ReplicationProfile.Indexed,
+		RemoveUnsealedCopy: !deal.ReplicationProfile.Unsealed,
+		DurationInDays:     deal.DealDuration - delayDays,
+		StartEpochInDays:   delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        deal.CommP,
 			PaddedPieceSize: deal.PaddedSize,
