@@ -15,7 +15,6 @@ func ReplicationProfilesCmd() []*cli.Command {
 	var unsealed bool
 	var indexed bool
 
-	// add a command to run API node
 	var providerCmds []*cli.Command
 	providerCmd := &cli.Command{
 		Name:    "replication-profile",
@@ -35,6 +34,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 					&cli.UintFlag{
 						Name:        "dataset",
 						Usage:       "dataset id",
+						Aliases:     []string{"dsid"},
 						Destination: &datasetId,
 						Required:    true,
 					},
@@ -91,6 +91,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 					&cli.UintFlag{
 						Name:        "dataset",
 						Usage:       "dataset id",
+						Aliases:     []string{"dsid"},
 						Destination: &datasetId,
 						Required:    true,
 					},
@@ -147,6 +148,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 					&cli.UintFlag{
 						Name:        "dataset",
 						Usage:       "dataset id",
+						Aliases:     []string{"dsid"},
 						Destination: &datasetId,
 						Required:    true,
 					},

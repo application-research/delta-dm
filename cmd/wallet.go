@@ -15,7 +15,6 @@ func WalletCmd() []*cli.Command {
 	var dataset string
 	var walletAddress string
 
-	// add a command to run API node
 	var walletCmds []*cli.Command
 	walletCmd := &cli.Command{
 		Name:  "wallet",

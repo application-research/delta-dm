@@ -15,7 +15,6 @@ func ProviderCmd() []*cli.Command {
 	var spName string
 	var allowSelfService string
 
-	// add a command to run API node
 	var providerCmds []*cli.Command
 	providerCmd := &cli.Command{
 		Name:  "provider",

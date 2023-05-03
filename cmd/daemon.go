@@ -19,7 +19,6 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 	var authServer string
 	var port uint
 
-	// add a command to run API node
 	var daemonCommands []*cli.Command
 	daemonCmd := &cli.Command{
 		Name:  "daemon",
