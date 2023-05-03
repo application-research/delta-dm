@@ -23,7 +23,7 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 	providers.GET("", func(c echo.Context) error {
 		var p []core.Provider
 
-		dldm.DB.Preload("AllowedDatasets").Find(&p)
+		dldm.DB.Preload("ReplicationProfiles").Find(&p)
 
 		for i, sp := range p {
 			var rb [2]uint64
