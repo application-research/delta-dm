@@ -15,35 +15,14 @@ type ReplicationProfile struct {
 }
 
 func ConfigureReplicationProfilesRouter(e *echo.Group, dldm *core.DeltaDM) {
-	replicationProfiles := e.Group("/replication_profiles")
+	replicationProfiles := e.Group("/replication-profiles")
 
 	replicationProfiles.Use(dldm.AS.AuthMiddleware)
 
 	replicationProfiles.GET("", func(c echo.Context) error {
 		var p []core.ReplicationProfile
-		datasetName := c.QueryParam("dataset_name")
-		providerActorID := c.QueryParam("provider_actor_id")
 
-		tx := dldm.DB.Model(&core.ReplicationProfile{})
-		if datasetName != "" {
-			var ds core.Dataset
-
-			res := dldm.DB.Where("name = ?", datasetName).First(&ds)
-
-			if res.Error != nil {
-				return fmt.Errorf("error finding dataset %s: %s", datasetName, res.Error)
-			}
-			if ds.ID == 0 {
-				return fmt.Errorf("dataset %s not found", datasetName)
-			}
-			tx.Where("dataset_id = ?", ds.ID)
-		}
-
-		if providerActorID != "" {
-			tx.Where("provider_actor_id = ?", providerActorID)
-		}
-
-		res := tx.Find(&p)
+		res := dldm.DB.Model(&core.ReplicationProfile{}).Find(&p)
 		if res.Error != nil {
 			return fmt.Errorf("error finding replication profiles: %s", res.Error)
 		}
