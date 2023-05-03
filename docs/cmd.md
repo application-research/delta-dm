@@ -105,3 +105,23 @@ Example:
 
 ### List content in a dataset
 `> ./delta-dm content list --dataset <dataset-name>`
+
+
+## replication profiles
+- Note: `replication-profile`/`rp` commands take a `dataset id`, not a `dataset name`- you can run `dataset list` to get the id for a dataset.
+### Add a replication profile
+`> ./delta-dm rp add --spid <sp-id> --dataset <dataset-id> [--unsealed] [--indexed]`
+
+Example:
+```bash
+./delta-dm rp add --spid f01000 --dataset 1 --unsealed --indexed
+```
+
+### Modify a replication profile
+`> ./delta-dm rp modify --spid <sp-id> --dataset <dataset-id> [--unsealed] [--indexed]`
+
+### Delete a replication profile
+`> ./delta-dm rp delete --spid <sp-id> --dataset <dataset-id>`
+
+### List replication profiles
+`> ./delta-dm rp list`

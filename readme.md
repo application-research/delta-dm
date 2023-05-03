@@ -4,7 +4,7 @@
 
 A tool to manage deal replication tracking for onboarding datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
 
-## Data Flow
+## Core Concepts
 
 ### Dataset
 The top-level logical grouping of data in DDM is the **dataset**. Datasets are identified by a name (aka "slug"), along with a replication quota, deal length, and a wallet to make the deals from.
@@ -16,9 +16,12 @@ Once a dataset has been created, content may be added to it. A content represent
 ### Providers
 DDM tracks deals to Storage Providers in the network. Add a list of storage providers to DDM before making deals to begin tracking them.
 
+### Replication Profiles
+A **Replication Profile** is what ties a **Dataset** together with a **Provider**. It defines the parameters for any deals made to that provider for that dataset. Currently, it allows specifying whether to keep an `unsealed copy` and whether to announce to the `IPNI` indexer. This allows for flexibility in how deals are made to different providers, such as defining a single SP to host the unsealed copies for retrieval while the others maintain a cold copy for backup.
+
 
 ### Replication
-Once a **Dataset**, **Content**, and **Providers** have been specified, the DDM `replication` API can be called to issue a number of import deals out to the providers. 
+Once a **Dataset**, **Content**, **Providers**, and a **Replication Strategy** have been specified, DDM can make replications for the content to the providers. A **Replication** is a single deal made to a single provider for a single piece of content. Replications are tracked by DDM, and can be queried for status and deal information.
 
 
 # Instructions
