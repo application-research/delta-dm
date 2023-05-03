@@ -11,9 +11,8 @@ import (
 )
 
 type ProviderPutBody struct {
-	ActorName        string   `json:"actor_name"`
-	AllowSelfService string   `json:"allow_self_service"`
-	AllowedDatasets  []string `json:"allowed_datasets"`
+	ActorName        string `json:"actor_name"`
+	AllowSelfService string `json:"allow_self_service"`
 }
 
 func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -91,22 +90,6 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 			existing.AllowSelfService = true
 		} else if p.AllowSelfService == "off" {
 			existing.AllowSelfService = false
-		}
-
-		// If array of allowed datasets is empty, don't modify the association
-		if len(p.AllowedDatasets) > 0 {
-			var newAllowedDatasets []core.Dataset
-			for _, ds_name := range p.AllowedDatasets {
-				var ds core.Dataset
-				res := dldm.DB.Model(&core.Dataset{}).Where("name = ?", ds_name).First(&ds)
-				if res.Error != nil {
-					return fmt.Errorf("error fetching dataset %s : %s", ds_name, res.Error)
-				} else {
-					newAllowedDatasets = append(newAllowedDatasets, ds)
-				}
-			}
-
-			dldm.DB.Model(&existing).Association("AllowedDatasets").Replace(newAllowedDatasets)
 		}
 
 		res = dldm.DB.Save(&existing)

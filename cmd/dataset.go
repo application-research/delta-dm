@@ -81,8 +81,8 @@ func DatasetCmd() []*cli.Command {
 						Name:             datasetName,
 						ReplicationQuota: replicationQuota,
 						DealDuration:     dealDuration,
-						Indexed:          announceToIndexer,
-						Unsealed:         keepUnsealedCopy,
+						// Indexed:          announceToIndexer,
+						// Unsealed:         keepUnsealedCopy,
 					}
 
 					b, err := json.Marshal(body)

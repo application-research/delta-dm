@@ -270,13 +270,13 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 			Wallet: core.Wallet{
 				Addr: wallet.Addr,
 			},
-			ConnectionMode:     "import",
-			Miner:              d.Provider,
-			Size:               c.Size,
-			SkipIpniAnnounce:   !c.Indexed,
-			RemoveUnsealedCopy: !c.Unsealed,
-			DurationInDays:     c.DealDuration,
-			StartEpochInDays:   delayStartEpoch,
+			ConnectionMode: "import",
+			Miner:          d.Provider,
+			Size:           c.Size,
+			// SkipIpniAnnounce:   !c.Indexed,
+			// RemoveUnsealedCopy: !c.Unsealed,
+			DurationInDays:   c.DealDuration,
+			StartEpochInDays: delayStartEpoch,
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,
 				PaddedPieceSize: c.PaddedSize,
@@ -295,6 +295,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 type replicatedContentQueryResponse struct {
 	core.Content
 	core.Dataset
+	core.ReplicationProfile
 }
 
 // Query the database for all contant that does not have replications to this actor yet
@@ -308,6 +309,7 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
   SELECT *
   FROM datasets d
   INNER JOIN contents c ON d.name = c.dataset_name
+  INNER JOIN replication_profiles rp ON rp.dataset_id = d.id
 	-- Only select content that does not have a non-failed replication to this provider
   WHERE c.comm_p NOT IN (
     SELECT r.content_comm_p 
@@ -319,12 +321,8 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
       WHERE p.actor_id <> ?
     )
   )
-	-- Only select content from datasets that this provider is allowed to replicate
-  AND d.id IN (
-    SELECT dataset_id 
-    FROM provider_allowed_datasets 
-    WHERE provider_actor_id = ?
-  )
+  -- Only select content from datasets that this provider is allowed to replicate
+  AND rp.provider_actor_id = ?
   AND c.num_replications < d.replication_quota 
 	`
 	var rawValues = []interface{}{providerID, providerID}
