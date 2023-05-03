@@ -52,8 +52,6 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 	"name": "delta-test",
 	"replication_quota": 6,
 	"deal_duration": 540,
-	"unsealed": false,
-	"indexed": true
 }
 ```
 
@@ -87,8 +85,6 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 			"type": "secp256k1"
 			}
 		],
-		"unsealed": false,
-		"indexed": true,
 		"contents": null,
 		"count_replicated": 21, // # of successful replications/storage deals 
 		"count_total": 210, // total # of contents for this dataset
@@ -99,6 +95,14 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"bytes_total": [
 			1801001922192, // Raw bytes (the content itself)
 			3435973836800 // Padded bytes (i.e, filecoin piece)
+		],
+		"replication_profiles": [
+			{
+				"provider_actor_id": "f012345",
+				"dataset_id": 1,
+				"unsealed": false,
+				"indexed": false
+			}
 		]
 	},
 	{
@@ -112,8 +116,6 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 			"dataset_name": "delta-test-2",
 			"type": "secp256k1"
 		},
-		"unsealed": false,
-		"indexed": true,
 		"contents": null,
 		"count_replicated": 14, // # of successful replications/storage deals 
 		"count_total": 440, // total # of contents for this dataset
@@ -124,6 +126,14 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"bytes_total": [
 			1801001922192, // Raw bytes (the content itself)
 			3435973836800 // Padded bytes (i.e, filecoin piece)
+		]
+		"replication_profiles": [
+			{
+				"provider_actor_id": "f012345",
+				"dataset_id": 2,
+				"unsealed": false,
+				"indexed": false
+			}
 		]
 	}
 ]
@@ -271,7 +281,6 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 {
 	actor_name: "Friendly name" // optional - friendly sp name 
 	allow_self_service: "on" // allow self-service replications ("on" or "off")
-	allowed_datasets: ["delta-test", "delta-test-2"] // list of datasets allowed to be replicated by this SP
 }
 ```
 
@@ -292,34 +301,25 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 {
 		"key": "b3cc8a99-155a-4fff-8974-999ec313e5cc",
 		"actor_id": "f0123456",
-		"actor_name": "jason",
+		"actor_name": "friendly sp",
 		"allow_self_service": false,
 		"bytes_replicated": {
 			"raw": 234130249877,
 			"padded": 446676598784
 		},
 		"count_replicated": 12,
-		"allowed_datasets": [
+		"replication_profiles": [
 			{
-				"ID": 1,
-				"CreatedAt": "2023-02-28T13:50:15.591038-08:00",
-				"UpdatedAt": "2023-02-28T13:50:23.928193-08:00",
-				"DeletedAt": null,
-				"name": "delta-test",
-				"replication_quota": 6,
-				"deal_duration": 540,
+				"provider_actor_id": "f0123456",
+				"dataset_id": 1,
 				"unsealed": false,
-				"indexed": true,
-				"contents": null,
-				"bytes_replicated": {
-					"raw": 0,
-					"padded": 0
-				},
-				"bytes_total": {
-					"raw": 0,
-					"padded": 0
-				},
-				"allowed_providers": null
+				"indexed": false
+			},
+			{
+				"provider_actor_id": "f0123456",
+				"dataset_id": 2,
+				"unsealed": false,
+				"indexed": false
 			}
 		]
 	},
@@ -328,7 +328,7 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 		"actor_id": "f0998272",
 		"actor_name": "test sp",
 		"allow_self_service": true,
-		"allowed_datasets": [],
+		"replication_profiles": [],
 		"bytes_replicated": {
 			"raw": 0,
 			"padded": 0
@@ -624,4 +624,84 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 > 200: Success
 ```sh
 "successfully made deal with f0123456"
+```
+
+## /replication-profiles
+
+### GET /replication-profiles
+- Get all replication profiles
+
+#### Params
+<none>
+
+#### Body
+<none>
+
+#### Response
+```json
+[
+	{
+		"provider_actor_id": "f012345",
+		"dataset_id": 1,
+		"unsealed": false,
+		"indexed": false
+	},
+	{
+		"provider_actor_id": "f012345",
+		"dataset_id": 2,
+		"unsealed": true,
+		"indexed": false
+	}
+]
+```
+
+### PUT /replication-profiles
+- Update a replication profile
+
+#### Params
+<none>
+
+#### Body
+```json
+{
+	"provider_actor_id": "f012345", 
+	"dataset_id": 1,
+	"unsealed": true,
+	"indexed": true
+}
+```
+
+- Note: `provider_actor_id` and `dataset_id` cannot be changed with the PUT request - they are used to identify the profile to update.
+
+#### Response
+> 200: Success
+
+```json	
+{
+	"provider_actor_id": "f012345",
+	"dataset_id": 1,
+	"unsealed": true,
+	"indexed": true
+}
+```
+
+### DELETE /replication-profiles
+- Delete a replication profile
+
+#### Params
+<none>
+
+#### Body
+```json
+{
+	"provider_actor_id": "f012345", 
+	"dataset_id": 2,
+}
+```
+
+#### Response
+> 200: Success
+
+```json
+"replication profile with ProviderActorID f012345 and DatasetID 2 deleted successfully"
 ```
