@@ -37,7 +37,7 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 				return c.String(401, "missing provider self-service token")
 			}
 			var p core.Provider
-			res := dldm.DB.Model(&core.Provider{}).Preload("AllowedDatasets").Where("key = ?", providerToken).Find(&p)
+			res := dldm.DB.Model(&core.Provider{}).Preload("ReplicationProfiles").Where("key = ?", providerToken).Find(&p)
 
 			if res.Error != nil {
 				log.Errorf("error finding provider: %s", res.Error)
@@ -94,8 +94,8 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	isAllowed := false
-	for _, allowedDs := range p.AllowedDatasets {
-		if allowedDs.Name == ds.Name {
+	for _, rp := range p.ReplicationProfiles {
+		if rp.DatasetID == ds.ID {
 			isAllowed = true
 			break
 		}
@@ -130,13 +130,13 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		Wallet: core.Wallet{
 			Addr: wallet.Addr,
 		},
-		ConnectionMode:     "import",
-		Miner:              p.ActorID,
-		Size:               cnt.Size,
-		SkipIpniAnnounce:   !ds.Indexed,
-		RemoveUnsealedCopy: !ds.Unsealed,
-		DurationInDays:     ds.DealDuration,
-		StartEpochInDays:   delayDays,
+		ConnectionMode: "import",
+		Miner:          p.ActorID,
+		Size:           cnt.Size,
+		// SkipIpniAnnounce:   !ds.Indexed,
+		// RemoveUnsealedCopy: !ds.Unsealed,
+		DurationInDays:   ds.DealDuration,
+		StartEpochInDays: delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        cnt.CommP,
 			PaddedPieceSize: cnt.PaddedSize,
@@ -159,6 +159,12 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a dataset name")
 	}
 
+	var ds core.Dataset
+	dsRes := dldm.DB.Where("name = ?", dataset).First(&ds)
+	if dsRes.Error != nil || ds.ID == 0 {
+		return fmt.Errorf("invalid dataset: %s", dsRes.Error)
+	}
+
 	var delayDays uint64 = 3
 	if startEpochDelay != "" {
 		var err error
@@ -174,9 +180,11 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	p := c.Get(PROVIDER).(core.Provider)
 
+	fmt.Printf("\n\n%+v\n\n", p)
+
 	isAllowed := false
-	for _, ds := range p.AllowedDatasets {
-		if ds.Name == dataset {
+	for _, rp := range p.ReplicationProfiles {
+		if rp.DatasetID == ds.ID {
 			isAllowed = true
 			break
 		}
@@ -212,13 +220,13 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		Wallet: core.Wallet{
 			Addr: wallet.Addr,
 		},
-		ConnectionMode:     "import",
-		Miner:              p.ActorID,
-		Size:               deal.Size,
-		SkipIpniAnnounce:   !deal.Indexed,
-		RemoveUnsealedCopy: !deal.Unsealed,
-		DurationInDays:     deal.DealDuration - delayDays,
-		StartEpochInDays:   delayDays,
+		ConnectionMode: "import",
+		Miner:          p.ActorID,
+		Size:           deal.Size,
+		// SkipIpniAnnounce:   !deal.Indexed,
+		// RemoveUnsealedCopy: !deal.Unsealed,
+		DurationInDays:   deal.DealDuration - delayDays,
+		StartEpochInDays: delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        deal.CommP,
 			PaddedPieceSize: deal.PaddedSize,
