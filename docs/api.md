@@ -5,7 +5,7 @@ All endpoints are prefixed with `/api/v1`.
 
 For example, `http://localhost:1314/api/v1/datasets`
 
-All endpoints (with the exception of `/self-service`) require the `Authorization: Bearer <XXX>` header present on the request. Set this to the Delta API key.
+All endpoints (with the exception of `/self-service`) require the `Authorization: Bearer <XXX>` header present on the request. It must match the `Delta API Key` that is passed into `delta-dm daemon` in order to be permitted to make requests.
 
 ## /health
 
@@ -80,11 +80,13 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 		"replication_quota": 6,
 		"delay_start_epoch": 7,
 		"deal_duration": 540,
-		"wallet": {
+		"wallets": [
+			{
 			"address": "f1tuoahmuwfhnxpugqigxliu4muasggezw2efuczq",
 			"dataset_name": "delta-test",
 			"type": "secp256k1"
-		},
+			}
+		],
 		"unsealed": false,
 		"indexed": true,
 		"contents": null,
@@ -489,7 +491,6 @@ Note the response contains two properties. `totalCount` is the total number of r
 
 #### Params
 ```json
-?dataset-name // OPTIONAL: name that identifies the dataset. Must already exist (add it using /datasets POST). Will associate the newly added wallet with this dataset
 ?hex // OPTIONAL: if true, expects wallet input in Hex format (see Hex wallet import below)
 ```
 
@@ -526,7 +527,13 @@ Note the response contains two properties. `totalCount` is the total number of r
 [
 	{
 		"address": "f1tuoahmuwfhnxpugqigxliu4muasggezw2efuczq",
-		"dataset_name": "delta-test",
+		"datasets": [
+			{
+				...
+				"ID": 1,
+				"name": "delta-test",
+			}
+		],
 		"type": "secp256k1",
 		"balance": {
 			"balance_filecoin": 775398756064282, // fil balance (in attofil)
@@ -561,7 +568,7 @@ Note the response contains two properties. `totalCount` is the total number of r
 ```json
 {
 	"address": "f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi",
-	"dataset": "delta-test"
+	"datasets": ["delta-test", "delta-test-2"]
 }
 ```
 
@@ -569,7 +576,7 @@ Note the response contains two properties. `totalCount` is the total number of r
 > 200: Success
 
 ```json
-"successfully associated wallet with dataset" 
+"successfully associated wallet with datasets" 
 ```
 
 

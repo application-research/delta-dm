@@ -46,7 +46,7 @@ func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	err := db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{})
+	err := db.AutoMigrate(&Replication{}, &Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{}, &WalletDatasets{})
 
 	if err != nil {
 		log.Fatalf("error migrating database: %s", err)
@@ -105,7 +105,7 @@ type Dataset struct {
 	Name             string     `json:"name" gorm:"unique; not null"`
 	ReplicationQuota uint64     `json:"replication_quota"`
 	DealDuration     uint64     `json:"deal_duration"`
-	Wallet           []Wallet   `json:"wallet,omitempty" gorm:"foreignKey:DatasetName;references:Name"`
+	Wallets          []Wallet   `json:"wallets,omitempty" gorm:"many2many:wallet_datasets;"`
 	Unsealed         bool       `json:"unsealed"`
 	Indexed          bool       `json:"indexed"`
 	Contents         []Content  `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
@@ -126,10 +126,15 @@ type Content struct {
 	NumReplications uint64        `json:"num_replications"`
 }
 
+type WalletDatasets struct {
+	WalletAddr string `gorm:"primaryKey" json:"wallet_addr"`
+	DatasetID  uint   `gorm:"primaryKey" json:"dataset_id"`
+}
+
 type Wallet struct {
-	Addr        string        `json:"address" gorm:"primaryKey"`
-	DatasetName string        `json:"dataset_name"`
-	Balance     WalletBalance `json:"balance,omitempty" gorm:"-"`
+	Addr     string        `json:"address" gorm:"primaryKey"`
+	Datasets []Dataset     `json:"datasets" gorm:"many2many:wallet_datasets;"`
+	Balance  WalletBalance `json:"balance,omitempty" gorm:"-"`
 }
 
 type WalletBalance struct {

@@ -265,13 +265,13 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 			Wallet: core.Wallet{
 				Addr: wallet.Addr,
 			},
-			ConnectionMode:       "import",
-			Miner:                d.Provider,
-			Size:                 c.Size,
-			SkipIpniAnnounce:     !c.Indexed,
-			RemoveUnsealedCopies: !c.Unsealed,
-			DurationInDays:       c.DealDuration,
-			StartEpochInDays:     delayStartEpoch,
+			ConnectionMode:     "import",
+			Miner:              d.Provider,
+			Size:               c.Size,
+			SkipIpniAnnounce:   !c.Indexed,
+			RemoveUnsealedCopy: !c.Unsealed,
+			DurationInDays:     c.DealDuration,
+			StartEpochInDays:   delayStartEpoch,
 			PieceCommitment: core.PieceCommitment{
 				PieceCid:        c.CommP,
 				PaddedPieceSize: c.PaddedSize,
@@ -341,7 +341,8 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
 // Find which wallet to use when making deals for a given dataset
 func walletSelection(db *gorm.DB, datasetName *string) (*core.Wallet, error) {
 	var w []core.Wallet
-	res := db.Model(&core.Wallet{}).Where("dataset_name = ?", datasetName).Find(&w)
+
+	res := db.Raw("select * from wallets w inner join wallet_datasets wd on w.addr = wd.wallet_addr inner join datasets d on wd.dataset_id = d.id where d.name = ?", datasetName).Scan(&w)
 
 	if res.Error != nil {
 		return nil, res.Error

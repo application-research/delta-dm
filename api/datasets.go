@@ -17,7 +17,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	datasets.GET("", func(c echo.Context) error {
 		var ds []core.Dataset
 
-		dldm.DB.Preload("Wallet").Preload("AllowedProviders", func(db *gorm.DB) *gorm.DB {
+		dldm.DB.Preload("Wallets").Preload("AllowedProviders", func(db *gorm.DB) *gorm.DB {
 			return db.Select("actor_id")
 		}).Find(&ds)
 

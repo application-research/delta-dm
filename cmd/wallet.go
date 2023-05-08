@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/application-research/delta-dm/api"
 	"github.com/urfave/cli/v2"
@@ -129,8 +130,8 @@ func WalletCmd() []*cli.Command {
 				UsageText: "delta-dm wallet associate [wallet address]",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:        "dataset",
-						Usage:       "dataset name",
+						Name:        "datasets",
+						Usage:       "dataset names to associate with wallet (comma separated)",
 						Destination: &dataset,
 						Required:    true,
 					},
@@ -147,9 +148,15 @@ func WalletCmd() []*cli.Command {
 						return fmt.Errorf("failed to connect to ddm node: %s", err)
 					}
 
+					datasets := strings.Split(dataset, ",")
+
+					if len(datasets) < 1 {
+						return fmt.Errorf("please provide at least one dataset name")
+					}
+
 					awb := api.AssociateWalletBody{
-						Address: walletAddress,
-						Dataset: dataset,
+						Address:  walletAddress,
+						Datasets: datasets,
 					}
 
 					b, err := json.Marshal(awb)
