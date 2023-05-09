@@ -34,6 +34,8 @@ DDM runs as a daemon, which is a webserver. Start it up with the `daemon` comman
 ./deltadm daemon
 ```
 
+By default, `delta-dm daemon` runs on port `1415`. It can be changed with the `--port` flag or `DELTA_DM_PORT` environment variable.
+
 Once running, you can interact with DDM through the API, CLI, or via the [Delta Web frontend](https://github.com/application-research/delta-nextjs-client/)
 
 ## API
