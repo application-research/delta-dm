@@ -7,6 +7,7 @@
 
 
 
+## What is this? 
 A tool to manage deal replication tracking for onboarding datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
 
 ## Data Flow
