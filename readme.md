@@ -1,6 +1,11 @@
-# ΔDM (Delta Dataset Manager)
+<div align="center">
+<h1> Δ Dataset Manager (DDM) </h1>
 
-> DDM is still in active development! Things may change/break as we add functionality and streamline the user experience.
+
+<img src="./docs/assets/hero.png" width=700/>
+</div>
+
+
 
 A tool to manage deal replication tracking for onboarding datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
 
