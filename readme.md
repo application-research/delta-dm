@@ -1,7 +1,13 @@
-# ΔDM (Delta Dataset Manager)
+<div align="center">
+<h1> Δ Dataset Manager (DDM) </h1>
 
-> DDM is still in active development! Things may change/break as we add functionality and streamline the user experience.
 
+<img src="./docs/assets/hero.png" width=700/>
+</div>
+
+
+
+## What is this? 
 A tool to manage deal replication tracking for onboarding datasets to the Filecoin network via **import storage deals**. This provides a solution to quickly make deals for massive amounts of data, where the transfer is better handled out-of-band. 
 
 ## Data Flow
@@ -33,6 +39,8 @@ DDM runs as a daemon, which is a webserver. Start it up with the `daemon` comman
 ```bash
 ./deltadm daemon
 ```
+
+By default, `delta-dm daemon` runs on port `1415`. It can be changed with the `--port` flag or `DELTA_DM_PORT` environment variable.
 
 Once running, you can interact with DDM through the API, CLI, or via the [Delta Web frontend](https://github.com/application-research/delta-nextjs-client/)
 

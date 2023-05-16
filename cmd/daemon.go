@@ -17,6 +17,7 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 	var deltaApi string
 	var deltaAuthToken string
 	var authServer string
+	var port uint
 
 	// add a command to run API node
 	var daemonCommands []*cli.Command
@@ -31,6 +32,14 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 				DefaultText: "delta-dm.db",
 				Value:       "delta-dm.db",
 				Destination: &dbConnStr,
+			},
+			&cli.UintFlag{
+				Name:        "port",
+				Usage:       "port that delta-dm will run on",
+				EnvVars:     []string{"DELTA_DM_PORT"},
+				DefaultText: "1415",
+				Value:       1415,
+				Destination: &port,
 			},
 			&cli.StringFlag{
 				Name:        "delta-api",
@@ -83,7 +92,7 @@ func DaemonCmd(di core.DeploymentInfo) []*cli.Command {
 
 			dldm := core.NewDeltaDM(dbConnStr, deltaApi, deltaAuthToken, authServer, di, debug, dryRun)
 			dldm.WatchReplications()
-			api.InitializeEchoRouterConfig(dldm)
+			api.InitializeEchoRouterConfig(dldm, port)
 			api.LoopForever()
 
 			return nil

@@ -44,7 +44,7 @@ type AuthResponse struct {
 }
 
 // RouterConfig configures the API node
-func InitializeEchoRouterConfig(dldm *core.DeltaDM) {
+func InitializeEchoRouterConfig(dldm *core.DeltaDM, port uint) {
 	// Echo instance
 	e := echo.New()
 
@@ -65,7 +65,7 @@ func InitializeEchoRouterConfig(dldm *core.DeltaDM) {
 	ConfigureHealthRouter(apiGroup, dldm)
 	ConfigureSelfServiceRouter(apiGroup, dldm)
 	// Start server
-	e.Logger.Fatal(e.Start("0.0.0.0:1314")) // configuration
+	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", (port)))) // configuration
 }
 
 func ErrorHandler(err error, c echo.Context) {
