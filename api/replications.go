@@ -175,7 +175,8 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	var totalCount int64
 
 	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
-	tx.Count(&totalCount)
+
+	dldm.DB.Model(&core.Replication{}).Joins("Content").Count(&totalCount)
 
 	response := ReplicationResponse{
 		Data:       r,
@@ -294,8 +295,9 @@ type replicatedContentQueryResponse struct {
 
 // Query the database for all contant that does not have replications to this actor yet
 // Arguments: providerID - the actor ID of the provider
-// 					  datasetName (optional) - the name of the dataset to replicate
-// 					  numDeals (optional) - the number of replications (deals) to return. If nil, return all
+//
+//	datasetName (optional) - the name of the dataset to replicate
+//	numDeals (optional) - the number of replications (deals) to return. If nil, return all
 func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetName *string, numDeals *uint) ([]replicatedContentQueryResponse, error) {
 
 	rawQuery := `
