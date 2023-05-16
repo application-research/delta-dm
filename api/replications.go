@@ -174,9 +174,8 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	var r []core.Replication
 	var totalCount int64
 
+	tx.Count(&totalCount)
 	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
-
-	dldm.DB.Model(&core.Replication{}).Joins("Content").Count(&totalCount)
 
 	response := ReplicationResponse{
 		Data:       r,
