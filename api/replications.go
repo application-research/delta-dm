@@ -174,7 +174,12 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	var r []core.Replication
 	var totalCount int64
 
-	tx.Count(&totalCount)
+	// Clone the tx before counting
+	// GORM's .Count() method does not include JOIN operations because it's designed to optimize counting rows directly from the target table for performance reasons.
+	// When you call .Count(), it modifies the current query to remove all selection fields, JOIN clauses, ORDER BY, LIMIT and OFFSET, and replaces it with SELECT count(*) FROM your_table.
+	countTx := tx.Session(&gorm.Session{NewDB: false})
+	countTx.Count(&totalCount)
+
 	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
 
 	response := ReplicationResponse{
