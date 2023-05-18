@@ -37,7 +37,7 @@ Once a **Dataset**, **Content**, and **Providers** have been specified, the DDM 
 
 DDM runs as a daemon, which is a webserver. Start it up with the `daemon` command.
 ```bash
-./deltadm daemon
+./delta-dm daemon
 ```
 
 By default, `delta-dm daemon` runs on port `1415`. It can be changed with the `--port` flag or `DELTA_DM_PORT` environment variable.
