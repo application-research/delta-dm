@@ -123,14 +123,17 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 	return gqp
 }
 
+type ReplicationResponse struct {
+	Data       []core.Replication `json:"data"`
+	TotalCount int64              `json:"totalCount"`
+}
+
 // handleGetReplications handles the request to get replications
 // @Summary Get replications
 // @Tags replications
 // @Produce  json
 func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	rqp := extractGetReplicationsQueryParams(c)
-
-	var r []core.Replication
 
 	tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
 
@@ -168,9 +171,23 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 		tx.Where("replications.delta_message LIKE ?", "%"+*rqp.Message+"%")
 	}
 
+	var r []core.Replication
+	var totalCount int64
+
+	// Clone the tx before counting
+	// GORM's .Count() method does not include JOIN operations because it's designed to optimize counting rows directly from the target table for performance reasons.
+	// When you call .Count(), it modifies the current query to remove all selection fields, JOIN clauses, ORDER BY, LIMIT and OFFSET, and replaces it with SELECT count(*) FROM your_table.
+	countTx := tx.Session(&gorm.Session{NewDB: false})
+	countTx.Count(&totalCount)
+
 	tx.Limit(rqp.Limit).Offset(rqp.Offset).Order("replications.id DESC").Scan(&r)
 
-	return c.JSON(200, r)
+	response := ReplicationResponse{
+		Data:       r,
+		TotalCount: totalCount,
+	}
+
+	return c.JSON(200, response)
 }
 
 // POST /api/replication
@@ -282,8 +299,9 @@ type replicatedContentQueryResponse struct {
 
 // Query the database for all contant that does not have replications to this actor yet
 // Arguments: providerID - the actor ID of the provider
-// 					  datasetName (optional) - the name of the dataset to replicate
-// 					  numDeals (optional) - the number of replications (deals) to return. If nil, return all
+//
+//	datasetName (optional) - the name of the dataset to replicate
+//	numDeals (optional) - the number of replications (deals) to return. If nil, return all
 func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetName *string, numDeals *uint) ([]replicatedContentQueryResponse, error) {
 
 	rawQuery := `
