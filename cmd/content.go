@@ -8,7 +8,7 @@ import (
 )
 
 func ContentCmd() []*cli.Command {
-	var datasetName string
+	var datasetID uint
 
 	// add a command to run API node
 	var contentCmds []*cli.Command
@@ -20,11 +20,11 @@ func ContentCmd() []*cli.Command {
 				Name:  "import",
 				Usage: "import content to a dataset",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
+					&cli.UintFlag{
 						Name:        "dataset",
 						Aliases:     []string{"d"},
-						Usage:       "dataset name (slug)",
-						Destination: &datasetName,
+						Usage:       "dataset id (numeric)",
+						Destination: &datasetID,
 						Required:    true,
 					},
 					&cli.StringFlag{
@@ -57,7 +57,7 @@ func ContentCmd() []*cli.Command {
 					}
 
 					var body []byte
-					url := "/api/v1/contents/" + datasetName
+					url := "/api/v1/contents/" + string(datasetID)
 
 					if jsonFilename != "" {
 						jsonFile, err := ioutil.ReadFile(jsonFilename)
@@ -98,11 +98,11 @@ func ContentCmd() []*cli.Command {
 				Name:  "list",
 				Usage: "list content in a dataset",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
+					&cli.UintFlag{
 						Name:        "dataset",
 						Aliases:     []string{"d"},
-						Usage:       "dataset name (slug)",
-						Destination: &datasetName,
+						Usage:       "dataset id (numeric)",
+						Destination: &datasetID,
 						Required:    true,
 					},
 				},
@@ -112,7 +112,7 @@ func ContentCmd() []*cli.Command {
 						return err
 					}
 
-					url := "/api/v1/contents/" + datasetName
+					url := "/api/v1/contents/" + string(datasetID)
 
 					res, closer, err := cmd.MakeRequest("GET", url, nil)
 

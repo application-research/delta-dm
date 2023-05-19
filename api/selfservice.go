@@ -91,9 +91,9 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	var ds core.Dataset
-	res = dldm.DB.Model(&core.Dataset{}).Where("name = ?", cnt.DatasetName).Find(&ds)
+	res = dldm.DB.Model(&core.Dataset{}).Where("id = ?", cnt.DatasetID).Find(&ds)
 	if res.Error != nil {
-		return fmt.Errorf("unable to find associated dataset %s", cnt.DatasetName)
+		return fmt.Errorf("unable to find dataset %d associated with requested CID", cnt.DatasetID)
 	}
 
 	var rp core.ReplicationProfile
@@ -124,10 +124,10 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	var dealsToMake core.OfflineDealRequest
 	log.Debugf("calling DELTA api for deal\n\n")
 
-	wallet, err := walletSelection(dldm.DB, &cnt.DatasetName)
+	wallet, err := walletSelection(dldm.DB, &cnt.DatasetID)
 
 	if err != nil || wallet.Addr == "" {
-		return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please contact administrator", cnt.DatasetName)
+		return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please contact administrator", ds.Name)
 	}
 
 	dealsToMake = append(dealsToMake, core.Deal{
@@ -199,7 +199,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	// give one deal at a time
 	numDeals := uint(1)
-	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &dataset, &numDeals)
+	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &ds.ID, &numDeals)
 	if err != nil {
 		return fmt.Errorf("unable to find content for dataset: %s", err)
 	}
@@ -210,10 +210,10 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	deal := cnt[0]
 
-	wallet, err := walletSelection(dldm.DB, &deal.DatasetName)
+	wallet, err := walletSelection(dldm.DB, &ds.ID)
 
 	if err != nil || wallet.Addr == "" {
-		return fmt.Errorf("dataset '%s' does not have a wallet associated. no deals were made. please contact administrator", deal.DatasetName)
+		return fmt.Errorf("dataset '%s' does not have a wallet associated. no deals were made. please contact administrator", ds.Name)
 	}
 
 	var dealsToMake []core.Deal

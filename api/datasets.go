@@ -24,7 +24,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents c inner join replications r on r.content_comm_p = c.comm_p where r.status = 'SUCCESS' AND dataset_id = ?", d.ID).Row().Scan(&rb[0], &rb[1])
 
 			var tb [2]uint64
-			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents where dataset_name = ?", d.Name).Row().Scan(&tb[0], &tb[1])
+			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents where dataset_id = ?", d.ID).Row().Scan(&tb[0], &tb[1])
 
 			ds[i].BytesReplicated = core.ByteSizes{Raw: rb[0], Padded: rb[1]}
 			ds[i].BytesTotal = core.ByteSizes{Raw: tb[0], Padded: tb[1]}
@@ -32,7 +32,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			var countReplicated uint64 = 0
 			var countTotal uint64 = 0
 			dldm.DB.Raw("select count(*) cr FROM contents c inner join replications r on r.content_comm_p = c.comm_p where r.status = 'SUCCESS' AND dataset_id = ?", d.ID).Row().Scan(&countReplicated)
-			dldm.DB.Raw("select count(*) cr FROM contents c where dataset_name = ?", d.Name).Row().Scan(&countTotal)
+			dldm.DB.Raw("select count(*) cr FROM contents c where dataset_id = ?", d.ID).Row().Scan(&countTotal)
 
 			ds[i].CountReplicated = countReplicated
 			ds[i].CountTotal = countTotal

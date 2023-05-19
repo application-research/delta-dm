@@ -34,7 +34,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 					&cli.UintFlag{
 						Name:        "dataset",
 						Usage:       "dataset id",
-						Aliases:     []string{"dsid"},
+						Aliases:     []string{"d"},
 						Destination: &datasetId,
 						Required:    true,
 					},
@@ -91,7 +91,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 					&cli.UintFlag{
 						Name:        "dataset",
 						Usage:       "dataset id",
-						Aliases:     []string{"dsid"},
+						Aliases:     []string{"d"},
 						Destination: &datasetId,
 						Required:    true,
 					},
@@ -148,7 +148,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 					&cli.UintFlag{
 						Name:        "dataset",
 						Usage:       "dataset id",
-						Aliases:     []string{"dsid"},
+						Aliases:     []string{"id"},
 						Destination: &datasetId,
 						Required:    true,
 					},
