@@ -1,12 +1,15 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -21,12 +24,21 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 		d := c.Param("dataset")
 
 		if d == "" {
-			return fmt.Errorf("dataset must be specified")
+			return fmt.Errorf("dataset id must be specified")
+		}
+		did, err := strconv.ParseUint(d, 10, 64)
+		if err != nil {
+			return fmt.Errorf("dataset id must be numeric %s", err)
 		}
 
-		dldm.DB.Where("name = ?", d).First(&dataset)
+		if tx := dldm.DB.First(&dataset, did); tx.Error != nil {
+			if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("dataset not found")
+			}
+			return fmt.Errorf("failed to get dataset: %s", tx.Error)
+		}
 
-		err := dldm.DB.Model(&dataset).Association("Contents").Find(&content)
+		err = dldm.DB.Model(&dataset).Association("Contents").Find(&content)
 		if err != nil {
 			return err
 		}
@@ -46,14 +58,21 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 		}
 
 		d := c.Param("dataset")
+
 		if d == "" {
-			return fmt.Errorf("dataset must be specified")
+			return fmt.Errorf("dataset id must be specified")
+		}
+		did, err := strconv.ParseUint(d, 10, 64)
+		if err != nil {
+			return fmt.Errorf("dataset id must be numeric %s", err)
 		}
 
 		// Check if dataset exists
-		res := dldm.DB.Where("name = ?", d).First(&dataset)
-		if res.Error != nil {
-			return fmt.Errorf("could not find dataset %s : %s", d, res.Error)
+		if tx := dldm.DB.First(&dataset, did); tx.Error != nil {
+			if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("dataset not found")
+			}
+			return fmt.Errorf("failed to get dataset: %s", tx.Error)
 		}
 
 		it := c.QueryParam("import_type")
@@ -90,7 +109,7 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 				continue
 			}
 
-			cnt.DatasetName = dataset.Name
+			cnt.DatasetID = dataset.ID
 
 			err := dldm.DB.Create(&cnt).Error
 			if err != nil {

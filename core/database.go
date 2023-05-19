@@ -110,7 +110,7 @@ type Dataset struct {
 	ReplicationQuota    uint64               `json:"replication_quota"`
 	DealDuration        uint64               `json:"deal_duration"`
 	Wallets             []Wallet             `json:"wallets,omitempty" gorm:"many2many:wallet_datasets;"`
-	Contents            []Content            `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
+	Contents            []Content            `json:"contents" gorm:"foreignKey:DatasetID;references:ID"`
 	BytesReplicated     ByteSizes            `json:"bytes_replicated,omitempty" gorm:"-"`
 	BytesTotal          ByteSizes            `json:"bytes_total,omitempty" gorm:"-"`
 	CountReplicated     uint64               `json:"count_replicated" gorm:"-"`
@@ -123,7 +123,7 @@ type Content struct {
 	PayloadCID      string        `json:"payload_cid" csv:"payloadCid"`
 	Size            uint64        `json:"size" csv:"size"`
 	PaddedSize      uint64        `json:"padded_size" csv:"paddedSize"`
-	DatasetName     string        `json:"dataset_name"`
+	DatasetID       uint          `json:"dataset_id"`
 	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
 	NumReplications uint64        `json:"num_replications"`
 }
