@@ -16,15 +16,15 @@ To do this, ensure your Singularity database is running and you have the `DELTA_
 
 **Script Usage**
 ```bash
-./singularity-import.sh <SINGULARITY datasetName> <DELTA datasetName> <deltaToken>
+./singularity-import.sh <SINGULARITY datasetName> <DELTA datasetID> <deltaToken>
 ```
 
 Where
 - SINGULARITY datasetName - the name of the dataset in Singularity (aka the slug)
-- DELTA datasetName - the name of the dataset in Delta
+- DELTA datasetID - the ID of the dataset in Delta (you can obtain this with `delta-dm dataset list`)
 - deltaToken - your delta auth token
 
 **Example**
 ```bash
-./singularity-import.sh common-crawl common-crawl EST-XXX-ARY
+./singularity-import.sh common-crawl 1 EST-XXX-ARY
 ```

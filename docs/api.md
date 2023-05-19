@@ -145,9 +145,11 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 ### POST /contents/:dataset
 - Add content (CAR files) to the dataset
 - Accepts three types of input - standard (delta-dm) format, singularity format, or CSV- as defined below
+- The :dataset parameter is the ID (uint) of the dataset to add the content to
 
 #### Request Params
 ```jsonc
+/dataset // ID of dataset to add content to
 ?import_type=<type> // singularity or csv. omit for standard format.
 ```
 
@@ -216,7 +218,7 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 
 #### Request Params
 ```jsonc
-:dataset // dataset name to get contents for
+/dataset // dataset ID to get contents for
 ```
 
 
@@ -235,7 +237,7 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 		"payload_cid": "bafybeifyaefzfalorttcqfcvago2rbide3mnm72geau6xxdl6iewc5leki",
 		"size": 26619574156,
 		"padded_size": 34359738368,
-		"dataset_name": "delta-test",
+		"dataset_id": 1,
 		"num_replications": 0
 	},
 	{
@@ -243,7 +245,7 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 		"payload_cid": "bafybeiaupshs7vgsgs5e4y6n7tqkz4ghuyt3teqmqqad6ee5drlbg6dcfq",
 		"size": 24389555373,
 		"padded_size": 34359738368,
-		"dataset_name": "delta-test",
+		"dataset_id": 2,
 		"num_replications": 0
 	}
 ]
@@ -408,7 +410,7 @@ Note the response contains two properties. `totalCount` is the total number of r
 			"payload_cid": "bafybeifoxwwx5newgdwnvojyotleh3x3sy7ckndwa2ysioe4corv4ixgti",
 			"size": 18010019221,
 			"padded_size": 34359738368,
-			"dataset_name": "delta-test",
+			"dataset_id": 1,
 			"num_replications": 1
 		},
 		"deal_time": "2023-03-01T19:16:14.956401-08:00",
@@ -428,7 +430,7 @@ Note the response contains two properties. `totalCount` is the total number of r
 			"payload_cid": "bafybeiezpv62emncxbe4adoyipxhzcdy2eqzxx3rde6rdzuqxs57gdsp2q",
 			"size": 18010019221,
 			"padded_size": 34359738368,
-			"dataset_name": "delta-test",
+			"dataset_id": 1,
 			"num_replications": 1
 		},
 		"deal_time": "2023-03-01T19:16:14.962877-08:00",
@@ -448,7 +450,7 @@ Note the response contains two properties. `totalCount` is the total number of r
 			"payload_cid": "bafybeiakf666idv6zs4uksckfkjr76jmvrcuu4neidldxlfngo2vh6jvfe",
 			"size": 18010019222,
 			"padded_size": 34359738368,
-			"dataset_name": "delta-test",
+			"dataset_id": 1,
 			"num_replications": 3
 		},
 		"deal_time": "2023-03-06T11:09:42.185318-08:00",
@@ -469,7 +471,7 @@ Note the response contains two properties. `totalCount` is the total number of r
 			"payload_cid": "bafybeiakf666idv6zs4uksckfkjr76jmvrcuu4neidldxlfngo2vh6jvfe",
 			"size": 18010019222,
 			"padded_size": 34359738368,
-			"dataset_name": "delta-test",
+			"dataset_id": 1,
 			"num_replications": 3
 		},
 		"deal_time": "2023-03-06T11:11:02.723922-08:00",

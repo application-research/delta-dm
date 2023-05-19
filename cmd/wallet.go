@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"strconv"
 
 	"github.com/application-research/delta-dm/api"
 	"github.com/urfave/cli/v2"
 )
 
 func WalletCmd() []*cli.Command {
-	var dataset string
+	var datasetIDs cli.UintSlice
+	var datasetID uint
 	var walletAddress string
 
 	var walletCmds []*cli.Command
@@ -128,10 +129,10 @@ func WalletCmd() []*cli.Command {
 				Usage:     "associate wallet with dataset",
 				UsageText: "delta-dm wallet associate [wallet address]",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
+					&cli.UintSliceFlag{
 						Name:        "datasets",
-						Usage:       "dataset names to associate with wallet (comma separated)",
-						Destination: &dataset,
+						Usage:       "dataset ids to associate with wallet (comma separated)",
+						Destination: &datasetIDs,
 						Required:    true,
 					},
 					&cli.StringFlag{
@@ -147,15 +148,13 @@ func WalletCmd() []*cli.Command {
 						return fmt.Errorf("failed to connect to ddm node: %s", err)
 					}
 
-					datasets := strings.Split(dataset, ",")
-
-					if len(datasets) < 1 {
-						return fmt.Errorf("please provide at least one dataset name")
+					if len(datasetIDs.Value()) < 1 {
+						return fmt.Errorf("please provide at least one dataset id")
 					}
 
 					awb := api.AssociateWalletBody{
 						Address:  walletAddress,
-						Datasets: datasets,
+						Datasets: datasetIDs.Value(),
 					}
 
 					b, err := json.Marshal(awb)
@@ -177,10 +176,10 @@ func WalletCmd() []*cli.Command {
 				Name:  "list",
 				Usage: "list wallets",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
+					&cli.UintFlag{
 						Name:        "dataset",
-						Usage:       "filter wallets by dataset",
-						Destination: &dataset,
+						Usage:       "filter wallets by dataset id",
+						Destination: &datasetID,
 					},
 				},
 				Action: func(c *cli.Context) error {
@@ -191,8 +190,8 @@ func WalletCmd() []*cli.Command {
 
 					url := "/api/v1/wallets"
 
-					if dataset != "" {
-						url += "?dataset=" + dataset
+					if datasetID != 0 {
+						url += "?dataset=" + strconv.FormatUint(uint64(datasetID), 10)
 					}
 
 					res, closer, err := cmd.MakeRequest(http.MethodGet, url, nil)
