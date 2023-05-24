@@ -55,3 +55,17 @@ See docs in [/docs/self-service.md](/docs/self-service.md).
 
 ## Importing CIDs from Singularity
 See docs in [/docs/singularity-import.md](/docs/singularity-import.md).
+
+
+## Developer Tips
+By default, DDM will run using a SQLite database. This is fine for development, but for production use, it is recommended to use a Postgres database. To test this, you can run a Postgres instance in Docker and connect to it with DDM.
+
+```bash
+docker run --name ddm-postgres -p 5432:5432 -e POSTGRES_PASSWORD=password -d postgres:14.7
+psql postgres://postgres:password@localhost:5432/ # to connect to the database
+```
+
+Update the `env` file (or `--db` flag) to connect to the dev postgres database.
+```bash
+DB_DSN="postgres://postgres:password@localhost:5432/"
+```
