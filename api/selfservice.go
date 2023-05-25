@@ -46,6 +46,9 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 			if p.ActorID == "" {
 				return c.String(401, "invalid provider self-service token")
 			}
+			if !p.AllowSelfService {
+				return c.String(401, "provider is not allowed to self-serve, please contact administrator to enable it")
+			}
 
 			c.Set(PROVIDER, p)
 
