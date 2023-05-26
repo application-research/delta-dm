@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
@@ -25,6 +26,10 @@ func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 	selfService.GET("/by-dataset/:dataset", func(c echo.Context) error {
 		return handleSelfServiceByDataset(c, dldm)
+	})
+
+	selfService.PUT("/telemetry/:cid", func(c echo.Context) error {
+		return handleSelfServiceTelemetry(c, dldm)
 	})
 }
 
@@ -116,7 +121,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 
 	// Ensure no pending/successful replications have been made for this content to this provider
 	for _, repl := range cnt.Replications {
-		if repl.ProviderActorID == p.ActorID && repl.Status != core.StatusFailure {
+		if repl.ProviderActorID == p.ActorID && repl.Status != core.DealStatusFailure {
 			return fmt.Errorf("content '%s' is already replicated to provider '%s'", piece, p.ActorID)
 		}
 	}
@@ -242,4 +247,45 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	return c.JSON(200, SelfServiceResponse{Cid: deal.CommP})
+}
+
+type SelfServiceStatusUpdate struct {
+	DealUuid string `json:"deal_uuid"`
+	State    string `json:"state"`
+	Message  string `json:"message"`
+}
+
+func handleSelfServiceTelemetry(c echo.Context, dldm *core.DeltaDM) error {
+	var update SelfServiceStatusUpdate
+	if err := c.Bind(&update); err != nil {
+		return fmt.Errorf("unable to bind request: %s", err)
+	}
+
+	if update.DealUuid == "" {
+		return fmt.Errorf("must provide a deal_uuid")
+	}
+
+	var repl core.Replication
+	err := dldm.DB.Model(&repl).Where("deal_uuid = ?", update.DealUuid).First(&repl).Error
+
+	if err != nil {
+		return fmt.Errorf("unable to find content for CID: %s", err)
+	}
+
+	p := c.Get(PROVIDER).(core.Provider)
+	if repl.ProviderActorID != p.ActorID {
+		return fmt.Errorf("deal '%s' does not belong to provider '%s'", update.DealUuid, p.ActorID)
+	}
+
+	repl.SelfServiceStatus.LastUpdate = time.Now()
+	repl.SelfServiceStatus.Status = update.State
+	repl.SelfServiceStatus.Message = update.Message
+
+	err = dldm.DB.Save(&repl).Error
+	if err != nil {
+		return fmt.Errorf("unable to update deal status: %s", err)
+	}
+
+	return nil
+
 }

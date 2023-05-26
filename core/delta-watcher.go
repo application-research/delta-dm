@@ -50,7 +50,7 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 	log.Debug("starting reconcile task")
 	var pendingReplications []int64
 
-	db.Model(&Replication{}).Where("status = ?", StatusPending).Select("delta_content_id").Find(&pendingReplications)
+	db.Model(&Replication{}).Where("status = ?", DealStatusPending).Select("delta_content_id").Find(&pendingReplications)
 
 	if len(pendingReplications) == 0 {
 		log.Debug("no pending replications")
@@ -74,7 +74,7 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 		}
 
 		// Remove a replication if it failed
-		if r.Status == StatusFailure {
+		if r.Status == DealStatusFailure {
 			var cnt Content
 
 			err := db.Model(&Content{}).Where("comm_p = ?", r.ContentCommP).First(&cnt)
@@ -106,7 +106,7 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 		// Success!
 		case CONTENT_DEAL_PROPOSAL_SENT:
 			r := Replication{
-				Status:         StatusSuccess,
+				Status:         DealStatusSuccess,
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
 			}
@@ -122,7 +122,7 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 
 		case CONTENT_DEAL_PROPOSAL_FAILED:
 			r := Replication{
-				Status:         StatusFailure,
+				Status:         DealStatusFailure,
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
 			}
