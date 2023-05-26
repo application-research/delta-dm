@@ -25,11 +25,11 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 				DeltaContentID:  c.DeltaContentID,
 				DealTime:        time.Now(),
 				Status:          DealStatusSuccess,
-				IsSelfService:   isSelfService,
 				ProposalCid:     "DRY_RUN_" + fmt.Sprint(rand.Int()),
 				DealUUID:        "DRY_RUN_" + fmt.Sprint(rand.Int()),
 				DeltaMessage:    "this is a dry run, no deal was made",
 			}
+			newReplication.SelfService.IsSelfService = isSelfService
 
 			res := dldm.DB.Model(&Replication{}).Create(&newReplication)
 			if res.Error != nil {
@@ -56,10 +56,10 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 			DeltaContentID:  c.DeltaContentID,
 			DealTime:        time.Now(),
 			Status:          DealStatusPending,
-			IsSelfService:   isSelfService,
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
 			DealUUID:        "PENDING_" + fmt.Sprint(rand.Int()),
 		}
+		newReplication.SelfService.IsSelfService = isSelfService
 
 		res := dldm.DB.Model(&Replication{}).Create(&newReplication)
 		if res.Error != nil {

@@ -277,9 +277,9 @@ func handleSelfServiceTelemetry(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("deal '%s' does not belong to provider '%s'", update.DealUuid, p.ActorID)
 	}
 
-	repl.SelfServiceStatus.LastUpdate = time.Now()
-	repl.SelfServiceStatus.Status = update.State
-	repl.SelfServiceStatus.Message = update.Message
+	repl.SelfService.LastUpdate = time.Now()
+	repl.SelfService.Status = update.State
+	repl.SelfService.Message = update.Message
 
 	err = dldm.DB.Save(&repl).Error
 	if err != nil {
