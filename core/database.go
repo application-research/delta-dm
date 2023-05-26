@@ -68,15 +68,21 @@ const (
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	Content         Content           `json:"content"` //TODO: doesnt come back from api
-	DealTime        time.Time         `json:"deal_time"`
-	DeltaContentID  int64             `json:"delta_content_id" gorm:"unique"`
-	ProposalCid     string            `json:"proposal_cid" gorm:"unique"`
-	ProviderActorID string            `json:"provider_actor_id"`
-	ContentCommP    string            `json:"content_commp"`
-	IsSelfService   bool              `json:"is_self_service"`
-	Status          ReplicationStatus `json:"status" gorm:"notnull,default:'PENDING'"`
-	DeltaMessage    string            `json:"delta_message,omitempty"`
+	Content           Content           `json:"content"` //TODO: doesnt come back from api
+	DealTime          time.Time         `json:"deal_time"`
+	DeltaContentID    int64             `json:"delta_content_id" gorm:"unique"`
+	DealUUID          string            `json:"deal_uuid" gotm:"unique"`
+	ProposalCid       string            `json:"proposal_cid" gorm:"unique"`
+	ProviderActorID   string            `json:"provider_actor_id"`
+	ContentCommP      string            `json:"content_commp"`
+	IsSelfService     bool              `json:"is_self_service"`
+	Status            ReplicationStatus `json:"status" gorm:"notnull,default:'PENDING'"`
+	DeltaMessage      string            `json:"delta_message,omitempty"`
+	SelfServiceStatus struct {
+		LastUpdate time.Time `json:"last_update"`
+		Status     string    `json:"status"`
+		Message    string    `json:"message"`
+	} `json:"self_service_status" gorm:"embedded;embeddedPrefix:ss_"`
 }
 
 // A client is a Storage Provider that is being replicated to

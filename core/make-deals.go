@@ -27,6 +27,7 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 				Status:          StatusSuccess,
 				IsSelfService:   isSelfService,
 				ProposalCid:     "DRY_RUN_" + fmt.Sprint(rand.Int()),
+				DealUUID:        "DRY_RUN_" + fmt.Sprint(rand.Int()),
 				DeltaMessage:    "this is a dry run, no deal was made",
 			}
 
@@ -57,6 +58,7 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 			Status:          StatusPending,
 			IsSelfService:   isSelfService,
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
+			DealUUID:        "PENDING_" + fmt.Sprint(rand.Int()),
 		}
 
 		res := dldm.DB.Model(&Replication{}).Create(&newReplication)
