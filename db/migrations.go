@@ -2,7 +2,18 @@ package db
 
 import (
 	gormigrate "github.com/go-gormigrate/gormigrate/v2"
+	"gorm.io/gorm"
 )
+
+func BaselineSchema(tx *gorm.DB) error {
+	log.Debugf("first run: initializing database schema")
+	err := tx.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{}, &WalletDatasets{}, &Replication{})
+
+	if err != nil {
+		log.Fatalf("error initializing database: %s", err)
+	}
+	return nil
+}
 
 var Migrations []*gormigrate.Migration = []*gormigrate.Migration{
 	// {
