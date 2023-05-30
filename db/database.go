@@ -53,6 +53,12 @@ func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if err = m.Migrate(); err != nil {
+		log.Fatalf("Could not migrate: %v", err)
+	}
+	log.Debugf("Migration ran successfully")
+
 	return DB, nil
 }
 

@@ -5,6 +5,18 @@ import (
 )
 
 var Migrations []*gormigrate.Migration = []*gormigrate.Migration{
+	// {
+	// 	ID: "baseline",
+	// 	Migrate: func(tx *gorm.DB) error {
+	// 		err := tx.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{}, &WalletDatasets{}, &Replication{})
+
+	// 		if err != nil {
+	// 			log.Fatalf("error initializing database: %s", err)
+	// 		}
+	// 		return nil
+	// 	},
+	// },
+
 	// Move isSelfService column inside SelfService struct
 	// {
 	// 	ID: "20230530000",
