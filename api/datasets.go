@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
 	"github.com/labstack/echo/v4"
 )
@@ -14,7 +15,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	datasets.Use(dldm.AS.AuthMiddleware)
 
 	datasets.GET("", func(c echo.Context) error {
-		var ds []core.Dataset
+		var ds []db.Dataset
 
 		dldm.DB.Preload("Wallets").Preload("ReplicationProfiles").Find(&ds)
 
@@ -26,8 +27,8 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			var tb [2]uint64
 			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents where dataset_id = ?", d.ID).Row().Scan(&tb[0], &tb[1])
 
-			ds[i].BytesReplicated = core.ByteSizes{Raw: rb[0], Padded: rb[1]}
-			ds[i].BytesTotal = core.ByteSizes{Raw: tb[0], Padded: tb[1]}
+			ds[i].BytesReplicated = db.ByteSizes{Raw: rb[0], Padded: rb[1]}
+			ds[i].BytesTotal = db.ByteSizes{Raw: tb[0], Padded: tb[1]}
 
 			var countReplicated uint64 = 0
 			var countTotal uint64 = 0
@@ -42,7 +43,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	})
 
 	datasets.POST("", func(c echo.Context) error {
-		var ads core.Dataset
+		var ads db.Dataset
 
 		if err := c.Bind(&ads); err != nil {
 			return err

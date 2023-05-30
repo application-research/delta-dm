@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -124,8 +125,8 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 }
 
 type ReplicationResponse struct {
-	Data       []core.Replication `json:"data"`
-	TotalCount int64              `json:"totalCount"`
+	Data       []db.Replication `json:"data"`
+	TotalCount int64            `json:"totalCount"`
 }
 
 // handleGetReplications handles the request to get replications
@@ -135,7 +136,7 @@ type ReplicationResponse struct {
 func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	rqp := extractGetReplicationsQueryParams(c)
 
-	tx := dldm.DB.Model(&core.Replication{}).Joins("Content")
+	tx := dldm.DB.Model(&db.Replication{}).Joins("Content")
 
 	if rqp.PieceCid != nil {
 		tx.Where("replications.piece_cid = ?", rqp.PieceCid)
@@ -171,7 +172,7 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 		tx.Where("replications.delta_message LIKE ?", "%"+*rqp.Message+"%")
 	}
 
-	var r []core.Replication
+	var r []db.Replication
 	var totalCount int64
 
 	// Clone the tx before counting
@@ -207,7 +208,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	var providerExists bool
-	err := dldm.DB.Model(core.Provider{}).
+	err := dldm.DB.Model(db.Provider{}).
 		Select("count(*) > 0").
 		Where("actor_id = ?", d.Provider).
 		Find(&providerExists).
@@ -231,7 +232,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 
 	if d.DatasetID != nil {
 		var datasetExists bool
-		err = dldm.DB.Model(core.Dataset{}).
+		err = dldm.DB.Model(db.Dataset{}).
 			Select("count(*) > 0").
 			Where("id = ?", d.DatasetID).
 			Find(&datasetExists).
@@ -267,7 +268,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 
 		dealsToMake = append(dealsToMake, core.Deal{
 			PayloadCID: c.PayloadCID,
-			Wallet: core.Wallet{
+			Wallet: db.Wallet{
 				Addr: wallet.Addr,
 			},
 			ConnectionMode:     "import",

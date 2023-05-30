@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
 	"gorm.io/gorm"
 )
@@ -46,11 +47,11 @@ func watch(db *gorm.DB, d *DeltaAPI) {
 	}
 }
 
-func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
+func RunReconciliation(dbi *gorm.DB, d *DeltaAPI) error {
 	log.Debug("starting reconcile task")
 	var pendingReplications []int64
 
-	db.Model(&Replication{}).Where("status = ?", DealStatusPending).Select("delta_content_id").Find(&pendingReplications)
+	dbi.Model(&db.Replication{}).Where("status = ?", db.DealStatusPending).Select("delta_content_id").Find(&pendingReplications)
 
 	if len(pendingReplications) == 0 {
 		log.Debug("no pending replications")
@@ -67,17 +68,17 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 
 	log.Debugf("updating %d replications\n", len(ru))
 	for _, r := range ru {
-		err := db.Model(&Replication{}).Where("delta_content_id = ?", r.DeltaContentID).Updates(r)
+		err := dbi.Model(&db.Replication{}).Where("delta_content_id = ?", r.DeltaContentID).Updates(r)
 
 		if err.Error != nil {
 			return fmt.Errorf("could not update replication: %s", err.Error)
 		}
 
 		// Remove a replication if it failed
-		if r.Status == DealStatusFailure {
-			var cnt Content
+		if r.Status == db.DealStatusFailure {
+			var cnt db.Content
 
-			err := db.Model(&Content{}).Where("comm_p = ?", r.ContentCommP).First(&cnt)
+			err := dbi.Model(&db.Content{}).Where("comm_p = ?", r.ContentCommP).First(&cnt)
 			if err.Error != nil {
 				return fmt.Errorf("could not find associated content: %s", err.Error)
 			}
@@ -86,7 +87,7 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 				cnt.NumReplications -= 1
 			}
 
-			err = db.Save(&cnt)
+			err = dbi.Save(&cnt)
 			if err.Error != nil {
 				return fmt.Errorf("could not update associated content: %s", err.Error)
 			}
@@ -97,16 +98,16 @@ func RunReconciliation(db *gorm.DB, d *DeltaAPI) error {
 	return nil
 }
 
-func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
-	toUpdate := []Replication{}
+func computeReplicationUpdates(dealStats DealStatsResponse) []db.Replication {
+	toUpdate := []db.Replication{}
 
 	for _, deal := range dealStats {
 		switch deal.Content.Status {
 
 		// Success!
 		case CONTENT_DEAL_PROPOSAL_SENT:
-			r := Replication{
-				Status:         DealStatusSuccess,
+			r := db.Replication{
+				Status:         db.DealStatusSuccess,
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
 			}
@@ -121,8 +122,8 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []Replication {
 			toUpdate = append(toUpdate, r)
 
 		case CONTENT_DEAL_PROPOSAL_FAILED:
-			r := Replication{
-				Status:         DealStatusFailure,
+			r := db.Replication{
+				Status:         db.DealStatusFailure,
 				DeltaContentID: deal.Content.ID,
 				DeltaMessage:   deal.Content.LastMessage,
 			}

@@ -4,14 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	logging "github.com/ipfs/go-log/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-
-	//	"gorm.io/gorm/logger"
-
-	logging "github.com/ipfs/go-log/v2"
 )
 
 var (

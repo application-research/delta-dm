@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,9 +18,9 @@ func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 		ds := c.QueryParam("dataset")
 
-		var w []core.Wallet
+		var w []db.Wallet
 
-		tx := dldm.DB.Model(&core.Wallet{}).Preload("Datasets")
+		tx := dldm.DB.Model(&db.Wallet{}).Preload("Datasets")
 
 		if ds != "" {
 			tx.Where("dataset_name = ?", ds)
@@ -34,7 +35,7 @@ func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 				continue
 			}
 
-			w[i].Balance = core.WalletBalance{
+			w[i].Balance = db.WalletBalance{
 				BalanceFilecoin: bal.Balance.Balance,
 				BalanceDatacap:  bal.Balance.VerifiedClientBalance,
 			}
@@ -55,7 +56,7 @@ func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 		w := c.Param("wallet")
 
-		res := dldm.DB.Model(&core.Wallet{}).Where("addr = ?", w).Delete(&core.Wallet{})
+		res := dldm.DB.Model(&db.Wallet{}).Where("addr = ?", w).Delete(&db.Wallet{})
 
 		if res.Error != nil {
 			return fmt.Errorf("could not delete wallet %s : %s", w, res.Error)
@@ -122,11 +123,11 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 		}
 	}
 
-	newWallet := core.Wallet{
+	newWallet := db.Wallet{
 		Addr: deltaResp.WalletAddr,
 	}
 
-	res := dldm.DB.Model(core.Wallet{}).Create(&newWallet)
+	res := dldm.DB.Model(db.Wallet{}).Create(&newWallet)
 	if res.Error != nil {
 		if res.Error.Error() == "UNIQUE constraint failed: wallets.addr" {
 			return fmt.Errorf("wallet %s already exists in delta", newWallet.Addr)
@@ -151,8 +152,8 @@ func handleAssociateWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return err
 	}
 
-	var wallet core.Wallet
-	findWallet := dldm.DB.Model(core.Wallet{}).Where("addr = ?", awb.Address).Find(&wallet)
+	var wallet db.Wallet
+	findWallet := dldm.DB.Model(db.Wallet{}).Where("addr = ?", awb.Address).Find(&wallet)
 	if findWallet.Error != nil {
 		return fmt.Errorf("could not find wallet %s : %s", awb.Address, findWallet.Error)
 	}
