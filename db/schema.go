@@ -30,7 +30,7 @@ type Replication struct {
 	Content         Content    `json:"content"` //TODO: doesnt come back from api
 	DealTime        time.Time  `json:"deal_time"`
 	DeltaContentID  int64      `json:"delta_content_id" gorm:"unique"`
-	DealUUID        string     `json:"deal_uuid" gorm:"unique"`
+	DealUUID        string     `json:"deal_uuid"`
 	OnChainDealID   uint       `json:"on_chain_deal_id"`
 	ProposalCid     string     `json:"proposal_cid" gorm:"unique"`
 	ProviderActorID string     `json:"provider_actor_id"`
