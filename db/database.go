@@ -1,8 +1,9 @@
-package core
+package db
 
 import (
 	"time"
 
+	gormigrate "github.com/go-gormigrate/gormigrate/v2"
 	"github.com/google/uuid"
 	logging "github.com/ipfs/go-log/v2"
 	"gorm.io/driver/postgres"
@@ -33,8 +34,17 @@ func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
 		DB, err = gorm.Open(sqlite.Open(dbDsn), config)
 	}
 
-	// generate new models.
-	ConfigureModels(DB) // create models.
+	m := gormigrate.New(DB, gormigrate.DefaultOptions, Migrations)
+
+	// Initialization for fresh db (only run at first setup)
+	m.InitSchema(func(tx *gorm.DB) error {
+		err := tx.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ReplicationProfile{}, &WalletDatasets{}, &Replication{})
+
+		if err != nil {
+			log.Fatalf("error initializing database: %s", err)
+		}
+		return nil
+	})
 
 	if debug {
 		log.Debugf("connected to db at: %s", dbDsn)
@@ -44,14 +54,6 @@ func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
 		return nil, err
 	}
 	return DB, nil
-}
-
-func ConfigureModels(db *gorm.DB) {
-	err := db.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ReplicationProfile{}, &WalletDatasets{}, &Replication{})
-
-	if err != nil {
-		log.Fatalf("error migrating database: %s", err)
-	}
 }
 
 type DealStatus string
