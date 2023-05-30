@@ -25,6 +25,7 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 				DeltaContentID:  c.DeltaContentID,
 				DealTime:        time.Now(),
 				Status:          DealStatusSuccess,
+				OnChainDealID:   0,
 				ProposalCid:     "DRY_RUN_" + fmt.Sprint(rand.Int()),
 				DealUUID:        "DRY_RUN_" + fmt.Sprint(rand.Int()),
 				DeltaMessage:    "this is a dry run, no deal was made",
@@ -56,6 +57,7 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 			DeltaContentID:  c.DeltaContentID,
 			DealTime:        time.Now(),
 			Status:          DealStatusPending,
+			OnChainDealID:   0,
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
 			DealUUID:        "PENDING_" + fmt.Sprint(rand.Int()),
 		}
