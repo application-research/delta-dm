@@ -399,7 +399,7 @@ type DealStats_Deal struct {
 	PropCid             string `json:"propCid"`
 	DealUUID            string `json:"dealUuid"`
 	Miner               string `json:"miner"`
-	DealID              int64  `json:"dealId"`
+	DealID              uint   `json:"dealId"`
 	Failed              bool   `json:"failed"`
 	Verified            bool   `json:"verified"`
 	Slashed             bool   `json:"slashed"`

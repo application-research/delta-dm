@@ -114,6 +114,7 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []db.Replication {
 			if len(deal.Deals) > 0 {
 				r.ProposalCid = deal.Deals[0].PropCid
 				r.DealUUID = deal.Deals[0].DealUUID
+				r.OnChainDealID = deal.Deals[0].DealID
 			}
 			if len(deal.PieceCommitments) > 0 {
 				r.ContentCommP = deal.PieceCommitments[0].Piece
@@ -134,6 +135,7 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []db.Replication {
 			if len(deal.Deals) > 0 {
 				r.ProposalCid = deal.Deals[0].PropCid
 				r.DealUUID = deal.Deals[0].DealUUID
+				r.OnChainDealID = deal.Deals[0].DealID
 			}
 			toUpdate = append(toUpdate, r)
 
