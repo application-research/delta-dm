@@ -157,7 +157,7 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	if rqp.SelfService != nil {
-		tx.Where("replications.is_self_service = ?", rqp.SelfService)
+		tx.Where("replications.ss_is_self_service = ?", rqp.SelfService)
 	}
 
 	if rqp.DealTimeStart != nil {
