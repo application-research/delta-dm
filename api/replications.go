@@ -260,7 +260,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 	log.Debugf("calling DELTA api for %+v deals\n\n", len(toReplicate))
 
 	for _, c := range toReplicate {
-		wallet, err := walletSelection(dldm.DB, d.DatasetID)
+		wallet, err := walletSelection(dldm.DB, &c.DatasetID)
 
 		if err != nil || wallet.Addr == "" {
 			return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please add a wallet for this dataset and try again. alternatively, explicitly specify a dataset in the request to force replication of one with an existing wallet", c.Dataset.Name)
@@ -296,7 +296,10 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 type replicatedContentQueryResponse struct {
 	db.Content
 	db.Dataset
-	db.ReplicationProfile
+	ReplicationProfile struct {
+		db.ReplicationProfile
+		DatasetID struct{} // prevent the ambiguous selector - we already have this coming from the `db.Dataset` model
+	}
 }
 
 // Query the database for all contant that does not have replications to this actor yet
