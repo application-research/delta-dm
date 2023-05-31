@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// If this runs, it means the database is empty. No migrations will be applied on top of it, as this sets up the database from scratch so it starts out "up to date"
 func BaselineSchema(tx *gorm.DB) error {
 	log.Debugf("first run: initializing database schema")
 	err := tx.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ReplicationProfile{}, &WalletDatasets{}, &Replication{})
@@ -16,41 +17,43 @@ func BaselineSchema(tx *gorm.DB) error {
 }
 
 var Migrations []*gormigrate.Migration = []*gormigrate.Migration{
-	// Move isSelfService column inside SelfService struct
-	{
-		ID: "20230530000",
-		Migrate: func(tx *gorm.DB) error {
-			// ! Column has already been created as it's included in the baseline
-			// this is an exception - normally the migration would also create the column
+	// SAMPLE MIGRATION
+	// {
+	// 	ID: "2023053000", // * Set to todays date, starting with 00 for first migration
+	// 	Migrate: func(tx *gorm.DB) error {
+	// 		// create a new ss_is_self_service bool column
+	// 		if err := tx.Migrator().AddColumn(&Replication{}, "ss_is_self_service"); err != nil {
+	// 			return err
+	// 		}
 
-			// Update the values in the new column
-			if err := tx.Exec("UPDATE replications SET ss_is_self_service = is_self_service").Error; err != nil {
-				return err
-			}
+	// 		// Update the values in the new column
+	// 		if err := tx.Exec("UPDATE replications SET ss_is_self_service = is_self_service").Error; err != nil {
+	// 			return err
+	// 		}
 
-			// Remove the old column
-			if err := tx.Migrator().RenameColumn(&Replication{}, "is_self_service", "deprecated_is_self_service"); err != nil {
-				return err
-			}
+	// 		// Remove the old column
+	// 		if err := tx.Migrator().RenameColumn(&Replication{}, "is_self_service", "deprecated_is_self_service"); err != nil {
+	// 			return err
+	// 		}
 
-			return nil
-		},
-		Rollback: func(tx *gorm.DB) error {
-			// Rollback the migration by renaming the columns back to their original names
-			if err := tx.Migrator().RenameColumn(&Replication{}, "deprecated_is_self_service", "is_self_service"); err != nil {
-				return err
-			}
+	// 		return nil
+	// 	},
+	// 	Rollback: func(tx *gorm.DB) error {
+	// 		// Rollback the migration by renaming the columns back to their original names
+	// 		if err := tx.Migrator().RenameColumn(&Replication{}, "deprecated_is_self_service", "is_self_service"); err != nil {
+	// 			return err
+	// 		}
 
-			if err := tx.Migrator().RenameColumn(&Replication{}, "ss_is_self_service", "is_self_service"); err != nil {
-				return err
-			}
+	// 		if err := tx.Migrator().RenameColumn(&Replication{}, "ss_is_self_service", "is_self_service"); err != nil {
+	// 			return err
+	// 		}
 
-			// Remove the new column
-			if err := tx.Migrator().DropColumn(&Replication{}, "ss_is_self_service"); err != nil {
-				return err
-			}
+	// 		// Remove the new column
+	// 		if err := tx.Migrator().DropColumn(&Replication{}, "ss_is_self_service"); err != nil {
+	// 			return err
+	// 		}
 
-			return nil
-		},
-	},
+	// 		return nil
+	// 	},
+	// },
 }
