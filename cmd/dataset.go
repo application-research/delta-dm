@@ -14,10 +14,7 @@ func DatasetCmd() []*cli.Command {
 	var datasetName string
 	var replicationQuota uint64
 	var dealDuration uint64
-	var keepUnsealedCopy bool
-	var announceToIndexer bool
 
-	// add a command to run API node
 	var datasetCmds []*cli.Command
 	datasetCmd := &cli.Command{
 		Name:  "dataset",
@@ -50,22 +47,6 @@ func DatasetCmd() []*cli.Command {
 						Value:       540,
 						Destination: &dealDuration,
 					},
-					&cli.BoolFlag{
-						Name:        "unsealed",
-						Aliases:     []string{"u"},
-						Usage:       "flag to keep unsealed copy when deals are made",
-						DefaultText: "true",
-						Value:       true,
-						Destination: &keepUnsealedCopy,
-					},
-					&cli.BoolFlag{
-						Name:        "indexed",
-						Aliases:     []string{"i"},
-						Usage:       "flag to announce to IPNI (Interplanetary Network Indexer)",
-						DefaultText: "true",
-						Value:       true,
-						Destination: &announceToIndexer,
-					},
 				},
 				Action: func(c *cli.Context) error {
 					cmd, err := NewCmdProcessor(c)
@@ -81,8 +62,6 @@ func DatasetCmd() []*cli.Command {
 						Name:             datasetName,
 						ReplicationQuota: replicationQuota,
 						DealDuration:     dealDuration,
-						Indexed:          announceToIndexer,
-						Unsealed:         keepUnsealedCopy,
 					}
 
 					b, err := json.Marshal(body)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: ./singularity-import.sh <SINGULARITY datasetName> <DELTA datasetName> <deltaToken>
+# Usage: ./singularity-import.sh <SINGULARITY datasetName> <DELTA datasetID> <deltaToken>
 query="{\"datasetName\": \"$1\", \"pieceSize\": { \"\$gt\": 0 }}"
 DELTA_TOKEN="Authorization: Bearer $3"
 

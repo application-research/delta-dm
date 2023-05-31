@@ -29,6 +29,7 @@ func main() {
 	commands = append(commands, cmd.DaemonCmd(di)...)
 	commands = append(commands, cmd.WalletCmd()...)
 	commands = append(commands, cmd.ReplicationCmd()...)
+	commands = append(commands, cmd.ReplicationProfilesCmd()...)
 	commands = append(commands, cmd.ProviderCmd()...)
 	commands = append(commands, cmd.DatasetCmd()...)
 	commands = append(commands, cmd.ContentCmd()...)

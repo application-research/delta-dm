@@ -138,8 +138,8 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 }
 
 type AssociateWalletBody struct {
-	Address  string   `json:"address"`
-	Datasets []string `json:"datasets"`
+	Address  string `json:"address"`
+	Datasets []uint `json:"datasets"`
 }
 
 // POST /api/wallet/associate
@@ -166,20 +166,20 @@ func handleAssociateWallet(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	var newDatasets []core.Dataset
-	for _, datasetName := range awb.Datasets {
+	for _, datasetID := range awb.Datasets {
 
 		var dataset core.Dataset
 		err := dldm.DB.Model(core.Dataset{}).
-			Where("name = ?", datasetName).
+			Where("id = ?", datasetID).
 			Find(&dataset).
 			Error
 
 		if err != nil {
-			return fmt.Errorf("could not check for dataset %s : %s", datasetName, err)
+			return fmt.Errorf("could not check for dataset %d : %s", datasetID, err)
 		}
 
 		if dataset.ID == 0 {
-			return fmt.Errorf("dataset %s does not exist", datasetName)
+			return fmt.Errorf("dataset %d does not exist", datasetID)
 		}
 
 		newDatasets = append(newDatasets, dataset)

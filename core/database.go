@@ -39,6 +39,10 @@ func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
 	// generate new models.
 	ConfigureModels(DB) // create models.
 
+	if debug {
+		log.Debugf("connected to db at: %s", dbDsn)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +50,7 @@ func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	err := db.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{}, &WalletDatasets{}, &Replication{})
+	err := db.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ReplicationProfile{}, &WalletDatasets{}, &Replication{})
 
 	if err != nil {
 		log.Fatalf("error migrating database: %s", err)
@@ -77,21 +81,21 @@ type Replication struct {
 
 // A client is a Storage Provider that is being replicated to
 type Provider struct {
-	Key              uuid.UUID     `json:"key,omitempty" gorm:"type:uuid"`
-	ActorID          string        `json:"actor_id" gorm:"primaryKey"`
-	ActorName        string        `json:"actor_name,omitempty"`
-	AllowSelfService bool          `json:"allow_self_service,omitempty" gorm:"notnull,default:true"`
-	BytesReplicated  ByteSizes     `json:"bytes_replicated,omitempty" gorm:"-"`
-	CountReplicated  uint64        `json:"count_replicated,omitempty" gorm:"-"`
-	Replications     []Replication `json:"replications,omitempty" gorm:"foreignKey:ProviderActorID"`
-	AllowedDatasets  []Dataset     `json:"allowed_datasets" gorm:"many2many:provider_allowed_datasets;"`
+	Key                 uuid.UUID            `json:"key,omitempty" gorm:"type:uuid"`
+	ActorID             string               `json:"actor_id" gorm:"primaryKey"`
+	ActorName           string               `json:"actor_name,omitempty"`
+	AllowSelfService    bool                 `json:"allow_self_service,omitempty" gorm:"notnull,default:true"`
+	BytesReplicated     ByteSizes            `json:"bytes_replicated,omitempty" gorm:"-"`
+	CountReplicated     uint64               `json:"count_replicated,omitempty" gorm:"-"`
+	Replications        []Replication        `json:"replications,omitempty" gorm:"foreignKey:ProviderActorID"`
+	ReplicationProfiles []ReplicationProfile `json:"replication_profiles" gorm:"foreignKey:ProviderActorID"`
 }
 
-type ProviderAllowedDatasets struct {
-	ProviderActorID string `gorm:"primaryKey" json:"provider_actor_id"`
-	DatasetID       uint   `gorm:"primaryKey" json:"dataset_id"`
-	CreatedAt       time.Time
-	DeletedAt       gorm.DeletedAt
+type ReplicationProfile struct {
+	ProviderActorID string `gorm:"primaryKey;uniqueIndex:idx_provider_dataset" json:"provider_actor_id"`
+	DatasetID       uint   `gorm:"primaryKey;uniqueIndex:idx_provider_dataset" json:"dataset_id"`
+	Unsealed        bool   `json:"unsealed"`
+	Indexed         bool   `json:"indexed"`
 }
 
 type ByteSizes struct {
@@ -102,18 +106,16 @@ type ByteSizes struct {
 // A Dataset is a collection of CAR files, and is identified by a name/slug
 type Dataset struct {
 	gorm.Model
-	Name             string     `json:"name" gorm:"unique; not null"`
-	ReplicationQuota uint64     `json:"replication_quota"`
-	DealDuration     uint64     `json:"deal_duration"`
-	Wallets          []Wallet   `json:"wallets,omitempty" gorm:"many2many:wallet_datasets;"`
-	Unsealed         bool       `json:"unsealed"`
-	Indexed          bool       `json:"indexed"`
-	Contents         []Content  `json:"contents" gorm:"foreignKey:DatasetName;references:Name"`
-	BytesReplicated  ByteSizes  `json:"bytes_replicated,omitempty" gorm:"-"`
-	BytesTotal       ByteSizes  `json:"bytes_total,omitempty" gorm:"-"`
-	CountReplicated  uint64     `json:"count_replicated" gorm:"-"`
-	CountTotal       uint64     `json:"count_total" gorm:"-"`
-	AllowedProviders []Provider `json:"allowed_providers" gorm:"many2many:provider_allowed_datasets;"`
+	Name                string               `json:"name" gorm:"unique; not null"`
+	ReplicationQuota    uint64               `json:"replication_quota"`
+	DealDuration        uint64               `json:"deal_duration"`
+	Wallets             []Wallet             `json:"wallets,omitempty" gorm:"many2many:wallet_datasets;"`
+	Contents            []Content            `json:"contents" gorm:"foreignKey:DatasetID;references:ID"`
+	BytesReplicated     ByteSizes            `json:"bytes_replicated,omitempty" gorm:"-"`
+	BytesTotal          ByteSizes            `json:"bytes_total,omitempty" gorm:"-"`
+	CountReplicated     uint64               `json:"count_replicated" gorm:"-"`
+	CountTotal          uint64               `json:"count_total" gorm:"-"`
+	ReplicationProfiles []ReplicationProfile `json:"replication_profiles" gorm:"foreignKey:dataset_id"`
 }
 
 type Content struct {
@@ -121,7 +123,7 @@ type Content struct {
 	PayloadCID      string        `json:"payload_cid" csv:"payloadCid"`
 	Size            uint64        `json:"size" csv:"size"`
 	PaddedSize      uint64        `json:"padded_size" csv:"paddedSize"`
-	DatasetName     string        `json:"dataset_name"`
+	DatasetID       uint          `json:"dataset_id"`
 	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
 	NumReplications uint64        `json:"num_replications"`
 }

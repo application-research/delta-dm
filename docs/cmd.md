@@ -83,16 +83,16 @@ Example:
 
 ## replication
 ### Create a replication
-`> ./delta-dm replication create --provider <sp-actor-id> -num <num-deals-to-make> [--dataset <dataset-name>] [--delay-start <delay-start-days>]`
+`> ./delta-dm replication create --provider <sp-actor-id> -num <num-deals-to-make> [--dataset <dataset-id>] [--delay-start <delay-start-days>]`
 
 Example:
 ```bash
-./delta-dm replication create --provider f01000 --num 3 --dataset delta-test --delay-start 3
+./delta-dm replication create --provider f01000 --num 3 --dataset 1 --delay-start 3
 ```
 
 ## content
 ### Import content to a dataset
-`> ./delta-dm content import --dataset <dataset-name> [--json <path-to-json-file>] [--csv <path-to-csv-file>] [--singularity <path-to-singularity-export-json-file>]`
+`> ./delta-dm content import --dataset <dataset-id> [--json <path-to-json-file>] [--csv <path-to-csv-file>] [--singularity <path-to-singularity-export-json-file>]`
 
 One of `--json`, `--csv`, or `--singularity` must be provided.
 
@@ -100,8 +100,28 @@ For the expected file format, see the [api docs](api.md##/contents)
 
 Example:
 ```bash
-./delta-dm content import --dataset delta-test --json ./content.json
+./delta-dm content import --dataset 1 --json ./content.json
 ```
 
 ### List content in a dataset
-`> ./delta-dm content list --dataset <dataset-name>`
+`> ./delta-dm content list --dataset <dataset-id>`
+
+
+## replication profiles
+- Note: `replication-profile`/`rp` commands take a `dataset id`, you can run `dataset list` to get the id for a dataset.
+### Add a replication profile
+`> ./delta-dm rp add --spid <sp-id> --dataset <dataset-id> [--unsealed] [--indexed]`
+
+Example:
+```bash
+./delta-dm rp add --spid f01000 --dataset 1 --unsealed --indexed
+```
+
+### Modify a replication profile
+`> ./delta-dm rp modify --spid <sp-id> --dataset <dataset-id> [--unsealed] [--indexed]`
+
+### Delete a replication profile
+`> ./delta-dm rp delete --spid <sp-id> --dataset <dataset-id>`
+
+### List replication profiles
+`> ./delta-dm rp list`

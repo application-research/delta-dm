@@ -12,10 +12,9 @@ import (
 func ReplicationCmd() []*cli.Command {
 	var num uint
 	var provider string
-	var dataset string
+	var datasetID uint
 	var delayStartDays uint64
 
-	// add a command to run API node
 	var replicationCmds []*cli.Command
 	replicationCmd := &cli.Command{
 		Name:  "replication",
@@ -39,10 +38,11 @@ func ReplicationCmd() []*cli.Command {
 						Destination: &provider,
 						Required:    true,
 					},
-					&cli.StringFlag{
+					&cli.UintFlag{
 						Name:        "dataset",
-						Usage:       "dataset to replicate",
-						Destination: &dataset,
+						Aliases:     []string{"d"},
+						Usage:       "dataset id to replicate",
+						Destination: &datasetID,
 					},
 					&cli.Uint64Flag{
 						Name:        "delay-start",
@@ -61,8 +61,8 @@ func ReplicationCmd() []*cli.Command {
 						Provider: provider,
 					}
 
-					if dataset != "" {
-						body.Dataset = &dataset
+					if datasetID != 0 {
+						body.DatasetID = &datasetID
 					}
 
 					if delayStartDays != 0 {

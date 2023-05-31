@@ -16,7 +16,7 @@ const DEFAULT_DELAY_DAYS = 3
 
 type PostReplicationBody struct {
 	Provider       string  `json:"provider"`
-	Dataset        *string `json:"dataset,omitempty"`
+	DatasetID      *uint   `json:"dataset_id,omitempty"`
 	NumDeals       *uint   `json:"num_deals,omitempty"`
 	DelayStartDays *uint64 `json:"delay_start_days,omitempty"`
 	// NumTib       *int    `json:"num_tib,omitempty"`
@@ -229,24 +229,24 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 		delayStartEpoch = *d.DelayStartDays
 	}
 
-	if d.Dataset != nil && *d.Dataset != "" {
+	if d.DatasetID != nil {
 		var datasetExists bool
 		err = dldm.DB.Model(core.Dataset{}).
 			Select("count(*) > 0").
-			Where("name = ?", d.Dataset).
+			Where("id = ?", d.DatasetID).
 			Find(&datasetExists).
 			Error
 		if err != nil {
-			return fmt.Errorf("could not check if dataset %s exists: %s", *d.Dataset, err)
+			return fmt.Errorf("could not check if dataset with id %d exists: %s", *d.DatasetID, err)
 		}
 		if !datasetExists {
-			return fmt.Errorf("dataset %s does not exist in ddm. please add it first", *d.Dataset)
+			return fmt.Errorf("dataset id %d does not exist in ddm.", *d.DatasetID)
 		}
 	}
 
 	// TODO: Support num_tib to allow specifying the amount of data to replicate
 
-	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.Dataset, d.NumDeals)
+	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.DatasetID, d.NumDeals)
 	if err != nil {
 		return err
 	}
@@ -259,7 +259,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 	log.Debugf("calling DELTA api for %+v deals\n\n", len(toReplicate))
 
 	for _, c := range toReplicate {
-		wallet, err := walletSelection(dldm.DB, &c.DatasetName)
+		wallet, err := walletSelection(dldm.DB, d.DatasetID)
 
 		if err != nil || wallet.Addr == "" {
 			return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please add a wallet for this dataset and try again. alternatively, explicitly specify a dataset in the request to force replication of one with an existing wallet", c.Dataset.Name)
@@ -273,8 +273,8 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 			ConnectionMode:     "import",
 			Miner:              d.Provider,
 			Size:               c.Size,
-			SkipIpniAnnounce:   !c.Indexed,
-			RemoveUnsealedCopy: !c.Unsealed,
+			SkipIpniAnnounce:   !c.ReplicationProfile.Indexed,
+			RemoveUnsealedCopy: !c.ReplicationProfile.Unsealed,
 			DurationInDays:     c.DealDuration,
 			StartEpochInDays:   delayStartEpoch,
 			PieceCommitment: core.PieceCommitment{
@@ -295,19 +295,21 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 type replicatedContentQueryResponse struct {
 	core.Content
 	core.Dataset
+	core.ReplicationProfile
 }
 
 // Query the database for all contant that does not have replications to this actor yet
 // Arguments: providerID - the actor ID of the provider
 //
-//	datasetName (optional) - the name of the dataset to replicate
+//	datasetID (optional) - the ID of the dataset to replicate
 //	numDeals (optional) - the number of replications (deals) to return. If nil, return all
-func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetName *string, numDeals *uint) ([]replicatedContentQueryResponse, error) {
+func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetId *uint, numDeals *uint) ([]replicatedContentQueryResponse, error) {
 
 	rawQuery := `
   SELECT *
   FROM datasets d
-  INNER JOIN contents c ON d.name = c.dataset_name
+  INNER JOIN contents c ON d.id = c.dataset_id
+  INNER JOIN replication_profiles rp ON rp.dataset_id = d.id
 	-- Only select content that does not have a non-failed replication to this provider
   WHERE c.comm_p NOT IN (
     SELECT r.content_comm_p 
@@ -319,19 +321,15 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
       WHERE p.actor_id <> ?
     )
   )
-	-- Only select content from datasets that this provider is allowed to replicate
-  AND d.id IN (
-    SELECT dataset_id 
-    FROM provider_allowed_datasets 
-    WHERE provider_actor_id = ?
-  )
+  -- Only select content from datasets that this provider is allowed to replicate
+  AND rp.provider_actor_id = ?
   AND c.num_replications < d.replication_quota 
 	`
 	var rawValues = []interface{}{providerID, providerID}
 
-	if datasetName != nil && *datasetName != "" {
-		rawQuery += " AND d.name = ?"
-		rawValues = append(rawValues, datasetName)
+	if datasetId != nil && *datasetId != 0 {
+		rawQuery += " AND d.id = ?"
+		rawValues = append(rawValues, datasetId)
 	}
 
 	if numDeals != nil {
@@ -345,17 +343,17 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetN
 }
 
 // Find which wallet to use when making deals for a given dataset
-func walletSelection(db *gorm.DB, datasetName *string) (*core.Wallet, error) {
+func walletSelection(db *gorm.DB, datasetId *uint) (*core.Wallet, error) {
 	var w []core.Wallet
 
-	res := db.Raw("select * from wallets w inner join wallet_datasets wd on w.addr = wd.wallet_addr inner join datasets d on wd.dataset_id = d.id where d.name = ?", datasetName).Scan(&w)
+	res := db.Raw("select * from wallets w inner join wallet_datasets wd on w.addr = wd.wallet_addr inner join datasets d on wd.dataset_id = d.id where d.id = ?", datasetId).Scan(&w)
 
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
 	if len(w) == 0 {
-		return nil, fmt.Errorf("no wallet found for dataset '%s'", *datasetName)
+		return nil, fmt.Errorf("no wallet found for dataset '%d'", *datasetId)
 
 	}
 

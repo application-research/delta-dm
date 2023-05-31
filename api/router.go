@@ -64,6 +64,7 @@ func InitializeEchoRouterConfig(dldm *core.DeltaDM, port uint) {
 	ConfigureWalletsRouter(apiGroup, dldm)
 	ConfigureHealthRouter(apiGroup, dldm)
 	ConfigureSelfServiceRouter(apiGroup, dldm)
+	ConfigureReplicationProfilesRouter(apiGroup, dldm)
 	// Start server
 	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", (port)))) // configuration
 }

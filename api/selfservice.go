@@ -37,7 +37,7 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 				return c.String(401, "missing provider self-service token")
 			}
 			var p core.Provider
-			res := dldm.DB.Model(&core.Provider{}).Preload("AllowedDatasets").Where("key = ?", providerToken).Find(&p)
+			res := dldm.DB.Model(&core.Provider{}).Preload("ReplicationProfiles").Where("key = ?", providerToken).Find(&p)
 
 			if res.Error != nil {
 				log.Errorf("error finding provider: %s", res.Error)
@@ -91,15 +91,17 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	var ds core.Dataset
-	res = dldm.DB.Model(&core.Dataset{}).Where("name = ?", cnt.DatasetName).Find(&ds)
+	res = dldm.DB.Model(&core.Dataset{}).Where("id = ?", cnt.DatasetID).Find(&ds)
 	if res.Error != nil {
-		return fmt.Errorf("unable to find associated dataset %s", cnt.DatasetName)
+		return fmt.Errorf("unable to find dataset %d associated with requested CID", cnt.DatasetID)
 	}
 
+	var rp core.ReplicationProfile
 	isAllowed := false
-	for _, allowedDs := range p.AllowedDatasets {
-		if allowedDs.Name == ds.Name {
+	for _, thisRp := range p.ReplicationProfiles {
+		if thisRp.DatasetID == ds.ID {
 			isAllowed = true
+			rp = thisRp
 			break
 		}
 	}
@@ -122,10 +124,10 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	var dealsToMake core.OfflineDealRequest
 	log.Debugf("calling DELTA api for deal\n\n")
 
-	wallet, err := walletSelection(dldm.DB, &cnt.DatasetName)
+	wallet, err := walletSelection(dldm.DB, &cnt.DatasetID)
 
 	if err != nil || wallet.Addr == "" {
-		return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please contact administrator", cnt.DatasetName)
+		return fmt.Errorf("dataset '%s' does not have a wallet. no deals were made. please contact administrator", ds.Name)
 	}
 
 	dealsToMake = append(dealsToMake, core.Deal{
@@ -136,8 +138,8 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		ConnectionMode:     "import",
 		Miner:              p.ActorID,
 		Size:               cnt.Size,
-		SkipIpniAnnounce:   !ds.Indexed,
-		RemoveUnsealedCopy: !ds.Unsealed,
+		SkipIpniAnnounce:   !rp.Indexed,
+		RemoveUnsealedCopy: !rp.Unsealed,
 		DurationInDays:     ds.DealDuration,
 		StartEpochInDays:   delayDays,
 		PieceCommitment: core.PieceCommitment{
@@ -162,6 +164,12 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a dataset name")
 	}
 
+	var ds core.Dataset
+	dsRes := dldm.DB.Where("name = ?", dataset).First(&ds)
+	if dsRes.Error != nil || ds.ID == 0 {
+		return fmt.Errorf("invalid dataset: %s", dsRes.Error)
+	}
+
 	var delayDays uint64 = 3
 	if startEpochDelay != "" {
 		var err error
@@ -178,8 +186,8 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 	p := c.Get(PROVIDER).(core.Provider)
 
 	isAllowed := false
-	for _, ds := range p.AllowedDatasets {
-		if ds.Name == dataset {
+	for _, rp := range p.ReplicationProfiles {
+		if rp.DatasetID == ds.ID {
 			isAllowed = true
 			break
 		}
@@ -191,7 +199,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	// give one deal at a time
 	numDeals := uint(1)
-	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &dataset, &numDeals)
+	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &ds.ID, &numDeals)
 	if err != nil {
 		return fmt.Errorf("unable to find content for dataset: %s", err)
 	}
@@ -202,10 +210,10 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	deal := cnt[0]
 
-	wallet, err := walletSelection(dldm.DB, &deal.DatasetName)
+	wallet, err := walletSelection(dldm.DB, &ds.ID)
 
 	if err != nil || wallet.Addr == "" {
-		return fmt.Errorf("dataset '%s' does not have a wallet associated. no deals were made. please contact administrator", deal.DatasetName)
+		return fmt.Errorf("dataset '%s' does not have a wallet associated. no deals were made. please contact administrator", ds.Name)
 	}
 
 	var dealsToMake []core.Deal
@@ -218,8 +226,8 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		ConnectionMode:     "import",
 		Miner:              p.ActorID,
 		Size:               deal.Size,
-		SkipIpniAnnounce:   !deal.Indexed,
-		RemoveUnsealedCopy: !deal.Unsealed,
+		SkipIpniAnnounce:   !deal.ReplicationProfile.Indexed,
+		RemoveUnsealedCopy: !deal.ReplicationProfile.Unsealed,
 		DurationInDays:     deal.DealDuration - delayDays,
 		StartEpochInDays:   delayDays,
 		PieceCommitment: core.PieceCommitment{
