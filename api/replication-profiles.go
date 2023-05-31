@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,9 +21,9 @@ func ConfigureReplicationProfilesRouter(e *echo.Group, dldm *core.DeltaDM) {
 	replicationProfiles.Use(dldm.AS.AuthMiddleware)
 
 	replicationProfiles.GET("", func(c echo.Context) error {
-		var p []core.ReplicationProfile
+		var p []db.ReplicationProfile
 
-		res := dldm.DB.Model(&core.ReplicationProfile{}).Find(&p)
+		res := dldm.DB.Model(&db.ReplicationProfile{}).Find(&p)
 		if res.Error != nil {
 			return fmt.Errorf("error finding replication profiles: %s", res.Error)
 		}
@@ -31,15 +32,15 @@ func ConfigureReplicationProfilesRouter(e *echo.Group, dldm *core.DeltaDM) {
 	})
 
 	replicationProfiles.POST("", func(c echo.Context) error {
-		var p core.ReplicationProfile
+		var p db.ReplicationProfile
 
 		if err := c.Bind(&p); err != nil {
 			return fmt.Errorf("failed to parse request body: %s", err.Error())
 		}
 
 		// Check if the dataset and provider exist
-		var ds core.Dataset
-		var provider core.Provider
+		var ds db.Dataset
+		var provider db.Provider
 
 		dsRes := dldm.DB.Where("id = ?", p.DatasetID).First(&ds)
 		providerRes := dldm.DB.Where("actor_id = ?", p.ProviderActorID).First(&provider)
@@ -65,7 +66,7 @@ func ConfigureReplicationProfilesRouter(e *echo.Group, dldm *core.DeltaDM) {
 	})
 
 	replicationProfiles.DELETE("", func(c echo.Context) error {
-		var p core.ReplicationProfile
+		var p db.ReplicationProfile
 		if err := c.Bind(&p); err != nil {
 			return fmt.Errorf("failed to parse request body: %s", err.Error())
 		}
@@ -74,7 +75,7 @@ func ConfigureReplicationProfilesRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("invalid replication profile ID")
 		}
 
-		var existingProfile core.ReplicationProfile
+		var existingProfile db.ReplicationProfile
 		res := dldm.DB.Where("provider_actor_id = ? AND dataset_id = ?", p.ProviderActorID, p.DatasetID).First(&existingProfile)
 
 		if res.Error != nil {
@@ -90,7 +91,7 @@ func ConfigureReplicationProfilesRouter(e *echo.Group, dldm *core.DeltaDM) {
 	})
 
 	replicationProfiles.PUT("", func(c echo.Context) error {
-		var updatedProfile core.ReplicationProfile
+		var updatedProfile db.ReplicationProfile
 		if err := c.Bind(&updatedProfile); err != nil {
 			return fmt.Errorf("failed to parse request body: %s", err.Error())
 		}
@@ -99,7 +100,7 @@ func ConfigureReplicationProfilesRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("invalid replication profile ID")
 		}
 
-		var existingProfile core.ReplicationProfile
+		var existingProfile db.ReplicationProfile
 		res := dldm.DB.Where("provider_actor_id = ? AND dataset_id = ?", updatedProfile.ProviderActorID, updatedProfile.DatasetID).First(&existingProfile)
 
 		if res.Error != nil {

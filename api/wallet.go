@@ -166,11 +166,11 @@ func handleAssociateWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("no datasets provided")
 	}
 
-	var newDatasets []core.Dataset
+	var newDatasets []db.Dataset
 	for _, datasetID := range awb.Datasets {
 
-		var dataset core.Dataset
-		err := dldm.DB.Model(core.Dataset{}).
+		var dataset db.Dataset
+		err := dldm.DB.Model(db.Dataset{}).
 			Where("id = ?", datasetID).
 			Find(&dataset).
 			Error

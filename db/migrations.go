@@ -7,7 +7,7 @@ import (
 
 func BaselineSchema(tx *gorm.DB) error {
 	log.Debugf("first run: initializing database schema")
-	err := tx.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ProviderAllowedDatasets{}, &WalletDatasets{}, &Replication{})
+	err := tx.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ReplicationProfile{}, &WalletDatasets{}, &Replication{})
 
 	if err != nil {
 		log.Fatalf("error initializing database: %s", err)
@@ -21,6 +21,7 @@ var Migrations []*gormigrate.Migration = []*gormigrate.Migration{
 		ID: "20230530000",
 		Migrate: func(tx *gorm.DB) error {
 			// ! Column has already been created as it's included in the baseline
+			// this is an exception - normally the migration would also create the column
 
 			// Update the values in the new column
 			if err := tx.Exec("UPDATE replications SET ss_is_self_service = is_self_service").Error; err != nil {

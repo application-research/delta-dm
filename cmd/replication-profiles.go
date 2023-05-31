@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/urfave/cli/v2"
 )
 
@@ -55,7 +55,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 						return err
 					}
 
-					body := core.ReplicationProfile{
+					body := db.ReplicationProfile{
 						ProviderActorID: spId,
 						DatasetID:       datasetId,
 						Unsealed:        unsealed,
@@ -112,7 +112,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 						return err
 					}
 
-					body := core.ReplicationProfile{
+					body := db.ReplicationProfile{
 						ProviderActorID: spId,
 						DatasetID:       datasetId,
 						Unsealed:        unsealed,
@@ -159,7 +159,7 @@ func ReplicationProfilesCmd() []*cli.Command {
 						return err
 					}
 
-					body := core.ReplicationProfile{
+					body := db.ReplicationProfile{
 						ProviderActorID: spId,
 						DatasetID:       datasetId,
 					}

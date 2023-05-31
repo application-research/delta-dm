@@ -42,8 +42,8 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 			if providerToken == "" {
 				return c.String(401, "missing provider self-service token")
 			}
-			var p core.Provider
-			res := dldm.DB.Model(&core.Provider{}).Preload("ReplicationProfiles").Where("key = ?", providerToken).Find(&p)
+			var p db.Provider
+			res := dldm.DB.Model(&db.Provider{}).Preload("ReplicationProfiles").Where("key = ?", providerToken).Find(&p)
 
 			if res.Error != nil {
 				log.Errorf("error finding provider: %s", res.Error)
@@ -96,13 +96,13 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deal for this CID")
 	}
 
-	var ds core.Dataset
-	res = dldm.DB.Model(&core.Dataset{}).Where("id = ?", cnt.DatasetID).Find(&ds)
+	var ds db.Dataset
+	res = dldm.DB.Model(&db.Dataset{}).Where("id = ?", cnt.DatasetID).Find(&ds)
 	if res.Error != nil {
 		return fmt.Errorf("unable to find dataset %d associated with requested CID", cnt.DatasetID)
 	}
 
-	var rp core.ReplicationProfile
+	var rp db.ReplicationProfile
 	isAllowed := false
 	for _, thisRp := range p.ReplicationProfiles {
 		if thisRp.DatasetID == ds.ID {
@@ -170,7 +170,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a dataset name")
 	}
 
-	var ds core.Dataset
+	var ds db.Dataset
 	dsRes := dldm.DB.Where("name = ?", dataset).First(&ds)
 	if dsRes.Error != nil || ds.ID == 0 {
 		return fmt.Errorf("invalid dataset: %s", dsRes.Error)
