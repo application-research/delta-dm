@@ -1,82 +1,48 @@
-package core
+package db
 
 import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-
-	//	"gorm.io/gorm/logger"
-
-	logging "github.com/ipfs/go-log/v2"
 )
 
-var (
-	log = logging.Logger("router")
-)
-
-// Opens a database connection, and returns a gorm DB object.
-// It will automatically detect either Postgres DSN or, or will fallback to sqlite
-func OpenDatabase(dbDsn string, debug bool) (*gorm.DB, error) {
-	var DB *gorm.DB
-	var err error
-	var config = &gorm.Config{}
-	if debug {
-		config = &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
-		}
-	}
-
-	if dbDsn[:8] == "postgres" {
-		DB, err = gorm.Open(postgres.Open(dbDsn), config)
-	} else {
-		DB, err = gorm.Open(sqlite.Open(dbDsn), config)
-	}
-
-	// generate new models.
-	ConfigureModels(DB) // create models.
-
-	if debug {
-		log.Debugf("connected to db at: %s", dbDsn)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-	return DB, nil
-}
-
-func ConfigureModels(db *gorm.DB) {
-	err := db.AutoMigrate(&Provider{}, &Dataset{}, &Content{}, &Wallet{}, &ReplicationProfile{}, &WalletDatasets{}, &Replication{})
-
-	if err != nil {
-		log.Fatalf("error migrating database: %s", err)
-	}
-}
-
-type ReplicationStatus string
+type DealStatus string
 
 const (
-	StatusPending ReplicationStatus = "PENDING"
-	StatusSuccess ReplicationStatus = "SUCCESS"
-	StatusFailure ReplicationStatus = "FAILURE"
+	DealStatusPending DealStatus = "PENDING"
+	DealStatusSuccess DealStatus = "SUCCESS"
+	DealStatusFailure DealStatus = "FAILURE"
+)
+
+// This is separate from the `DealStatus` enum to accomodate more granular statuses in the future (ex, SealingInProgress)
+type SelfServiceStatus string
+
+const (
+	SelfServiceStatusPending SelfServiceStatus = "PENDING"
+	SelfServiceStatusSuccess SelfServiceStatus = "SUCCESS"
+	SelfServiceStatusFailure SelfServiceStatus = "FAILURE"
 )
 
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	Content         Content           `json:"content"` //TODO: doesnt come back from api
-	DealTime        time.Time         `json:"deal_time"`
-	DeltaContentID  int64             `json:"delta_content_id" gorm:"unique"`
-	ProposalCid     string            `json:"proposal_cid" gorm:"unique"`
-	ProviderActorID string            `json:"provider_actor_id"`
-	ContentCommP    string            `json:"content_commp"`
-	IsSelfService   bool              `json:"is_self_service"`
-	Status          ReplicationStatus `json:"status" gorm:"notnull,default:'PENDING'"`
-	DeltaMessage    string            `json:"delta_message,omitempty"`
+	Content         Content    `json:"content"` //TODO: doesnt come back from api
+	DealTime        time.Time  `json:"deal_time"`
+	DeltaContentID  int64      `json:"delta_content_id" gorm:"unique"`
+	DealUUID        string     `json:"deal_uuid"`
+	OnChainDealID   uint       `json:"on_chain_deal_id"`
+	ProposalCid     string     `json:"proposal_cid" gorm:"unique"`
+	ProviderActorID string     `json:"provider_actor_id"`
+	ContentCommP    string     `json:"content_commp"`
+	Status          DealStatus `json:"status" gorm:"notnull,default:'PENDING'"`
+	DeltaMessage    string     `json:"delta_message,omitempty"`
+	SelfService     struct {
+		IsSelfService bool      `json:"is_self_service"`
+		LastUpdate    time.Time `json:"last_update"`
+		Status        string    `json:"status" gorm:"notnull,default:'PENDING'"`
+		Message       string    `json:"message"`
+	} `json:"self_service" gorm:"embedded;embeddedPrefix:ss_"`
 }
 
 // A client is a Storage Provider that is being replicated to

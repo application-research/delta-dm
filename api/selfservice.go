@@ -3,8 +3,10 @@ package api
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,6 +28,10 @@ func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 	selfService.GET("/by-dataset/:dataset", func(c echo.Context) error {
 		return handleSelfServiceByDataset(c, dldm)
 	})
+
+	selfService.PUT("/telemetry/:cid", func(c echo.Context) error {
+		return handleSelfServiceTelemetry(c, dldm)
+	})
 }
 
 func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
@@ -36,8 +42,8 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 			if providerToken == "" {
 				return c.String(401, "missing provider self-service token")
 			}
-			var p core.Provider
-			res := dldm.DB.Model(&core.Provider{}).Preload("ReplicationProfiles").Where("key = ?", providerToken).Find(&p)
+			var p db.Provider
+			res := dldm.DB.Model(&db.Provider{}).Preload("ReplicationProfiles").Where("key = ?", providerToken).Find(&p)
 
 			if res.Error != nil {
 				log.Errorf("error finding provider: %s", res.Error)
@@ -82,21 +88,21 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a piece CID")
 	}
 
-	p := c.Get(PROVIDER).(core.Provider)
+	p := c.Get(PROVIDER).(db.Provider)
 
-	var cnt core.Content
-	res := dldm.DB.Model(&core.Content{}).Preload("Replications").Where("comm_p = ?", piece).Find(&cnt)
+	var cnt db.Content
+	res := dldm.DB.Model(&db.Content{}).Preload("Replications").Where("comm_p = ?", piece).Find(&cnt)
 	if res.Error != nil {
 		return fmt.Errorf("unable to make deal for this CID")
 	}
 
-	var ds core.Dataset
-	res = dldm.DB.Model(&core.Dataset{}).Where("id = ?", cnt.DatasetID).Find(&ds)
+	var ds db.Dataset
+	res = dldm.DB.Model(&db.Dataset{}).Where("id = ?", cnt.DatasetID).Find(&ds)
 	if res.Error != nil {
 		return fmt.Errorf("unable to find dataset %d associated with requested CID", cnt.DatasetID)
 	}
 
-	var rp core.ReplicationProfile
+	var rp db.ReplicationProfile
 	isAllowed := false
 	for _, thisRp := range p.ReplicationProfiles {
 		if thisRp.DatasetID == ds.ID {
@@ -116,7 +122,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 
 	// Ensure no pending/successful replications have been made for this content to this provider
 	for _, repl := range cnt.Replications {
-		if repl.ProviderActorID == p.ActorID && repl.Status != core.StatusFailure {
+		if repl.ProviderActorID == p.ActorID && repl.Status != db.DealStatusFailure {
 			return fmt.Errorf("content '%s' is already replicated to provider '%s'", piece, p.ActorID)
 		}
 	}
@@ -132,7 +138,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 
 	dealsToMake = append(dealsToMake, core.Deal{
 		PayloadCID: cnt.PayloadCID,
-		Wallet: core.Wallet{
+		Wallet: db.Wallet{
 			Addr: wallet.Addr,
 		},
 		ConnectionMode:     "import",
@@ -164,7 +170,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("must provide a dataset name")
 	}
 
-	var ds core.Dataset
+	var ds db.Dataset
 	dsRes := dldm.DB.Where("name = ?", dataset).First(&ds)
 	if dsRes.Error != nil || ds.ID == 0 {
 		return fmt.Errorf("invalid dataset: %s", dsRes.Error)
@@ -183,7 +189,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		}
 	}
 
-	p := c.Get(PROVIDER).(core.Provider)
+	p := c.Get(PROVIDER).(db.Provider)
 
 	isAllowed := false
 	for _, rp := range p.ReplicationProfiles {
@@ -220,7 +226,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	dealsToMake = append(dealsToMake, core.Deal{
 		PayloadCID: deal.PayloadCID,
-		Wallet: core.Wallet{
+		Wallet: db.Wallet{
 			Addr: wallet.Addr,
 		},
 		ConnectionMode:     "import",
@@ -242,4 +248,45 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	return c.JSON(200, SelfServiceResponse{Cid: deal.CommP})
+}
+
+type SelfServiceStatusUpdate struct {
+	DealUuid string `json:"deal_uuid"`
+	State    string `json:"state"`
+	Message  string `json:"message"`
+}
+
+func handleSelfServiceTelemetry(c echo.Context, dldm *core.DeltaDM) error {
+	var update SelfServiceStatusUpdate
+	if err := c.Bind(&update); err != nil {
+		return fmt.Errorf("unable to bind request: %s", err)
+	}
+
+	if update.DealUuid == "" {
+		return fmt.Errorf("must provide a deal_uuid")
+	}
+
+	var repl db.Replication
+	err := dldm.DB.Model(&repl).Where("deal_uuid = ?", update.DealUuid).First(&repl).Error
+
+	if err != nil {
+		return fmt.Errorf("unable to find content for CID: %s", err)
+	}
+
+	p := c.Get(PROVIDER).(db.Provider)
+	if repl.ProviderActorID != p.ActorID {
+		return fmt.Errorf("deal '%s' does not belong to provider '%s'", update.DealUuid, p.ActorID)
+	}
+
+	repl.SelfService.LastUpdate = time.Now()
+	repl.SelfService.Status = update.State
+	repl.SelfService.Message = update.Message
+
+	err = dldm.DB.Save(&repl).Error
+	if err != nil {
+		return fmt.Errorf("unable to update deal status: %s", err)
+	}
+
+	return nil
+
 }

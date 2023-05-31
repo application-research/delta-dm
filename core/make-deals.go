@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
 	"gorm.io/gorm"
 )
@@ -19,18 +20,20 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 		dealResp, _ := dryRunDeal(&dealsToMake)
 
 		for _, c := range *dealResp {
-			var newReplication = Replication{
+			var newReplication = db.Replication{
 				ContentCommP:    c.DealRequestMeta.PieceCommitment.PieceCid,
 				ProviderActorID: c.DealRequestMeta.Miner,
 				DeltaContentID:  c.DeltaContentID,
 				DealTime:        time.Now(),
-				Status:          StatusSuccess,
-				IsSelfService:   isSelfService,
+				Status:          db.DealStatusSuccess,
+				OnChainDealID:   0,
 				ProposalCid:     "DRY_RUN_" + fmt.Sprint(rand.Int()),
+				DealUUID:        "DRY_RUN_" + fmt.Sprint(rand.Int()),
 				DeltaMessage:    "this is a dry run, no deal was made",
 			}
+			newReplication.SelfService.IsSelfService = isSelfService
 
-			res := dldm.DB.Model(&Replication{}).Create(&newReplication)
+			res := dldm.DB.Model(&db.Replication{}).Create(&newReplication)
 			if res.Error != nil {
 				log.Errorf("unable to create replication in db: %s", res.Error)
 				continue
@@ -49,24 +52,26 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 		if c.Status != "success" {
 			continue
 		}
-		var newReplication = Replication{
+		var newReplication = db.Replication{
 			ContentCommP:    c.DealRequestMeta.PieceCommitment.PieceCid,
 			ProviderActorID: c.DealRequestMeta.Miner,
 			DeltaContentID:  c.DeltaContentID,
 			DealTime:        time.Now(),
-			Status:          StatusPending,
-			IsSelfService:   isSelfService,
+			Status:          db.DealStatusPending,
+			OnChainDealID:   0,
 			ProposalCid:     "PENDING_" + fmt.Sprint(rand.Int()),
+			DealUUID:        "PENDING_" + fmt.Sprint(rand.Int()),
 		}
+		newReplication.SelfService.IsSelfService = isSelfService
 
-		res := dldm.DB.Model(&Replication{}).Create(&newReplication)
+		res := dldm.DB.Model(&db.Replication{}).Create(&newReplication)
 		if res.Error != nil {
 			log.Errorf("unable to create replication in db: %s", res.Error)
 			continue
 		}
 
 		// Update the content's num replications
-		dldm.DB.Model(&Content{}).Where("comm_p = ?", newReplication.ContentCommP).Update("num_replications", gorm.Expr("num_replications + ?", 1))
+		dldm.DB.Model(&db.Content{}).Where("comm_p = ?", newReplication.ContentCommP).Update("num_replications", gorm.Expr("num_replications + ?", 1))
 	}
 	return deltaResp, nil
 }

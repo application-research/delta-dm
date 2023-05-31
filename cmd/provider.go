@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/application-research/delta-dm/api"
-	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/urfave/cli/v2"
 )
 
@@ -42,7 +42,7 @@ func ProviderCmd() []*cli.Command {
 						return err
 					}
 
-					body := core.Provider{
+					body := db.Provider{
 						ActorID: spId,
 					}
 

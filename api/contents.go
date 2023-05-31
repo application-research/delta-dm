@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -18,8 +19,8 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	contents.Use(dldm.AS.AuthMiddleware)
 
 	contents.GET("/:dataset", func(c echo.Context) error {
-		var content []core.Content
-		var dataset core.Dataset
+		var content []db.Content
+		var dataset db.Dataset
 
 		d := c.Param("dataset")
 
@@ -47,8 +48,8 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	})
 
 	contents.POST("/:dataset", func(c echo.Context) error {
-		var content []core.Content
-		var dataset core.Dataset
+		var content []db.Content
+		var dataset db.Dataset
 		results := struct {
 			Success []string `json:"success"`
 			Fail    []string `json:"fail"`
@@ -132,8 +133,8 @@ type SingularityJSON struct {
 	PieceSize uint64 `json:"pieceSize"`
 }
 
-func (s *SingularityJSON) toDeltaContent() core.Content {
-	return core.Content{
+func (s *SingularityJSON) toDeltaContent() db.Content {
+	return db.Content{
 		CommP:      s.PieceCid,
 		PayloadCID: s.DataCid,
 		Size:       s.CarSize,

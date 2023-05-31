@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
 	"github.com/urfave/cli/v2"
 )
@@ -58,7 +58,7 @@ func DatasetCmd() []*cli.Command {
 						return fmt.Errorf("invalid dataset name. must contain only lowercase letters, numbers and hyphens. must begin and end with a letter. must not contain consecutive hyphens")
 					}
 
-					body := core.Dataset{
+					body := db.Dataset{
 						Name:             datasetName,
 						ReplicationQuota: replicationQuota,
 						DealDuration:     dealDuration,

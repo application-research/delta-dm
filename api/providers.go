@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/application-research/delta-dm/core"
+	db "github.com/application-research/delta-dm/db"
 	"github.com/filecoin-project/go-address"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -21,7 +22,7 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 	providers.Use(dldm.AS.AuthMiddleware)
 
 	providers.GET("", func(c echo.Context) error {
-		var p []core.Provider
+		var p []db.Provider
 
 		dldm.DB.Preload("ReplicationProfiles").Find(&p)
 
@@ -29,7 +30,7 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 			var rb [2]uint64
 			dldm.DB.Raw("select SUM(size) s, SUM(padded_size) ps FROM contents c inner join replications r on r.content_comm_p = c.comm_p where r.status = 'SUCCESS' AND r.provider_actor_id = ?", sp.ActorID).Row().Scan(&rb[0], &rb[1])
 
-			p[i].BytesReplicated = core.ByteSizes{Raw: rb[0], Padded: rb[1]}
+			p[i].BytesReplicated = db.ByteSizes{Raw: rb[0], Padded: rb[1]}
 
 			var countReplicated uint64 = 0
 			dldm.DB.Raw("select count(*) cr from replications r where r.status = 'SUCCESS' AND  r.provider_actor_id = ?", sp.ActorID).Row().Scan(&countReplicated)
@@ -41,7 +42,7 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 	})
 
 	providers.POST("", func(c echo.Context) error {
-		var p core.Provider
+		var p db.Provider
 
 		if err := c.Bind(&p); err != nil {
 			return err
@@ -75,8 +76,8 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return err
 		}
 
-		var existing core.Provider
-		res := dldm.DB.Model(&core.Provider{}).Where("actor_id = ?", pid).First(&existing)
+		var existing db.Provider
+		res := dldm.DB.Model(&db.Provider{}).Where("actor_id = ?", pid).First(&existing)
 
 		if res.Error != nil {
 			return fmt.Errorf("error fetching provider %s", res.Error)

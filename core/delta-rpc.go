@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	db "github.com/application-research/delta-dm/db"
 )
 
 type DeltaAPI struct {
@@ -297,7 +299,7 @@ type OfflineDealResponseElement struct {
 
 type Deal struct { // AKA meta
 	PayloadCID         string          `json:"cid"` // Payload CID
-	Wallet             Wallet          `json:"wallet"`
+	Wallet             db.Wallet       `json:"wallet"`
 	Miner              string          `json:"miner"` //TODO: rename to provider
 	PieceCommitment    PieceCommitment `json:"piece_commitment"`
 	ConnectionMode     string          `json:"connection_mode"`
@@ -397,7 +399,7 @@ type DealStats_Deal struct {
 	PropCid             string `json:"propCid"`
 	DealUUID            string `json:"dealUuid"`
 	Miner               string `json:"miner"`
-	DealID              int64  `json:"dealId"`
+	DealID              uint   `json:"dealId"`
 	Failed              bool   `json:"failed"`
 	Verified            bool   `json:"verified"`
 	Slashed             bool   `json:"slashed"`

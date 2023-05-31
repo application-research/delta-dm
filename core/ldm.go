@@ -1,8 +1,13 @@
 package core
 
 import (
+	db "github.com/application-research/delta-dm/db"
 	logging "github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
+)
+
+var (
+	log = logging.Logger("router")
 )
 
 type DeploymentInfo struct {
@@ -22,11 +27,11 @@ func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, authServerU
 		logging.SetDebugLogging()
 	}
 
-	db, err := OpenDatabase(dbConnStr, debug)
+	dbi, err := db.OpenDatabase(dbConnStr, debug)
 	if err != nil {
 		log.Fatalf("could not connect to db: %s", err)
 	} else {
-		log.Debugf("successfully connected to delta db at %s\n", deltaApi)
+		log.Debugf("successfully connected to delta db at %s\n", dbConnStr)
 	}
 
 	dapi, err := NewDeltaAPI(deltaApi, authToken)
@@ -40,7 +45,7 @@ func NewDeltaDM(dbConnStr string, deltaApi string, authToken string, authServerU
 
 	return &DeltaDM{
 		DAPI:       dapi,
-		DB:         db,
+		DB:         dbi,
 		AS:         as,
 		Info:       di,
 		DryRunMode: dryRun,
