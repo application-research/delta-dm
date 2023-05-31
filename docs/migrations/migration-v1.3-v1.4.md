@@ -1,9 +1,9 @@
 # V1.3 to V1.4 Migration
 
-If you have an existing database from DDM V1.3, you will need to migrate it to V1.4. This migration is not backwards compatible, so you will not be able to use the V1.4 database with V1.3.
+If you have an existing database from DDM V1.3, you will need to *manually* migrate it to update the schema for V1.4 compatibility. This migration is not backwards compatible, so you will not be able to use the V1.4 database with V1.3.
 
 Note: This migration is only necessary as we did not have the automatic migration framework in place prior to this release. Thus, we are using manual SQL to ensure database consistency.
-Going forward, this will not be required as the schema established in V1.4 allows for automatic migrations. 
+Going forward, this will not be required as the **baseline schema established in V1.4 allows for automatic migrations. **
 
 ## Manual SQL
 Please execute the following SQL statements in your DDM database.
