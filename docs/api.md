@@ -354,8 +354,8 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 
 ```jsonc
 {
-  provider: "f01234", // required! ID of the SP to create deals with
-  dataset: "test-dataset", // optional - if unspecified, will select content from any dataset
+  provider_id: "f01234", // required! ID of the SP to create deals with
+  dataset_id: 1, // optional - if unspecified, will select content from any dataset
   num_deals: 10, // Number of deals to make
 	delay_start_days: 3 // Optional - delay start of deals by this many days. Default is 3. Must be between 1 and 14.
 }
@@ -401,87 +401,90 @@ Note the response contains two properties. `totalCount` is the total number of r
 {
 	"data": [
 		{
-		"ID": 8,
-		"CreatedAt": "2023-03-01T19:16:14.956554-08:00",
-		"UpdatedAt": "2023-03-02T17:21:17.260965-08:00",
-		"DeletedAt": null,
-		"content": {
-			"commp": "baga6ea4seaqnkkxerlx4vljfvmpffjzqmxuusz4l72lil5quf7c5b2mcg5zy2mi",
-			"payload_cid": "bafybeifoxwwx5newgdwnvojyotleh3x3sy7ckndwa2ysioe4corv4ixgti",
-			"size": 18010019221,
-			"padded_size": 34359738368,
-			"dataset_id": 1,
-			"num_replications": 1
+			"ID": 2256,
+			"CreatedAt": "2023-05-31T15:34:16.052673274-07:00",
+			"UpdatedAt": "2023-05-31T15:34:28.037248473-07:00",
+			"DeletedAt": null,
+			"content": {
+				"commp": "baga6ea4seaqbcp2ujtp4v2ldidqe3saohzdfk2ssmg2ksad4f7fwghsrcxbruka",
+				"payload_cid": "bafybeihfm75r5p3jd7365w4p4pkanjfnwni4cfubjvkxlzqksmtqzjj6w4",
+				"size": 18215910897,
+				"padded_size": 34359738368,
+				"dataset_id": 1,
+				"num_replications": 4
+			},
+			"deal_time": "2023-05-31T15:34:16.052586454-07:00",
+			"delta_content_id": 2403,
+			"deal_uuid": "7a08ecb8-fea4-4e28-b3c9-c3216ca7f182",
+			"on_chain_deal_id": 0,
+			"proposal_cid": "bafyreidlrtmbjtfp2uniw5tsc76r7bn5e5f5kmoph26d446ipuxwci2kma",
+			"provider_actor_id": "f01963614",
+			"content_commp": "baga6ea4seaqbcp2ujtp4v2ldidqe3saohzdfk2ssmg2ksad4f7fwghsrcxbruka",
+			"status": "SUCCESS",
+			"self_service": {
+				"is_self_service": true,
+				"last_update": "0001-01-01T00:00:00Z",
+				"status": "",
+				"message": ""
+			}
 		},
-		"deal_time": "2023-03-01T19:16:14.956401-08:00",
-		"delta_content_id": 27388,
-		"proposal_cid": "bafyreidvtrgw2z6l3m6slalibrb67rqxcnscjiexrsccjwnwr7pwhat5zq",
-		"provider_actor_id": "f01963614",
-		"content_commp": "baga6ea4seaqnkkxerlx4vljfvmpffjzqmxuusz4l72lil5quf7c5b2mcg5zy2mi",
-		"status": "SUCCESS"
-	},
-	{
-		"ID": 9,
-		"CreatedAt": "2023-03-01T19:16:14.962937-08:00",
-		"UpdatedAt": "2023-03-02T17:21:17.261791-08:00",
-		"DeletedAt": null,
-		"content": {
-			"commp": "baga6ea4seaqchqjaoycetgpptpiipeuygx7h7aeuml5mfrqp7kskrqsloi6pwia",
-			"payload_cid": "bafybeiezpv62emncxbe4adoyipxhzcdy2eqzxx3rde6rdzuqxs57gdsp2q",
-			"size": 18010019221,
-			"padded_size": 34359738368,
-			"dataset_id": 1,
-			"num_replications": 1
+		{
+			"ID": 2255,
+			"CreatedAt": "2023-05-31T15:32:20.998182439-07:00",
+			"UpdatedAt": "2023-05-31T15:32:27.494745191-07:00",
+			"DeletedAt": null,
+			"content": {
+				"commp": "baga6ea4seaqfcjignlqka2qdox5m4re2jvhztddeswpmfdrmbol4ttgejdymaiy",
+				"payload_cid": "bafybeifwnmgg5ielqxcfwhy2nqxfqeguoruozdt2cgzuztxfbfeiekvgrm",
+				"size": 18143697080,
+				"padded_size": 34359738368,
+				"dataset_id": 1,
+				"num_replications": 4
+			},
+			"deal_time": "2023-05-31T15:32:20.998080359-07:00",
+			"delta_content_id": 2402,
+			"deal_uuid": "3411e5e3-f169-4d4f-a841-b12ffa4e56fb",
+			"on_chain_deal_id": 0,
+			"proposal_cid": "bafyreib3e5dzbut5edfj5qfiv7ex3q2nni7qpm3sbd23cwycl2crlj4txe",
+			"provider_actor_id": "f01963614",
+			"content_commp": "baga6ea4seaqfcjignlqka2qdox5m4re2jvhztddeswpmfdrmbol4ttgejdymaiy",
+			"status": "SUCCESS",
+			"self_service": {
+				"is_self_service": true,
+				"last_update": "0001-01-01T00:00:00Z",
+				"status": "",
+				"message": ""
+			}
 		},
-		"deal_time": "2023-03-01T19:16:14.962877-08:00",
-		"delta_content_id": 27389,
-		"proposal_cid": "bafyreid23uwyqqdwvgaaivnqzktmnpgxgo4ruo3hlk7efjgzs6lwcq75wy",
-		"provider_actor_id": "f01963614",
-		"content_commp": "baga6ea4seaqchqjaoycetgpptpiipeuygx7h7aeuml5mfrqp7kskrqsloi6pwia",
-		"status": "SUCCESS"
-	},
-	{
-		"ID": 18,
-		"CreatedAt": "2023-03-06T11:09:42.185496-08:00",
-		"UpdatedAt": "2023-03-06T11:09:43.997136-08:00",
-		"DeletedAt": null,
-		"content": {
-			"commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
-			"payload_cid": "bafybeiakf666idv6zs4uksckfkjr76jmvrcuu4neidldxlfngo2vh6jvfe",
-			"size": 18010019222,
-			"padded_size": 34359738368,
-			"dataset_id": 1,
-			"num_replications": 3
+		{
+			"ID": 2255,
+			"CreatedAt": "2023-05-31T15:32:20.998182439-07:00",
+			"UpdatedAt": "2023-05-31T15:32:27.494745191-07:00",
+			"DeletedAt": null,
+			"content": {
+				"commp": "baga6ea4seaqfcjignlqka2qdox5m4re2jvhztddeswpmfdrmbol4ttgejdymaiy",
+				"payload_cid": "bafybeifwnmgg5ielqxcfwhy2nqxfqeguoruozdt2cgzuztxfbfeiekvgrm",
+				"size": 18143697080,
+				"padded_size": 34359738368,
+				"dataset_id": 1,
+				"num_replications": 4
+			},
+			"deal_time": "2023-05-31T15:32:20.998080359-07:00",
+			"delta_content_id": 2402,
+			"deal_uuid": "3411e5e3-f169-4d4f-a841-b12ffa4e56fb",
+			"on_chain_deal_id": 0,
+			"proposal_cid": "bafyreib3e5dzbut5edfj5qfiv7ex3q2nni7qpm3sbd23cwycl2crlj4txe",
+			"provider_actor_id": "f01963614",
+			"content_commp": "baga6ea4seaqfcjignlqka2qdox5m4re2jvhztddeswpmfdrmbol4ttgejdymaiy",
+			"status": "FAILURE",
+			"delta_message": "deal proposal rejected: failed validation: invalid deal end epoch 4236142: cannot be more than 1555200 past current epoch 2660782",
+			"self_service": {
+				"is_self_service": false,
+				"last_update": "0001-01-01T00:00:00Z",
+				"status": "",
+				"message": ""
+			}
 		},
-		"deal_time": "2023-03-06T11:09:42.185318-08:00",
-		"delta_content_id": 27874,
-		"proposal_cid": "PENDING_1508341816105618720",
-		"provider_actor_id": "f01963614",
-		"content_commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
-		"status": "FAILURE",
-		"delta_message": "illegal base64 data at input byte 0"
-	},
-	{
-		"ID": 19,
-		"CreatedAt": "2023-03-06T11:11:02.724047-08:00",
-		"UpdatedAt": "2023-03-06T11:11:15.867567-08:00",
-		"DeletedAt": null,
-		"content": {
-			"commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
-			"payload_cid": "bafybeiakf666idv6zs4uksckfkjr76jmvrcuu4neidldxlfngo2vh6jvfe",
-			"size": 18010019222,
-			"padded_size": 34359738368,
-			"dataset_id": 1,
-			"num_replications": 3
-		},
-		"deal_time": "2023-03-06T11:11:02.723922-08:00",
-		"delta_content_id": 27875,
-		"proposal_cid": "bafyreic7n7josf5klvdxop46zjjfr6ju4o4ywqtom2wxhpagaswel3krd4",
-		"provider_actor_id": "f01963614",
-		"content_commp": "baga6ea4seaqk3b7prx2ulmdztwbg4r4jvccxcdjqqzi3jdb25lggsgytpkxjgoy",
-		"status": "FAILURE",
-		"delta_message": "deal proposal rejected: failed validation: invalid deal end epoch 4236142: cannot be more than 1555200 past current epoch 2660782"
-		}
 	],
 	"totalCount": 4,
 }
@@ -561,16 +564,16 @@ Note the response contains two properties. `totalCount` is the total number of r
 ```
 
 ### POST /wallets/associate
-- Associate a wallet with a dataset
+- Associate a wallet with datasets
 
 #### Params
 <none>
 
 #### Body
-```json
+```jsonc
 {
 	"address": "f1mmb3lx7lnzkwsvhridvpugnuzo4mq2xjmawvnfi",
-	"datasets": ["delta-test", "delta-test-2"]
+	"datasets": [1, 2] // ids of datasets to associate
 }
 ```
 
