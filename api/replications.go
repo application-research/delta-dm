@@ -274,8 +274,8 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 			ConnectionMode:     "import",
 			Miner:              d.Provider,
 			Size:               c.Size,
-			SkipIpniAnnounce:   !c.ReplicationProfile.Indexed,
-			RemoveUnsealedCopy: !c.ReplicationProfile.Unsealed,
+			SkipIpniAnnounce:   !c.Indexed,
+			RemoveUnsealedCopy: !c.Unsealed,
 			DurationInDays:     c.DealDuration,
 			StartEpochInDays:   delayStartEpoch,
 			PieceCommitment: core.PieceCommitment{
@@ -296,10 +296,10 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 type replicatedContentQueryResponse struct {
 	db.Content
 	db.Dataset
-	ReplicationProfile struct {
-		db.ReplicationProfile
-		DatasetID struct{} // prevent the ambiguous selector - we already have this coming from the `db.Dataset` model
-	}
+	// Note: We can't use `db.ReplicationProfile` here because it has a `DatasetID` field which conflicts with the `Dataset` field above
+	// Thus, Unsealed and Indexed are added manually
+	Unsealed bool
+	Indexed  bool
 }
 
 // Query the database for all contant that does not have replications to this actor yet
