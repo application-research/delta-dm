@@ -232,8 +232,8 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		ConnectionMode:     "import",
 		Miner:              p.ActorID,
 		Size:               deal.Size,
-		SkipIpniAnnounce:   !deal.ReplicationProfile.Indexed,
-		RemoveUnsealedCopy: !deal.ReplicationProfile.Unsealed,
+		SkipIpniAnnounce:   !deal.Indexed,
+		RemoveUnsealedCopy: !deal.Unsealed,
 		DurationInDays:     deal.DealDuration - delayDays,
 		StartEpochInDays:   delayDays,
 		PieceCommitment: core.PieceCommitment{
