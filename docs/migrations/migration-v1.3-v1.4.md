@@ -5,6 +5,8 @@ If you have an existing database from DDM V1.3, you will need to *manually* migr
 Note: This migration is only necessary as we did not have the automatic migration framework in place prior to this release. Thus, we are using manual SQL to ensure database consistency.
 Going forward, this will not be required as the **baseline schema established in V1.4 allows for automatic migrations. **
 
+**Before running the Manual SQL**, please start up DDM V1.4.0, allow it to apply some schema changes, then shut it down and proceed. 
+
 ## Manual SQL
 Please execute the following SQL statements in your DDM database.
 
