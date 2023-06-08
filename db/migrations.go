@@ -17,43 +17,13 @@ func BaselineSchema(tx *gorm.DB) error {
 }
 
 var Migrations []*gormigrate.Migration = []*gormigrate.Migration{
-	// SAMPLE MIGRATION
-	// {
-	// 	ID: "2023053000", // * Set to todays date, starting with 00 for first migration
-	// 	Migrate: func(tx *gorm.DB) error {
-	// 		// create a new ss_is_self_service bool column
-	// 		if err := tx.Migrator().AddColumn(&Replication{}, "ss_is_self_service"); err != nil {
-	// 			return err
-	// 		}
-
-	// 		// Update the values in the new column
-	// 		if err := tx.Exec("UPDATE replications SET ss_is_self_service = is_self_service").Error; err != nil {
-	// 			return err
-	// 		}
-
-	// 		// Remove the old column
-	// 		if err := tx.Migrator().RenameColumn(&Replication{}, "is_self_service", "deprecated_is_self_service"); err != nil {
-	// 			return err
-	// 		}
-
-	// 		return nil
-	// 	},
-	// 	Rollback: func(tx *gorm.DB) error {
-	// 		// Rollback the migration by renaming the columns back to their original names
-	// 		if err := tx.Migrator().RenameColumn(&Replication{}, "deprecated_is_self_service", "is_self_service"); err != nil {
-	// 			return err
-	// 		}
-
-	// 		if err := tx.Migrator().RenameColumn(&Replication{}, "ss_is_self_service", "is_self_service"); err != nil {
-	// 			return err
-	// 		}
-
-	// 		// Remove the new column
-	// 		if err := tx.Migrator().DropColumn(&Replication{}, "ss_is_self_service"); err != nil {
-	// 			return err
-	// 		}
-
-	// 		return nil
-	// 	},
-	// },
+	{
+		ID: "2023060800", // Set to todays date, starting with 00 for first migration
+		Migrate: func(tx *gorm.DB) error {
+			return tx.Migrator().AddColumn(&Content{}, "ContentLocation")
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return tx.Migrator().DropColumn(&Content{}, "ContentLocation")
+		},
+	},
 }

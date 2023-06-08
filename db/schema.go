@@ -92,6 +92,7 @@ type Content struct {
 	DatasetID       uint          `json:"dataset_id"`
 	Replications    []Replication `json:"replications,omitempty" gorm:"foreignKey:ContentCommP"`
 	NumReplications uint64        `json:"num_replications"`
+	ContentLocation string        `json:"content_location"`
 }
 
 type WalletDatasets struct {
