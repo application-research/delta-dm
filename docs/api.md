@@ -162,13 +162,15 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
     "payload_cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhy",
     "commp": "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmlq",
     "padded_size": 34359738368,
-    "size": 18010019221
+    "size": 18010019221,
+		"content_location": "http://location.of.content.com/bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhy.car" // Optional
   },
   {
     "payload_cid": "bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu",
     "commp": "baga6ea4seaqcqnnwp7n5ra5ltnvwkd3xk3jxujtxg4bqrueangl3t5cyn5p6soq",
     "padded_size": 34359738368,
-    "size": 18010019221
+    "size": 18010019221, 
+		"content_location": "http://location.of.content.com/bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu.car" // Optional
   },
  ...
 ]
