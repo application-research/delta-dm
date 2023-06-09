@@ -13,7 +13,8 @@ import (
 const PROVIDER = "PROVIDER"
 
 type SelfServiceResponse struct {
-	Cid string `json:"cid"`
+	Cid             string `json:"cid"`
+	ContentLocation string `json:"content_location"`
 }
 
 func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -159,7 +160,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
-	return c.JSON(200, SelfServiceResponse{Cid: cnt.CommP})
+	return c.JSON(200, SelfServiceResponse{Cid: cnt.CommP, ContentLocation: cnt.ContentLocation})
 }
 
 func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
@@ -247,7 +248,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
-	return c.JSON(200, SelfServiceResponse{Cid: deal.CommP})
+	return c.JSON(200, SelfServiceResponse{Cid: deal.CommP, ContentLocation: deal.ContentLocation})
 }
 
 type SelfServiceStatusUpdate struct {
