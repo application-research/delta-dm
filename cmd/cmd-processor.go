@@ -31,7 +31,7 @@ type CmdProcessor struct {
 }
 
 func NewCmdProcessor(c *cli.Context) (*CmdProcessor, error) {
-	ddmUrl := getFlagOrEnvVar(c, "ddm-api-info", "DDM_API_INFO", "http://localhost:1314")
+	ddmUrl := getFlagOrEnvVar(c, "ddm-api-info", "DDM_API_INFO", "http://localhost:1415")
 	ddmAuthKey := getFlagOrEnvVar(c, "delta-auth", "DELTA_AUTH", "")
 
 	if ddmAuthKey == "" {
