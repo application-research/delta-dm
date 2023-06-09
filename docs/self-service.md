@@ -29,7 +29,10 @@ If  successful, the following will be returned:
 
 ```
 Status: 200 (OK)
-"successfully made deal with f01963614"
+{
+	"cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhx",
+	"content_location": "http://google.com/carfile.car"
+}
 ```
 
 If it fails, a 500 error will be returned, with the error message in the body. For example:

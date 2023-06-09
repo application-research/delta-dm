@@ -608,7 +608,10 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 #### Response
 > 200: Success
 ```sh
-"successfully made deal with f0123456"
+{
+	"cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhx",
+	"content_location": "http://google.com/carfile.car"
+}
 ```
 
 ### GET /self-service/by-dataset
@@ -632,8 +635,11 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 
 #### Response
 > 200: Success
-```sh
-"successfully made deal with f0123456"
+```json
+{
+	"cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhx",
+	"content_location": "http://google.com/carfile.car"
+}
 ```
 
 ## /replication-profiles
