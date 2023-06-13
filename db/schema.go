@@ -3,49 +3,28 @@ package db
 import (
 	"time"
 
+	sm "github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type DealStatus string
 
-const (
-	DDM_StorageDealStatusPending            DealStatus = "DDM_PENDING" // Initial state set by DDM (not from Boost)
-	StorageDealUnknown                      DealStatus = "StorageDealUnknown"
-	StorageDealProposalNotFound             DealStatus = "StorageDealProposalNotFound"
-	StorageDealProposalRejected             DealStatus = "StorageDealProposalRejected"
-	StorageDealProposalAccepted             DealStatus = "StorageDealProposalAccepted"
-	StorageDealAcceptWait                   DealStatus = "StorageDealAcceptWait"
-	StorageDealStartDataTransfer            DealStatus = "StorageDealStartDataTransfer"
-	StorageDealStaged                       DealStatus = "StorageDealStaged"
-	StorageDealAwaitingPreCommit            DealStatus = "StorageDealAwaitingPreCommit"
-	StorageDealSealing                      DealStatus = "StorageDealSealing"
-	StorageDealActive                       DealStatus = "StorageDealActive"
-	StorageDealExpired                      DealStatus = "StorageDealExpired"
-	StorageDealSlashed                      DealStatus = "StorageDealSlashed"
-	StorageDealRejecting                    DealStatus = "StorageDealRejecting"
-	StorageDealFailing                      DealStatus = "StorageDealFailing"
-	StorageDealFundsReserved                DealStatus = "StorageDealFundsReserved"
-	StorageDealCheckForAcceptance           DealStatus = "StorageDealCheckForAcceptance"
-	StorageDealValidating                   DealStatus = "StorageDealValidating"
-	StorageDealTransferring                 DealStatus = "StorageDealTransferring"
-	StorageDealWaitingForData               DealStatus = "StorageDealWaitingForData"
-	StorageDealVerifyData                   DealStatus = "StorageDealVerifyData"
-	StorageDealReserveProviderFunds         DealStatus = "StorageDealReserveProviderFunds"
-	StorageDealReserveClientFunds           DealStatus = "StorageDealReserveClientFunds"
-	StorageDealProviderFunding              DealStatus = "StorageDealProviderFunding"
-	StorageDealClientFunding                DealStatus = "StorageDealClientFunding"
-	StorageDealPublish                      DealStatus = "StorageDealPublish"
-	StorageDealPublishing                   DealStatus = "StorageDealPublishing"
-	StorageDealError                        DealStatus = "StorageDealError"
-	StorageDealFinalizing                   DealStatus = "StorageDealFinalizing"
-	StorageDealClientTransferRestart        DealStatus = "StorageDealClientTransferRestart"
-	StorageDealProviderTransferAwaitRestart DealStatus = "StorageDealProviderTransferAwaitRestart"
-	StorageDealTransferQueued               DealStatus = "StorageDealTransferQueued"
-)
+const DDM_StorageDealStatusPending DealStatus = "DDM_PENDING"
+
+// List of statuses that indicate a deal has failed
+var FailedStatuses = []DealStatus{
+	DealStatus(sm.DealStates[sm.StorageDealProposalRejected]),
+	DealStatus(sm.DealStates[sm.StorageDealError]),
+}
 
 func (ds DealStatus) HasFailed() bool {
-	return ds == StorageDealProposalRejected || ds == StorageDealError
+	for _, state := range FailedStatuses {
+		if state == ds {
+			return true
+		}
+	}
+	return false
 }
 
 // This is separate from the `DealStatus` enum to accomodate more granular statuses in the future (ex, SealingInProgress)

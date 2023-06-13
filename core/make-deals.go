@@ -7,6 +7,7 @@ import (
 
 	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
+	sm "github.com/filecoin-project/go-fil-markets/storagemarket"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +26,7 @@ func (dldm *DeltaDM) MakeDeals(dealsToMake OfflineDealRequest, authKey string, i
 				ProviderActorID: c.DealRequestMeta.Miner,
 				DeltaContentID:  c.DeltaContentID,
 				DealTime:        time.Now(),
-				Status:          db.StorageDealProposalAccepted,
+				Status:          db.DealStatus(sm.DealStates[sm.StorageDealProposalAccepted]),
 				OnChainDealID:   0,
 				ProposalCid:     "DRY_RUN_" + fmt.Sprint(rand.Int()),
 				DealUUID:        "DRY_RUN_" + fmt.Sprint(rand.Int()),

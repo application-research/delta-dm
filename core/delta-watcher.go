@@ -36,7 +36,8 @@ func RunReconciliation(dbi *gorm.DB, d *DeltaAPI) error {
 	var pendingReplications []int64
 
 	// Once the on_chain_deal_id is nonzero, we don't need to continue checking the deal
-	dbi.Model(&db.Replication{}).Where("on_chain_deal_id = ?", 0).Select("delta_content_id").Find(&pendingReplications)
+	// Or, if it's in a failed state it's not going to change
+	dbi.Model(&db.Replication{}).Where("on_chain_deal_id = ? AND status NOT IN ?", 0, db.FailedStatuses).Select("delta_content_id").Find(&pendingReplications)
 
 	if len(pendingReplications) == 0 {
 		log.Debug("no pending replications")
