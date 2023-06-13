@@ -10,10 +10,43 @@ import (
 type DealStatus string
 
 const (
-	DealStatusPending DealStatus = "PENDING"
-	DealStatusSuccess DealStatus = "SUCCESS"
-	DealStatusFailure DealStatus = "FAILURE"
+	DDM_StorageDealStatusPending            DealStatus = "DDM_PENDING" // Initial state set by DDM (not from Boost)
+	StorageDealUnknown                      DealStatus = "StorageDealUnknown"
+	StorageDealProposalNotFound             DealStatus = "StorageDealProposalNotFound"
+	StorageDealProposalRejected             DealStatus = "StorageDealProposalRejected"
+	StorageDealProposalAccepted             DealStatus = "StorageDealProposalAccepted"
+	StorageDealAcceptWait                   DealStatus = "StorageDealAcceptWait"
+	StorageDealStartDataTransfer            DealStatus = "StorageDealStartDataTransfer"
+	StorageDealStaged                       DealStatus = "StorageDealStaged"
+	StorageDealAwaitingPreCommit            DealStatus = "StorageDealAwaitingPreCommit"
+	StorageDealSealing                      DealStatus = "StorageDealSealing"
+	StorageDealActive                       DealStatus = "StorageDealActive"
+	StorageDealExpired                      DealStatus = "StorageDealExpired"
+	StorageDealSlashed                      DealStatus = "StorageDealSlashed"
+	StorageDealRejecting                    DealStatus = "StorageDealRejecting"
+	StorageDealFailing                      DealStatus = "StorageDealFailing"
+	StorageDealFundsReserved                DealStatus = "StorageDealFundsReserved"
+	StorageDealCheckForAcceptance           DealStatus = "StorageDealCheckForAcceptance"
+	StorageDealValidating                   DealStatus = "StorageDealValidating"
+	StorageDealTransferring                 DealStatus = "StorageDealTransferring"
+	StorageDealWaitingForData               DealStatus = "StorageDealWaitingForData"
+	StorageDealVerifyData                   DealStatus = "StorageDealVerifyData"
+	StorageDealReserveProviderFunds         DealStatus = "StorageDealReserveProviderFunds"
+	StorageDealReserveClientFunds           DealStatus = "StorageDealReserveClientFunds"
+	StorageDealProviderFunding              DealStatus = "StorageDealProviderFunding"
+	StorageDealClientFunding                DealStatus = "StorageDealClientFunding"
+	StorageDealPublish                      DealStatus = "StorageDealPublish"
+	StorageDealPublishing                   DealStatus = "StorageDealPublishing"
+	StorageDealError                        DealStatus = "StorageDealError"
+	StorageDealFinalizing                   DealStatus = "StorageDealFinalizing"
+	StorageDealClientTransferRestart        DealStatus = "StorageDealClientTransferRestart"
+	StorageDealProviderTransferAwaitRestart DealStatus = "StorageDealProviderTransferAwaitRestart"
+	StorageDealTransferQueued               DealStatus = "StorageDealTransferQueued"
 )
+
+func (ds DealStatus) HasFailed() bool {
+	return ds == StorageDealProposalRejected || ds == StorageDealError
+}
 
 // This is separate from the `DealStatus` enum to accomodate more granular statuses in the future (ex, SealingInProgress)
 type SelfServiceStatus string
@@ -27,7 +60,7 @@ const (
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	Content         Content    `json:"content"` //TODO: doesnt come back from api
+	Content         Content    `json:"content"`
 	DealTime        time.Time  `json:"deal_time"`
 	DeltaContentID  int64      `json:"delta_content_id" gorm:"unique"`
 	DealUUID        string     `json:"deal_uuid"`
