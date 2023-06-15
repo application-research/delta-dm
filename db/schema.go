@@ -16,6 +16,7 @@ const DDM_StorageDealStatusPending DealStatus = "DDM_PENDING"
 var FailedStatuses = []DealStatus{
 	DealStatus(sm.DealStates[sm.StorageDealProposalRejected]),
 	DealStatus(sm.DealStates[sm.StorageDealError]),
+	DealStatus("deal-proposal-failed"), // This comes from Delta, if the deal never makes it to the chain
 }
 
 func (ds DealStatus) HasFailed() bool {
