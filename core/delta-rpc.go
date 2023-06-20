@@ -370,17 +370,17 @@ type DealStatsResponseElement struct {
 }
 
 type DealStats_Content struct {
-	ID                int64  `json:"ID"`
-	Name              string `json:"name"`
-	Size              int64  `json:"size"`
-	Cid               string `json:"cid"`
-	RequestingAPIKey  string `json:"requesting_api_key"`
-	PieceCommitmentID int64  `json:"piece_commitment_id"`
-	Status            string `json:"status"`
-	ConnectionMode    string `json:"connection_mode"`
-	LastMessage       string `json:"last_message"`
-	CreatedAt         string `json:"created_at"`
-	UpdatedAt         string `json:"updated_at"`
+	ID                int64         `json:"ID"`
+	Name              string        `json:"name"`
+	Size              int64         `json:"size"`
+	Cid               string        `json:"cid"`
+	RequestingAPIKey  string        `json:"requesting_api_key"`
+	PieceCommitmentID int64         `json:"piece_commitment_id"`
+	Status            db.DealStatus `json:"status"`
+	ConnectionMode    string        `json:"connection_mode"`
+	LastMessage       string        `json:"last_message"`
+	CreatedAt         string        `json:"created_at"`
+	UpdatedAt         string        `json:"updated_at"`
 }
 
 type DealStats_DealProposal struct {
@@ -394,25 +394,25 @@ type DealStats_DealProposal struct {
 }
 
 type DealStats_Deal struct {
-	ID                  int64  `json:"ID"`
-	Content             int64  `json:"content"`
-	PropCid             string `json:"propCid"`
-	DealUUID            string `json:"dealUuid"`
-	Miner               string `json:"miner"`
-	DealID              uint   `json:"dealId"`
-	Failed              bool   `json:"failed"`
-	Verified            bool   `json:"verified"`
-	Slashed             bool   `json:"slashed"`
-	FailedAt            string `json:"failedAt"`
-	DtChan              string `json:"dtChan"`
-	TransferStarted     string `json:"transferStarted"`
-	TransferFinished    string `json:"transferFinished"`
-	OnChainAt           string `json:"onChainAt"`
-	SealedAt            string `json:"sealedAt"`
-	LastMessage         string `json:"lastMessage"`
-	DealProtocolVersion string `json:"deal_protocol_version"`
-	CreatedAt           string `json:"created_at"`
-	UpdatedAt           string `json:"updated_at"`
+	ID                  int64         `json:"ID"`
+	Content             int64         `json:"content"`
+	PropCid             string        `json:"propCid"`
+	DealUUID            string        `json:"dealUuid"`
+	Miner               string        `json:"miner"`
+	DealID              uint          `json:"dealId"`
+	Failed              bool          `json:"failed"`
+	Verified            bool          `json:"verified"`
+	Slashed             bool          `json:"slashed"`
+	FailedAt            string        `json:"failedAt"`
+	DtChan              string        `json:"dtChan"`
+	TransferStarted     string        `json:"transferStarted"`
+	TransferFinished    string        `json:"transferFinished"`
+	OnChainAt           string        `json:"onChainAt"`
+	SealedAt            string        `json:"sealedAt"`
+	LastMessage         db.DealStatus `json:"lastMessage"`
+	DealProtocolVersion string        `json:"deal_protocol_version"`
+	CreatedAt           string        `json:"created_at"`
+	UpdatedAt           string        `json:"updated_at"`
 }
 
 type DealStats_PieceCommitment struct {

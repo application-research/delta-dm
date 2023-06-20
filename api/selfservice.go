@@ -123,7 +123,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 
 	// Ensure no pending/successful replications have been made for this content to this provider
 	for _, repl := range cnt.Replications {
-		if repl.ProviderActorID == p.ActorID && repl.Status != db.DealStatusFailure {
+		if repl.ProviderActorID == p.ActorID && !repl.Status.HasFailed() {
 			return fmt.Errorf("content '%s' is already replicated to provider '%s'", piece, p.ActorID)
 		}
 	}

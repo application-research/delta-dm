@@ -10,22 +10,6 @@ import (
 )
 
 // TODO: Import from Delta once public
-// https://github.com/application-research/delta/blob/main/utils/constants.go
-const (
-	CONTENT_PIECE_COMPUTING        = "piece-computing"
-	CONTENT_PIECE_COMPUTED         = "piece-computed"
-	CONTENT_PIECE_COMPUTING_FAILED = "piece-computing-failed"
-	CONTENT_PIECE_ASSIGNED         = "piece-assigned"
-
-	CONTENT_DEAL_MAKING_PROPOSAL  = "making-deal-proposal"
-	CONTENT_DEAL_SENDING_PROPOSAL = "sending-deal-proposal"
-	CONTENT_DEAL_PROPOSAL_SENT    = "deal-proposal-sent"
-	CONTENT_DEAL_PROPOSAL_FAILED  = "deal-proposal-failed"
-
-	DEAL_STATUS_TRANSFER_STARTED  = "transfer-started"
-	DEAL_STATUS_TRANSFER_FINISHED = "transfer-finished"
-	DEAL_STATUS_TRANSFER_FAILED   = "transfer-failed"
-)
 
 func (ddm *DeltaDM) WatchReplications() {
 	if ddm.DryRunMode {
@@ -51,7 +35,9 @@ func RunReconciliation(dbi *gorm.DB, d *DeltaAPI) error {
 	log.Debug("starting reconcile task")
 	var pendingReplications []int64
 
-	dbi.Model(&db.Replication{}).Where("status = ?", db.DealStatusPending).Select("delta_content_id").Find(&pendingReplications)
+	// Once the on_chain_deal_id is nonzero, we don't need to continue checking the deal
+	// Or, if it's in a failed state it's not going to change
+	dbi.Model(&db.Replication{}).Where("on_chain_deal_id = ? AND status NOT IN ?", 0, db.FailedStatuses).Select("delta_content_id").Find(&pendingReplications)
 
 	if len(pendingReplications) == 0 {
 		log.Debug("no pending replications")
@@ -75,7 +61,7 @@ func RunReconciliation(dbi *gorm.DB, d *DeltaAPI) error {
 		}
 
 		// Remove a replication if it failed
-		if r.Status == db.DealStatusFailure {
+		if r.Status.HasFailed() {
 			var cnt db.Content
 
 			err := dbi.Model(&db.Content{}).Where("comm_p = ?", r.ContentCommP).First(&cnt)
@@ -102,45 +88,27 @@ func computeReplicationUpdates(dealStats DealStatsResponse) []db.Replication {
 	toUpdate := []db.Replication{}
 
 	for _, deal := range dealStats {
-		switch deal.Content.Status {
 
-		// Success!
-		case CONTENT_DEAL_PROPOSAL_SENT:
-			r := db.Replication{
-				Status:         db.DealStatusSuccess,
-				DeltaContentID: deal.Content.ID,
-				DeltaMessage:   deal.Content.LastMessage,
-			}
-			if len(deal.Deals) > 0 {
-				r.ProposalCid = deal.Deals[0].PropCid
-				r.DealUUID = deal.Deals[0].DealUUID
-				r.OnChainDealID = deal.Deals[0].DealID
-			}
-			if len(deal.PieceCommitments) > 0 {
-				r.ContentCommP = deal.PieceCommitments[0].Piece
-			}
-
-			toUpdate = append(toUpdate, r)
-
-		case CONTENT_DEAL_PROPOSAL_FAILED:
-			r := db.Replication{
-				Status:         db.DealStatusFailure,
-				DeltaContentID: deal.Content.ID,
-				DeltaMessage:   deal.Content.LastMessage,
-			}
-			if len(deal.PieceCommitments) > 0 {
-				r.ContentCommP = deal.PieceCommitments[0].Piece
-			}
-
-			if len(deal.Deals) > 0 {
-				r.ProposalCid = deal.Deals[0].PropCid
-				r.DealUUID = deal.Deals[0].DealUUID
-				r.OnChainDealID = deal.Deals[0].DealID
-			}
-			toUpdate = append(toUpdate, r)
-
-			// ? Do we need to care about any other statuses?
+		r := db.Replication{
+			Status:         deal.Content.Status,
+			DeltaContentID: deal.Content.ID,
+			DeltaMessage:   deal.Content.LastMessage,
 		}
+
+		if len(deal.Deals) > 0 {
+			r.ProposalCid = deal.Deals[0].PropCid
+			r.DealUUID = deal.Deals[0].DealUUID
+
+			if deal.Deals[0].DealID != 0 {
+				r.OnChainDealID = deal.Deals[0].DealID
+			}
+
+		}
+		if len(deal.PieceCommitments) > 0 {
+			r.ContentCommP = deal.PieceCommitments[0].Piece
+		}
+
+		toUpdate = append(toUpdate, r)
 	}
 
 	return toUpdate

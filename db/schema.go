@@ -3,17 +3,30 @@ package db
 import (
 	"time"
 
+	sm "github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type DealStatus string
 
-const (
-	DealStatusPending DealStatus = "PENDING"
-	DealStatusSuccess DealStatus = "SUCCESS"
-	DealStatusFailure DealStatus = "FAILURE"
-)
+const DDM_StorageDealStatusPending DealStatus = "DDM_PENDING"
+
+// List of statuses that indicate a deal has failed
+var FailedStatuses = []DealStatus{
+	DealStatus(sm.DealStates[sm.StorageDealProposalRejected]),
+	DealStatus(sm.DealStates[sm.StorageDealError]),
+	DealStatus("deal-proposal-failed"), // This comes from Delta, if the deal never makes it to the chain
+}
+
+func (ds DealStatus) HasFailed() bool {
+	for _, state := range FailedStatuses {
+		if state == ds {
+			return true
+		}
+	}
+	return false
+}
 
 // This is separate from the `DealStatus` enum to accomodate more granular statuses in the future (ex, SealingInProgress)
 type SelfServiceStatus string
@@ -27,7 +40,7 @@ const (
 // A replication refers to a deal, for a specific content, with a client
 type Replication struct {
 	gorm.Model
-	Content         Content    `json:"content"` //TODO: doesnt come back from api
+	Content         Content    `json:"content"`
 	DealTime        time.Time  `json:"deal_time"`
 	DeltaContentID  int64      `json:"delta_content_id" gorm:"unique"`
 	DealUUID        string     `json:"deal_uuid"`
