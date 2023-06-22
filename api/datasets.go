@@ -2,12 +2,17 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/application-research/delta-dm/core"
 	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
 	"github.com/labstack/echo/v4"
 )
+
+type DatasetPutBody struct {
+	Name string `json:"name"`
+}
 
 func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	datasets := e.Group("/datasets")
@@ -72,5 +77,36 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 		}
 
 		return c.JSON(200, ads)
+	})
+
+	datasets.PUT("/:dataset_id", func(c echo.Context) error {
+		did := c.Param("dataset_id")
+		if did == "" {
+			return fmt.Errorf("dataset id not specified")
+		}
+
+		var d DatasetPutBody
+
+		if err := c.Bind(&d); err != nil {
+			return err
+		}
+
+		var existing db.Dataset
+		res := dldm.DB.Model(&db.Dataset{}).Where("id = ?", did).First(&existing)
+
+		if res.Error != nil {
+			return fmt.Errorf("error fetching dataset %s", res.Error)
+		}
+
+		if d.Name != "" {
+			existing.Name = d.Name
+		}
+
+		res = dldm.DB.Save(&existing)
+		if res.Error != nil {
+			return fmt.Errorf("error saving dataset %s", res.Error)
+		}
+
+		return c.JSON(http.StatusOK, existing)
 	})
 }
