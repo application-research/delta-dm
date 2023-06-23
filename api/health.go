@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/application-research/delta-dm/core"
 	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 // Health check routes for verifying API is alive
@@ -23,6 +24,6 @@ func ConfigureHealthRouter(e *echo.Group, dldm *core.DeltaDM) {
 			DeltaInfo: dldm.DAPI.DeltaDeploymentInfo,
 		}
 
-		return c.JSON(200, resp)
+		return c.JSON(http.StatusOK, resp)
 	})
 }

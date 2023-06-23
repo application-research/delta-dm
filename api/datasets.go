@@ -44,7 +44,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			ds[i].CountTotal = countTotal
 		}
 
-		return c.JSON(200, ds)
+		return c.JSON(http.StatusOK, ds)
 	})
 
 	datasets.POST("", func(c echo.Context) error {
@@ -76,7 +76,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return res.Error
 		}
 
-		return c.JSON(200, ads)
+		return c.JSON(http.StatusOK, ads)
 	})
 
 	datasets.PUT("/:dataset_id", func(c echo.Context) error {

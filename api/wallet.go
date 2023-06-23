@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/application-research/delta-dm/core"
 	db "github.com/application-research/delta-dm/db"
@@ -41,7 +42,7 @@ func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			}
 		}
 
-		return c.JSON(200, w)
+		return c.JSON(http.StatusOK, w)
 	})
 
 	wallets.POST("", func(c echo.Context) error {
@@ -65,7 +66,7 @@ func ConfigureWalletsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("wallet not found %s", w)
 		}
 
-		return c.JSON(200, "wallet successfully deleted")
+		return c.JSON(http.StatusOK, "wallet successfully deleted")
 	})
 }
 
@@ -134,7 +135,7 @@ func handleAddWallet(c echo.Context, dldm *core.DeltaDM) error {
 		}
 		return res.Error
 	}
-	return c.JSON(200, newWallet)
+	return c.JSON(http.StatusOK, newWallet)
 
 }
 
@@ -191,5 +192,5 @@ func handleAssociateWallet(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("could not associate wallet with dataset: %s", err)
 	}
 
-	return c.JSON(200, "successfully associated wallet with datasets")
+	return c.JSON(http.StatusOK, "successfully associated wallet with datasets")
 }

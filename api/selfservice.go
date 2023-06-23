@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -160,7 +161,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
-	return c.JSON(200, SelfServiceResponse{Cid: cnt.CommP, ContentLocation: cnt.ContentLocation})
+	return c.JSON(http.StatusOK, SelfServiceResponse{Cid: cnt.CommP, ContentLocation: cnt.ContentLocation})
 }
 
 func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
@@ -248,7 +249,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deal for this CID: %s", err)
 	}
 
-	return c.JSON(200, SelfServiceResponse{Cid: deal.CommP, ContentLocation: deal.ContentLocation})
+	return c.JSON(http.StatusOK, SelfServiceResponse{Cid: deal.CommP, ContentLocation: deal.ContentLocation})
 }
 
 type SelfServiceStatusUpdate struct {
