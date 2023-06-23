@@ -105,14 +105,23 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 		}
 
 		if d.Name != nil {
+			if !util.ValidateDatasetName(*d.Name) {
+				return fmt.Errorf("invalid dataset name. must contain only lowercase letters, numbers and hyphens. must begin and end with a letter. must not contain consecutive hyphens")
+			}
 			existing.Name = *d.Name
 		}
 
 		if d.ReplicationQuota != nil {
+			if *d.ReplicationQuota < 1 {
+				return fmt.Errorf("replication quota must be greater than 0")
+			}
 			existing.ReplicationQuota = *d.ReplicationQuota
 		}
 
 		if d.DealDuration != nil {
+			if *d.DealDuration < 180 || *d.DealDuration > 540 {
+				return fmt.Errorf("deal duration must be between 180 and 540 days")
+			}
 			existing.DealDuration = *d.DealDuration
 		}
 
