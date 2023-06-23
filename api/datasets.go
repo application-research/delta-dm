@@ -11,7 +11,9 @@ import (
 )
 
 type DatasetPutBody struct {
-	Name string `json:"name"`
+	Name             *string `json:"name"`
+	ReplicationQuota *uint64 `json:"replication_quota"`
+	DealDuration     *uint64 `json:"deal_duration"`
 }
 
 func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
@@ -91,6 +93,10 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return err
 		}
 
+		if d.Name == nil && d.ReplicationQuota == nil && d.DealDuration == nil {
+			return fmt.Errorf("at least one parameter is required: name, replication_quota or deal_duration")
+		}
+
 		var existing db.Dataset
 		res := dldm.DB.Model(&db.Dataset{}).Where("id = ?", did).First(&existing)
 
@@ -98,8 +104,16 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return fmt.Errorf("error fetching dataset %s", res.Error)
 		}
 
-		if d.Name != "" {
-			existing.Name = d.Name
+		if d.Name != nil {
+			existing.Name = *d.Name
+		}
+
+		if d.ReplicationQuota != nil {
+			existing.ReplicationQuota = *d.ReplicationQuota
+		}
+
+		if d.DealDuration != nil {
+			existing.DealDuration = *d.DealDuration
 		}
 
 		res = dldm.DB.Save(&existing)
