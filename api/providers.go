@@ -38,7 +38,7 @@ func ConfigureProvidersRouter(e *echo.Group, dldm *core.DeltaDM) {
 			p[i].CountReplicated = countReplicated
 		}
 
-		return c.JSON(200, p)
+		return c.JSON(http.StatusOK, p)
 	})
 
 	providers.POST("", func(c echo.Context) error {

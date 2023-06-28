@@ -2,12 +2,19 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/application-research/delta-dm/core"
 	db "github.com/application-research/delta-dm/db"
 	"github.com/application-research/delta-dm/util"
 	"github.com/labstack/echo/v4"
 )
+
+type DatasetPutBody struct {
+	Name             *string `json:"name"`
+	ReplicationQuota *uint64 `json:"replication_quota"`
+	DealDuration     *uint64 `json:"deal_duration"`
+}
 
 func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	datasets := e.Group("/datasets")
@@ -39,7 +46,7 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			ds[i].CountTotal = countTotal
 		}
 
-		return c.JSON(200, ds)
+		return c.JSON(http.StatusOK, ds)
 	})
 
 	datasets.POST("", func(c echo.Context) error {
@@ -71,6 +78,58 @@ func ConfigureDatasetsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return res.Error
 		}
 
-		return c.JSON(200, ads)
+		return c.JSON(http.StatusOK, ads)
+	})
+
+	datasets.PUT("/:dataset_id", func(c echo.Context) error {
+		did := c.Param("dataset_id")
+		if did == "" {
+			return fmt.Errorf("dataset id not specified")
+		}
+
+		var d DatasetPutBody
+
+		if err := c.Bind(&d); err != nil {
+			return err
+		}
+
+		if d.Name == nil && d.ReplicationQuota == nil && d.DealDuration == nil {
+			return fmt.Errorf("at least one parameter is required: name, replication_quota or deal_duration")
+		}
+
+		var existing db.Dataset
+		res := dldm.DB.Model(&db.Dataset{}).Where("id = ?", did).First(&existing)
+
+		if res.Error != nil {
+			return fmt.Errorf("error fetching dataset %s", res.Error)
+		}
+
+		if d.Name != nil {
+			if !util.ValidateDatasetName(*d.Name) {
+				return fmt.Errorf("invalid dataset name. must contain only lowercase letters, numbers and hyphens. must begin and end with a letter. must not contain consecutive hyphens")
+			}
+			existing.Name = *d.Name
+		}
+
+		if d.ReplicationQuota != nil {
+			if *d.ReplicationQuota < 1 {
+				return fmt.Errorf("replication quota must be greater than 0")
+			}
+			existing.ReplicationQuota = *d.ReplicationQuota
+		}
+
+		if d.DealDuration != nil {
+			if *d.DealDuration < 180 || *d.DealDuration > 540 {
+				return fmt.Errorf("deal duration must be between 180 and 540 days")
+			}
+			existing.DealDuration = *d.DealDuration
+		}
+
+		res = dldm.DB.Save(&existing)
+		if res.Error != nil {
+			return fmt.Errorf("error saving dataset %s", res.Error)
+		}
+
+		return c.JSON(http.StatusOK, existing)
 	})
 }

@@ -59,6 +59,28 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 > 200: Success
 > 500: Fail
 
+### PUT /datasets/:dataset
+- Update a dataset
+- Note: the dataset name must contain only lowercase letters, numbers and hypens, and must be less than 255 characters in length. It must start and end with a letter, and double-dashes are not allowed.
+
+#### Params
+```
+:dataset // Dataset ID
+```
+
+#### Body
+```jsonc
+{
+	"name": "delta-test",
+	"replication_quota": 6,
+	"deal_duration": 540,
+}
+```
+
+#### Response
+> 200: Success
+> 500: Fail
+
 ### GET /datasets
 - Returns a list of all datasets
 

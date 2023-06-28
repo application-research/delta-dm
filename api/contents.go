@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 
 	"github.com/application-research/delta-dm/core"
@@ -44,7 +45,7 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return err
 		}
 
-		return c.JSON(200, content)
+		return c.JSON(http.StatusOK, content)
 	})
 
 	contents.POST("/:dataset", func(c echo.Context) error {
@@ -121,7 +122,7 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			results.Success = append(results.Success, cnt.CommP)
 		}
 
-		return c.JSON(200, results)
+		return c.JSON(http.StatusOK, results)
 	})
 }
 

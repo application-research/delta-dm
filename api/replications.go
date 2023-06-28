@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -188,7 +189,7 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 		TotalCount: totalCount,
 	}
 
-	return c.JSON(200, response)
+	return c.JSON(http.StatusOK, response)
 }
 
 // POST /api/replication
@@ -290,7 +291,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to make deals: %s", err)
 	}
 
-	return c.JSON(200, deltaResp)
+	return c.JSON(http.StatusOK, deltaResp)
 }
 
 type replicatedContentQueryResponse struct {
