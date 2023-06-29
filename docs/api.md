@@ -624,6 +624,7 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 ```s
 /:cid # CID of content to replicate 
 ?start_epoch_delay # delay, in number of days, before deal starts (default: 3)
+?end_epoch_advance # delay, in number of days, to advance end epoch (default: 0)
 ```
 
 #### Body
@@ -652,6 +653,7 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 ```s
 /:dataset # name of dataset to replicate for
 ?start_epoch_delay # delay, in number of days, before deal starts (default: 3)
+?end_epoch_advance # delay, in number of days, to advance end epoch (default: 0)
 ```
 
 #### Body

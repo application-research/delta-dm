@@ -72,7 +72,10 @@ func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
 func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 	piece := c.Param("piece")
 	startEpochDelay := c.QueryParam("start_epoch_delay")
+	endEpochAdvance := c.QueryParam("end_epoch_advance")
+
 	var delayDays uint64 = DEFAULT_DELAY_DAYS
+	var advanceDays uint64 = 0
 
 	if startEpochDelay != "" {
 		var err error
@@ -83,6 +86,18 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 
 		if delayDays < 1 || delayDays > 14 {
 			return fmt.Errorf("start_epoch_delay must be between 1 and 14 days")
+		}
+	}
+
+	if endEpochAdvance != "" {
+		var err error
+		advanceDays, err = strconv.ParseUint(endEpochAdvance, 10, 64)
+		if err != nil {
+			return fmt.Errorf("unable to parse end_epoch_advance: %s", err)
+		}
+
+		if advanceDays < 0 || advanceDays > 20 {
+			return fmt.Errorf("end_epoch_advance must be between 0 and 20 days")
 		}
 	}
 
@@ -148,7 +163,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 		Size:               cnt.Size,
 		SkipIpniAnnounce:   !rp.Indexed,
 		RemoveUnsealedCopy: !rp.Unsealed,
-		DurationInDays:     ds.DealDuration,
+		DurationInDays:     ds.DealDuration - advanceDays,
 		StartEpochInDays:   delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        cnt.CommP,
@@ -167,6 +182,7 @@ func handleSelfServiceByCid(c echo.Context, dldm *core.DeltaDM) error {
 func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 	dataset := c.Param("dataset")
 	startEpochDelay := c.QueryParam("start_epoch_delay")
+	endEpochAdvance := c.QueryParam("end_epoch_advance")
 
 	if dataset == "" {
 		return fmt.Errorf("must provide a dataset name")
@@ -178,7 +194,9 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("invalid dataset: %s", dsRes.Error)
 	}
 
-	var delayDays uint64 = 3
+	var advanceDays uint64 = 0
+	var delayDays uint64 = DEFAULT_DELAY_DAYS
+
 	if startEpochDelay != "" {
 		var err error
 		delayDays, err = strconv.ParseUint(startEpochDelay, 10, 64)
@@ -188,6 +206,18 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 		if delayDays < 1 || delayDays > 14 {
 			return fmt.Errorf("start_epoch_delay must be between 1 and 14 days")
+		}
+	}
+
+	if endEpochAdvance != "" {
+		var err error
+		advanceDays, err = strconv.ParseUint(endEpochAdvance, 10, 64)
+		if err != nil {
+			return fmt.Errorf("unable to parse end_epoch_advance: %s", err)
+		}
+
+		if advanceDays < 0 || advanceDays > 20 {
+			return fmt.Errorf("end_epoch_advance must be between 0 and 20 days")
 		}
 	}
 
@@ -236,7 +266,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 		Size:               deal.Size,
 		SkipIpniAnnounce:   !deal.Indexed,
 		RemoveUnsealedCopy: !deal.Unsealed,
-		DurationInDays:     deal.DealDuration - delayDays,
+		DurationInDays:     deal.DealDuration - advanceDays,
 		StartEpochInDays:   delayDays,
 		PieceCommitment: core.PieceCommitment{
 			PieceCid:        deal.CommP,
