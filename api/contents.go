@@ -15,10 +15,10 @@ import (
 )
 
 type ContentCollection struct {
-	CommP      string `json:"commp" csv:"commP" gorm:"primaryKey"`
-	PayloadCID string `json:"payload_cid" csv:"payloadCid"`
-	Size       uint64 `json:"size" csv:"size"`
-	PaddedSize uint64 `json:"padded_size" csv:"paddedSize"`
+	CommP      string `json:"commp" gorm:"primaryKey"`
+	PayloadCID string `json:"payload_cid"`
+	Size       uint64 `json:"size"`
+	PaddedSize uint64 `json:"padded_size"`
 	Collection string `json:"collection"`
 }
 
