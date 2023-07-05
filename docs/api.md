@@ -707,7 +707,7 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 }
 ```
 
-### GET /self-service/eligible_pieces
+### GET /self-service/available_contents
 
 Returns a list of contents that is downloadable by the client, which can then have deals requested for it.
 This endpoint requires the Provider's self-service key is present in the header in the form: 
