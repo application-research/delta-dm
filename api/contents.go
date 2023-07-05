@@ -153,7 +153,8 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 		for _, cnt := range content {
 			var dataset db.Dataset
 			// Check for bad data
-			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 || cnt.Collection == "" {
+			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 ||
+				cnt.Collection == "" || cnt.ContentLocation == "" {
 				log.Debugf("Missing required parameters for commP: %s", cnt.CommP)
 				results.Fail = append(results.Fail, cnt.CommP)
 				continue
@@ -171,11 +172,12 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			cache[cnt.Collection] = dataset.ID
 
 			dbc := db.Content{
-				CommP:      cnt.CommP,
-				PayloadCID: cnt.PayloadCID,
-				PaddedSize: cnt.PaddedSize,
-				Size:       cnt.Size,
-				DatasetID:  dataset.ID,
+				CommP:           cnt.CommP,
+				PayloadCID:      cnt.PayloadCID,
+				PaddedSize:      cnt.PaddedSize,
+				Size:            cnt.Size,
+				DatasetID:       dataset.ID,
+				ContentLocation: cnt.ContentLocation,
 			}
 
 			err := dldm.DB.Create(&dbc).Error
