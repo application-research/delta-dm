@@ -248,7 +248,7 @@ func handlePostReplications(c echo.Context, dldm *core.DeltaDM) error {
 
 	// TODO: Support num_tib to allow specifying the amount of data to replicate
 
-	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.DatasetID, d.NumDeals)
+	toReplicate, err := findUnreplicatedContentForProvider(dldm.DB, d.Provider, d.DatasetID, d.NumDeals, false)
 	if err != nil {
 		return err
 	}
@@ -308,7 +308,8 @@ type replicatedContentQueryResponse struct {
 //
 //	datasetID (optional) - the ID of the dataset to replicate
 //	numDeals (optional) - the number of replications (deals) to return. If nil, return all
-func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetId *uint, numDeals *uint) ([]replicatedContentQueryResponse, error) {
+//  onlyContentLocations - if true, only return content where the content_location is present
+func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetId *uint, numDeals *uint, onlyContentLocations bool) ([]replicatedContentQueryResponse, error) {
 
 	rawQuery := `
   SELECT *
@@ -330,6 +331,10 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetI
   AND rp.provider_actor_id = ?
   AND c.num_replications < d.replication_quota 
 	`
+
+	if onlyContentLocations {
+		rawQuery += " AND c.content_location NOT NULL"
+	}
 	var rawValues = []interface{}{providerID, providerID}
 
 	if datasetId != nil && *datasetId != 0 {
