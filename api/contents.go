@@ -14,6 +14,15 @@ import (
 	"gorm.io/gorm"
 )
 
+type ContentCollection struct {
+	CommP           string `json:"commp"`
+	PayloadCID      string `json:"payload_cid"`
+	Size            uint64 `json:"size"`
+	PaddedSize      uint64 `json:"padded_size"`
+	Collection      string `json:"collection"`
+	ContentLocation string `json:"content_location"`
+}
+
 func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 	contents := e.Group("/contents")
 
@@ -115,6 +124,65 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 			err := dldm.DB.Create(&cnt).Error
 			if err != nil {
+				results.Fail = append(results.Fail, cnt.CommP)
+				continue
+			}
+
+			results.Success = append(results.Success, cnt.CommP)
+		}
+
+		return c.JSON(http.StatusOK, results)
+	})
+
+	contents.POST("", func(c echo.Context) error {
+		var content []ContentCollection
+		results := struct {
+			Success []string `json:"success"`
+			Fail    []string `json:"fail"`
+		}{
+			Success: make([]string, 0),
+			Fail:    make([]string, 0),
+		}
+
+		if err := c.Bind(&content); err != nil {
+			return err
+		}
+
+		cache := make(map[string]uint)
+
+		for _, cnt := range content {
+			var dataset db.Dataset
+			// Check for bad data
+			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 ||
+				cnt.Collection == "" || cnt.ContentLocation == "" {
+				log.Debugf("Missing required parameters for commP: %s", cnt.CommP)
+				results.Fail = append(results.Fail, cnt.CommP)
+				continue
+			}
+
+			// Check if dataset exists
+			if cache[cnt.Collection] == 0 {
+				if dldm.DB.Model(&db.Dataset{}).Where("name = ?", cnt.Collection).First(&dataset).Error != nil {
+					log.Debugf("Collection not found for: %s", cnt.Collection)
+					results.Fail = append(results.Fail, cnt.CommP)
+					continue
+				}
+			}
+
+			cache[cnt.Collection] = dataset.ID
+
+			dbc := db.Content{
+				CommP:           cnt.CommP,
+				PayloadCID:      cnt.PayloadCID,
+				PaddedSize:      cnt.PaddedSize,
+				Size:            cnt.Size,
+				DatasetID:       dataset.ID,
+				ContentLocation: cnt.ContentLocation,
+			}
+
+			err := dldm.DB.Create(&dbc).Error
+			if err != nil {
+				log.Debugf("Could not create DB record: %s", err.Error())
 				results.Fail = append(results.Fail, cnt.CommP)
 				continue
 			}
