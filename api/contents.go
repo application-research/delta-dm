@@ -153,6 +153,7 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			var dataset db.Dataset
 			// Check for bad data
 			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 || cnt.Collection == "" {
+				log.Debugf("Missing required parameters for commP: %s", cnt.CommP)
 				results.Fail = append(results.Fail, cnt.CommP)
 				continue
 			}
@@ -160,6 +161,7 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			// Check if dataset exists
 			if cache[cnt.Collection] == 0 {
 				if dldm.DB.Model(&db.Dataset{}).Where("name = ?", cnt.Collection).First(&dataset).Error != nil {
+					log.Debugf("Collection not found for: %s", cnt.Collection)
 					results.Fail = append(results.Fail, cnt.CommP)
 					continue
 				}
@@ -177,6 +179,7 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 			err := dldm.DB.Create(&dbc).Error
 			if err != nil {
+				log.Debugf("Could not create DB record: %s", err.Error())
 				results.Fail = append(results.Fail, cnt.CommP)
 				continue
 			}
