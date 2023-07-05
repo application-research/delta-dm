@@ -34,6 +34,10 @@ func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 	selfService.PUT("/telemetry/:cid", func(c echo.Context) error {
 		return handleSelfServiceTelemetry(c, dldm)
 	})
+
+	selfService.GET("/eligible_pieces", func(c echo.Context) error {
+		return handleSelfServiceEligiblePieces(c, dldm)
+	})
 }
 
 func selfServiceTokenMiddleware(dldm *core.DeltaDM) echo.MiddlewareFunc {
@@ -237,7 +241,7 @@ func handleSelfServiceByDataset(c echo.Context, dldm *core.DeltaDM) error {
 
 	// give one deal at a time
 	numDeals := uint(1)
-	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &ds.ID, &numDeals)
+	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, &ds.ID, &numDeals, false)
 	if err != nil {
 		return fmt.Errorf("unable to find content for dataset: %s", err)
 	}
@@ -320,5 +324,54 @@ func handleSelfServiceTelemetry(c echo.Context, dldm *core.DeltaDM) error {
 	}
 
 	return nil
+}
 
+type EligiblePiece struct {
+	PayloadCID      string `json:"payload_cid"`
+	PieceCID        string `json:"piece_cid"`
+	Size            uint64 `json:"size"`
+	PaddedSize      uint64 `json:"padded_size"`
+	ContentLocation string `json:"content_location"`
+}
+
+func handleSelfServiceEligiblePieces(c echo.Context, dldm *core.DeltaDM) error {
+	p := c.Get(PROVIDER).(db.Provider)
+	limit := c.QueryParam("limit")
+
+	var numDeals uint
+	if limit != "" {
+		n, err := strconv.ParseUint(limit, 10, 64)
+
+		if err != nil {
+			return fmt.Errorf("unable to parse limit: %s", err)
+		}
+
+		if numDeals > 2000 {
+			return fmt.Errorf("limit must be less than 2000")
+		}
+
+		numDeals = uint(n)
+	} else {
+		numDeals = uint(500)
+	}
+
+	cnt, err := findUnreplicatedContentForProvider(dldm.DB, p.ActorID, nil, &numDeals, true)
+
+	if err != nil {
+		return fmt.Errorf("unable to find content for dataset: %s", err)
+	}
+
+	var result []EligiblePiece
+
+	for _, deal := range cnt {
+		result = append(result, EligiblePiece{
+			PayloadCID:      deal.PayloadCID,
+			PieceCID:        deal.CommP,
+			Size:            deal.Size,
+			PaddedSize:      deal.PaddedSize,
+			ContentLocation: deal.ContentLocation,
+		})
+	}
+
+	return c.JSON(http.StatusOK, result)
 }

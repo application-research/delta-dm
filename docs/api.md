@@ -668,6 +668,46 @@ For more details, see the [Self-Service API](/docs/self-service.md) documentatio
 }
 ```
 
+### GET /self-service/eligible_pieces
+
+Returns a list of contents that is downloadable by the client, which can then have deals requested for it.
+This endpoint requires the Provider's self-service key is present in the header in the form: 
+
+```sh
+X-DELTA-AUTH: b3cc8a99-155a-4fff-8974-999ec313e5cc
+```
+
+#### Params
+```s
+?limit # max number of records to return (default: 500)
+```
+
+#### Body
+<none>
+
+#### Response
+> 200: Success
+```json
+[
+	{
+		"payload_cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhe",
+		"piece_cid": "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmle",
+		"size": 18010019221,
+		"padded_size": 34359738368,
+		"content_location": "http://google.com/carfile"
+	},
+	[
+	{
+		"payload_cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhe",
+		"piece_cid": "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmle",
+		"size": 18010019221,
+		"padded_size": 34359738368,
+		"content_location": "http://google.com/carfile"
+	}
+]
+]
+```
+
 ## /replication-profiles
 
 ### GET /replication-profiles
