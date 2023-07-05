@@ -677,8 +677,6 @@ This endpoint requires the Provider's self-service key is present in the header 
 X-DELTA-AUTH: b3cc8a99-155a-4fff-8974-999ec313e5cc
 ```
 
-For more details, see the [Self-Service API](/docs/self-service.md) documentation.
-
 #### Params
 ```s
 ?limit # max number of records to return (default: 500)

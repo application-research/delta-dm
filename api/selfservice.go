@@ -338,8 +338,6 @@ func handleSelfServiceEligiblePieces(c echo.Context, dldm *core.DeltaDM) error {
 	p := c.Get(PROVIDER).(db.Provider)
 	limit := c.QueryParam("limit")
 
-	fmt.Println("limit: " + limit)
-
 	var numDeals uint
 	if limit != "" {
 		n, err := strconv.ParseUint(limit, 10, 64)
