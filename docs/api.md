@@ -164,6 +164,47 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
 
 
 ## /contents
+
+### POST /contents
+- Add content (CAR files) to collections
+
+#### Request Body
+
+##### delta-dm format
+```jsonc
+[
+  {
+    "payload_cid": "bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhy",
+    "commp": "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmlq",
+    "padded_size": 34359738368,
+    "size": 18010019221,
+    "collection": "collection-1",
+    "content_location": "http://location.of.content.com/bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhy.car"
+  },
+  {
+    "payload_cid": "bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu",
+    "commp": "baga6ea4seaqcqnnwp7n5ra5ltnvwkd3xk3jxujtxg4bqrueangl3t5cyn5p6soq",
+    "padded_size": 34359738368,
+    "size": 18010019221,
+    "collection": "collection-2",
+    "content_location": "http://location.of.content.com/bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu.car"
+  },
+ ...
+]
+```
+
+#### Response Body
+```jsonc
+{
+    "success": [
+        "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmlq",
+        "baga6ea4seaqcqnnwp7n5ra5ltnvwkd3xk3jxujtxg4bqrueangl3t5cyn5p6soq"
+    ..
+    ],
+    "fail": []
+}
+```
+
 ### POST /contents/:dataset
 - Add content (CAR files) to the dataset
 - Accepts three types of input - standard (delta-dm) format, singularity format, or CSV- as defined below
@@ -185,14 +226,14 @@ All endpoints (with the exception of `/self-service`) require the `Authorization
     "commp": "baga6ea4seaqblmkqfesvijszk34r3j6oairnl4fhi2ehamt7f3knn3gwkyylmlq",
     "padded_size": 34359738368,
     "size": 18010019221,
-		"content_location": "http://location.of.content.com/bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhy.car" // Optional
+	"content_location": "http://location.of.content.com/bafybeidylyizmuhqny6dj5vblzokmrmgyq5tocssps3nw3g22dnlty7bhy.car" // Optional
   },
   {
     "payload_cid": "bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu",
     "commp": "baga6ea4seaqcqnnwp7n5ra5ltnvwkd3xk3jxujtxg4bqrueangl3t5cyn5p6soq",
     "padded_size": 34359738368,
     "size": 18010019221, 
-		"content_location": "http://location.of.content.com/bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu.car" // Optional
+	"content_location": "http://location.of.content.com/bafybeib5nunwd6nmhe3x3mfzmfhrddegsrxxk6lq4lszploeplktzkxhzu.car" // Optional
   },
  ...
 ]
@@ -234,8 +275,6 @@ baga6ea4seaqhf2ymr6ahkxe3i2txmnqbmltzyf65nwcdvq2hvwmcx4eu4wzl4fi,bafybeif2bu5bdq
 	"fail": []
 }
 ```
-
-		
 
 ### GET /contents/:dataset
 - Get list of contents in a dataset
