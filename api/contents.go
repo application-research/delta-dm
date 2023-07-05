@@ -15,11 +15,12 @@ import (
 )
 
 type ContentCollection struct {
-	CommP      string `json:"commp"`
-	PayloadCID string `json:"payload_cid"`
-	Size       uint64 `json:"size"`
-	PaddedSize uint64 `json:"padded_size"`
-	Collection string `json:"collection"`
+	CommP           string `json:"commp"`
+	PayloadCID      string `json:"payload_cid"`
+	Size            uint64 `json:"size"`
+	PaddedSize      uint64 `json:"padded_size"`
+	Collection      string `json:"collection"`
+	ContentLocation string `json:"content_location"`
 }
 
 func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
