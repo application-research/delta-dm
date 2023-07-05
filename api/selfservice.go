@@ -35,8 +35,8 @@ func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return handleSelfServiceTelemetry(c, dldm)
 	})
 
-	selfService.GET("/eligible_pieces", func(c echo.Context) error {
-		return handleSelfServiceEligiblePieces(c, dldm)
+	selfService.GET("/available_contents", func(c echo.Context) error {
+		return handleSelfServiceAvailableContents(c, dldm)
 	})
 }
 
@@ -326,7 +326,7 @@ func handleSelfServiceTelemetry(c echo.Context, dldm *core.DeltaDM) error {
 	return nil
 }
 
-type EligiblePiece struct {
+type AvailableContent struct {
 	PayloadCID      string `json:"payload_cid"`
 	PieceCID        string `json:"piece_cid"`
 	Size            uint64 `json:"size"`
@@ -334,7 +334,7 @@ type EligiblePiece struct {
 	ContentLocation string `json:"content_location"`
 }
 
-func handleSelfServiceEligiblePieces(c echo.Context, dldm *core.DeltaDM) error {
+func handleSelfServiceAvailableContents(c echo.Context, dldm *core.DeltaDM) error {
 	p := c.Get(PROVIDER).(db.Provider)
 	limit := c.QueryParam("limit")
 
@@ -361,10 +361,10 @@ func handleSelfServiceEligiblePieces(c echo.Context, dldm *core.DeltaDM) error {
 		return fmt.Errorf("unable to find content for dataset: %s", err)
 	}
 
-	var result []EligiblePiece
+	var result []AvailableContent
 
 	for _, deal := range cnt {
-		result = append(result, EligiblePiece{
+		result = append(result, AvailableContent{
 			PayloadCID:      deal.PayloadCID,
 			PieceCID:        deal.CommP,
 			Size:            deal.Size,
