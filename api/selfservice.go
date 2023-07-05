@@ -35,7 +35,7 @@ func ConfigureSelfServiceRouter(e *echo.Group, dldm *core.DeltaDM) {
 		return handleSelfServiceTelemetry(c, dldm)
 	})
 
-	selfService.GET("/available_contents", func(c echo.Context) error {
+	selfService.GET("/available-contents", func(c echo.Context) error {
 		return handleSelfServiceAvailableContents(c, dldm)
 	})
 }
