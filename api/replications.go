@@ -92,7 +92,7 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 	}
 
 	if statuses != "" {
-		gqp.Statuses = strings.Split(strings.ToUpper(statuses), ",")
+		gqp.Statuses = strings.Split(statuses, ",")
 	}
 
 	if datasets != "" {

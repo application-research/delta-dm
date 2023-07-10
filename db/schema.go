@@ -10,7 +10,7 @@ import (
 
 type DealStatus string
 
-const DDM_StorageDealStatusPending DealStatus = "DDM_PENDING"
+const DDM_StorageDealStatusPending DealStatus = "ddm-pending"
 
 // List of statuses that indicate a deal has failed
 var FailedStatuses = []DealStatus{
