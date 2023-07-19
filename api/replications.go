@@ -332,7 +332,7 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetI
 	`
 
 	if filterOnlyContentLocations {
-		rawQuery += " AND c.content_location NOT NULL"
+		rawQuery += " AND c.content_location IS NOT NULL"
 	}
 	var rawValues = []interface{}{providerID, providerID}
 
