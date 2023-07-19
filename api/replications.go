@@ -310,7 +310,6 @@ type replicatedContentQueryResponse struct {
 //	numDeals (optional) - the number of replications (deals) to return. If nil, return all
 //  filterOnlyContentLocations - if true, only return content where the content_location is present (i.e, downloadable)
 func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetId *uint, numDeals *uint, filterOnlyContentLocations bool) ([]replicatedContentQueryResponse, error) {
-
 	rawQuery := `
   SELECT *
   FROM datasets d
@@ -347,7 +346,11 @@ func findUnreplicatedContentForProvider(db *gorm.DB, providerID string, datasetI
 		rawValues = append(rawValues, numDeals)
 	}
 	var contents []replicatedContentQueryResponse
-	db.Raw(rawQuery, rawValues...).Scan(&contents)
+	tx := db.Raw(rawQuery, rawValues...).Scan(&contents)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
 
 	return contents, nil
 }
