@@ -153,52 +153,56 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return err
 		}
 
-		if err := dldm.DB.Find(&db.Dataset{}).Error; err != nil {
+		if err := dldm.DB.Model(&db.Dataset{}).Find(&datasets).Error; err != nil {
 			return err
 		}
 
-		for _, cnt := range content {
-			// Check for bad data
-			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 ||
-				cnt.Collection == "" || cnt.ContentLocation == "" {
-				log.Debugf("Missing required parameters for commP: %s", cnt.CommP)
-				results.Fail = append(results.Fail, cnt.CommP)
-				continue
-			}
-
-			// Check if dataset exists
-			var collection *db.Dataset
-			for _, dataset := range datasets {
-				if dataset.Name == cnt.Collection {
-					collection = &dataset
-					break
+		dldm.DB.Transaction(func(tx *gorm.DB) error {
+			for _, cnt := range content {
+				// Check for bad data
+				if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 ||
+					cnt.Collection == "" || cnt.ContentLocation == "" {
+					log.Debugf("Missing required parameters for commP: %s", cnt.CommP)
+					results.Fail = append(results.Fail, cnt.CommP)
+					continue
 				}
+
+				// Check if dataset exists
+				var collection *db.Dataset
+				for _, dataset := range datasets {
+					if dataset.Name == cnt.Collection {
+						collection = &dataset
+						break
+					}
+				}
+
+				if collection == nil {
+					log.Debugf("Collection %s not found for Commp: %s", cnt.Collection, cnt.CommP)
+					results.Fail = append(results.Fail, cnt.CommP)
+					continue
+				}
+
+				dbc := db.Content{
+					CommP:           cnt.CommP,
+					PayloadCID:      cnt.PayloadCID,
+					PaddedSize:      cnt.PaddedSize,
+					Size:            cnt.Size,
+					DatasetID:       collection.ID,
+					ContentLocation: cnt.ContentLocation,
+				}
+
+				err := tx.Create(&dbc).Error
+				if err != nil {
+					log.Debugf("Could not create DB record: %s", err.Error())
+					results.Fail = append(results.Fail, cnt.CommP)
+					continue
+				}
+
+				results.Success = append(results.Success, cnt.CommP)
 			}
 
-			if collection == nil {
-				log.Debugf("Collection %s not found for Commp: %s", cnt.Collection, cnt.CommP)
-				results.Fail = append(results.Fail, cnt.CommP)
-				continue
-			}
-
-			dbc := db.Content{
-				CommP:           cnt.CommP,
-				PayloadCID:      cnt.PayloadCID,
-				PaddedSize:      cnt.PaddedSize,
-				Size:            cnt.Size,
-				DatasetID:       collection.ID,
-				ContentLocation: cnt.ContentLocation,
-			}
-
-			err := dldm.DB.Create(&dbc).Error
-			if err != nil {
-				log.Debugf("Could not create DB record: %s", err.Error())
-				results.Fail = append(results.Fail, cnt.CommP)
-				continue
-			}
-
-			results.Success = append(results.Success, cnt.CommP)
-		}
+			return nil
+		})
 
 		return c.JSON(http.StatusOK, results)
 	})
