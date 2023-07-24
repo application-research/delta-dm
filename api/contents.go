@@ -113,29 +113,34 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			}
 		}
 
-		for _, cnt := range content {
-			// Check for bad data
-			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 {
-				results.Fail = append(results.Fail, cnt.CommP)
-				continue
+		dldm.DB.Transaction(func(tx *gorm.DB) error {
+			for _, cnt := range content {
+				// Check for bad data
+				if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 {
+					results.Fail = append(results.Fail, cnt.CommP)
+					continue
+				}
+
+				cnt.DatasetID = dataset.ID
+
+				err := tx.Create(&cnt).Error
+				if err != nil {
+					results.Fail = append(results.Fail, cnt.CommP)
+					continue
+				}
+
+				results.Success = append(results.Success, cnt.CommP)
 			}
-
-			cnt.DatasetID = dataset.ID
-
-			err := dldm.DB.Create(&cnt).Error
-			if err != nil {
-				results.Fail = append(results.Fail, cnt.CommP)
-				continue
-			}
-
-			results.Success = append(results.Success, cnt.CommP)
-		}
+			return nil
+		})
 
 		return c.JSON(http.StatusOK, results)
 	})
 
 	contents.POST("", func(c echo.Context) error {
 		var content []ContentCollection
+		var datasets []db.Dataset
+
 		results := struct {
 			Success []string `json:"success"`
 			Fail    []string `json:"fail"`
@@ -148,10 +153,11 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			return err
 		}
 
-		cache := make(map[string]uint)
+		if err := dldm.DB.Find(&db.Dataset{}).Error; err != nil {
+			return err
+		}
 
 		for _, cnt := range content {
-			var dataset db.Dataset
 			// Check for bad data
 			if cnt.CommP == "" || cnt.PayloadCID == "" || cnt.PaddedSize == 0 || cnt.Size == 0 ||
 				cnt.Collection == "" || cnt.ContentLocation == "" {
@@ -161,22 +167,26 @@ func ConfigureContentsRouter(e *echo.Group, dldm *core.DeltaDM) {
 			}
 
 			// Check if dataset exists
-			if cache[cnt.Collection] == 0 {
-				if dldm.DB.Model(&db.Dataset{}).Where("name = ?", cnt.Collection).First(&dataset).Error != nil {
-					log.Debugf("Collection not found for: %s", cnt.Collection)
-					results.Fail = append(results.Fail, cnt.CommP)
-					continue
+			var collection *db.Dataset
+			for _, dataset := range datasets {
+				if dataset.Name == cnt.Collection {
+					collection = &dataset
+					break
 				}
 			}
 
-			cache[cnt.Collection] = dataset.ID
+			if collection == nil {
+				log.Debugf("Collection %s not found for Commp: %s", cnt.Collection, cnt.CommP)
+				results.Fail = append(results.Fail, cnt.CommP)
+				continue
+			}
 
 			dbc := db.Content{
 				CommP:           cnt.CommP,
 				PayloadCID:      cnt.PayloadCID,
 				PaddedSize:      cnt.PaddedSize,
 				Size:            cnt.Size,
-				DatasetID:       dataset.ID,
+				DatasetID:       collection.ID,
 				ContentLocation: cnt.ContentLocation,
 			}
 
