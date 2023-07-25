@@ -42,7 +42,7 @@ func ConfigureReplicationsRouter(e *echo.Group, dldm *core.DeltaDM) {
 
 type GetReplicationsQueryParams struct {
 	Statuses      []string
-	Datasets      []string
+	DatasetNames  []string
 	Providers     []string
 	SelfService   *bool
 	DealTimeStart *time.Time
@@ -61,7 +61,7 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 	proposalCid := c.QueryParam("proposal_cid")
 	pieceCid := c.QueryParam("piece_cid")
 	statuses := c.QueryParam("statuses")
-	datasets := c.QueryParam("datasets")
+	datasetNames := c.QueryParam("datasets")
 	providers := c.QueryParam("providers")
 	selfService := c.QueryParam("self_service")
 	dealTimeStart := c.QueryParam("deal_time_start")
@@ -95,8 +95,8 @@ func extractGetReplicationsQueryParams(c echo.Context) GetReplicationsQueryParam
 		gqp.Statuses = strings.Split(statuses, ",")
 	}
 
-	if datasets != "" {
-		gqp.Datasets = strings.Split(datasets, ",")
+	if datasetNames != "" {
+		gqp.DatasetNames = strings.Split(datasetNames, ",")
 	}
 
 	if providers != "" {
@@ -149,8 +149,12 @@ func handleGetReplications(c echo.Context, dldm *core.DeltaDM) error {
 		tx.Where("replications.status IN ?", rqp.Statuses)
 	}
 
-	if len(rqp.Datasets) > 0 {
-		tx.Where("Content.dataset_name IN ?", rqp.Datasets)
+	if len(rqp.DatasetNames) > 0 {
+		datasetIds := []uint{}
+
+		// Get dataset IDs from names
+		dldm.DB.Model(&db.Dataset{}).Where("name IN ?", rqp.DatasetNames).Pluck("id", &datasetIds)
+		tx.Where("Content.dataset_id IN ?", datasetIds)
 	}
 
 	if len(rqp.Providers) > 0 {
